@@ -1,9 +1,11 @@
+import Footer from '@/components/footer'
 import GradientBlinds from '@/components/ui/GradientBlinds'
 import React from 'react'
 
 function page() {
   return (
-    <section className='w-full min-h-screen relative overflow-hidden text-white font-brcolage-grotesque flex items-center justify-center'>
+    <>
+     <section className='w-full min-h-screen relative overflow-hidden text-white font-brcolage-grotesque flex items-center justify-center'>
       <div className='w-full h-full absolute inset-0'>
         <GradientBlinds
           gradientColors={['#E60000', '#622222']}
@@ -24,10 +26,10 @@ function page() {
       <div className='relative z-10 max-w-7xl mx-auto px-6 text-center'>
         <div className='space-y-8'>
           <div className='space-y-4'>
-            <h1 className='text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-none'>
-              <span className='block'>Transform Your</span>
+            <h1 className='text-4xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-none'>
+              <span className='block'>Unified Platform for</span>
               <span className='block bg-gradient-to-r from-white via-red-100 to-white bg-clip-text text-transparent'>
-                Creative Flow
+               Service Bussiness
               </span>
             </h1>
 
@@ -37,9 +39,10 @@ function page() {
           </div>
         </div>
       </div>
-
-      
     </section>
+    <Footer />
+    </>
+   
   )
 }
 

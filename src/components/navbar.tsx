@@ -12,8 +12,8 @@ function Navbar() {
   return (
     <>
       <header className='fixed top-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-6xl font-brcolage-grotesque px-4 p-2 z-50
-                     bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg shadow-black/10
-                     flex items-center justify-between transition-all duration-300 hover:bg-white/15'>
+                     bg-zinc-900 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg shadow-black/10
+                     flex items-center justify-between transition-all duration-300'>
         <section className='flex items-center'>
           <Link href="/" onClick={closeMenu}>
             <h1 className='text-white font-bold text-xl tracking-tight cursor-pointer'>StudioFlow</h1>
@@ -30,15 +30,15 @@ function Navbar() {
             </Link>
           </nav>
 
-          <button className='px-5 py-[7px] hidden md:block rounded-md bg-white/90 hover:bg-white text-black font-semibold 
+          <Link href={"/signup"} className='px-5 py-[7px] hidden md:block rounded-md bg-white/90 hover:bg-white text-black font-semibold 
                            transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg'>
             Get Started
-          </button>
+          </Link>
 
 
           <button
             onClick={toggleMenu}
-            className='md:hidden p-2 rounded-lg hover:bg-white/10 transition-all duration-200 relative z-50'
+            className='md:hidden cursor-pointer p-2 rounded-lg hover:bg-white/10 transition-all duration-200 relative z-50'
             aria-label={isOpen ? 'Close menu' : 'Open menu'}
             aria-expanded={isOpen}
           >
@@ -56,7 +56,7 @@ function Navbar() {
 
 
       {isOpen && (
-        <div className="fixed inset-0 z- transition-all ease-in duration-75 md:hidden">
+        <div className="fixed inset-0 z-40 transition-all ease-in duration-75 md:hidden">
           <div
             className="absolute inset-0 bg-black/50 backdrop-blur-sm"
             onClick={closeMenu}
