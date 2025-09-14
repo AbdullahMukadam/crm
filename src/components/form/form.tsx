@@ -1,6 +1,9 @@
 "use client"
+import { SigninUser, SignupUser } from '@/lib/store/features/authSlice';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { ArrowRightIcon } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, FormEvent, useState } from 'react'
 import { toast } from 'sonner';
 
@@ -17,45 +20,58 @@ interface UserDetails {
 
 function AuthenticationForm({ headerText, TypeofTheForm }: Props) {
     const isSignUpForm = TypeofTheForm === "Signup"
+    const dispatch = useAppDispatch()
+    const { isLoading, error } = useAppSelector((state) => state.auth)
+    const router = useRouter()
     const [userData, setUserData] = useState<UserDetails>({
         username: "",
         email: "",
         password: ""
     });
-    const [isLoading, setisLoading] = useState(false)
+
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
 
         try {
-            setisLoading(true)
             if (isSignUpForm) {
-                const response = await fetch("/api/signup", {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        userCredentials: userData
-                    })
-                })
-                if (response) {
-                    const data = await response.json();
-                    if (data.success) {
-                        toast(`Welcome ${data.user.username}`, {
-                            description: "Youll be redirected to Onboard page"
-                        })
-                    }
+                if (!userData.username || !userData.email || !userData.password) {
+                    toast.error("Please fill all the fields")
+                    return
+                }
+                const result = await dispatch(SignupUser({
+                    username: userData.username,
+                    email: userData.email,
+                    password: userData.password
+                }))
+
+                if (SignupUser.fulfilled.match(result)) {
+                    console.log(result.payload)
+                    toast.success("User Signed Up Successfully")
+                    router.push("/onboard")
+                } else if (SignupUser.rejected.match(result)) {
+                    toast.error(result.payload as string || "Failed to create account");
+                }
+            } else {
+                if (!userData.email || !userData.password) {
+                    toast.error("Please fill all the fields")
+                    return
                 }
 
-            } else {
-                console.log("SignInForm")
+                const result = await dispatch(SigninUser({
+                    email: userData.email,
+                    password: userData.password
+                }))
+                if (SigninUser.fulfilled.match(result)) {
+                    toast.success("User Signed In Successfully")
+                    router.push("/onboard")
+                } else if (SigninUser.rejected.match(result)) {
+                    toast.error(result.payload as string || "Failed to Signin");
+                }
             }
         } catch (error) {
             toast("Internal Server Error")
             console.error(error)
-        } finally {
-            setisLoading(false)
         }
     }
 

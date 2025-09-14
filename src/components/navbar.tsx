@@ -1,13 +1,40 @@
 "use client"
+import { LogoutUser } from '@/lib/store/features/authSlice'
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
+import { toast } from 'sonner'
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
+  const { isAuthenticated } = useAppSelector((state) => state.auth)
+  const dispatch = useAppDispatch()
+  const router = useRouter()
 
   const toggleMenu = () => setIsOpen(!isOpen)
-
   const closeMenu = () => setIsOpen(false)
+
+  const handleLogout = async () => {
+    try {
+      const response = await dispatch(LogoutUser())
+      if (LogoutUser.fulfilled.match(response)) {
+        toast.success("Logged out successfully")
+        router.push("/signin")
+      } else if (LogoutUser.rejected.match(response)) {
+        toast.error(response.payload as string || "Logout failed. Please try again.")
+      }
+    } catch (error) {
+      console.error('Logout failed:', error)
+      toast(error as string || 'Logout failed. Please try again.')
+    }
+
+  }
+
+  const commonItems = [
+    { name: 'About', href: '/about' },
+    { name: 'Pricing', href: '/pricing' },
+  ]
 
   return (
     <>
@@ -22,18 +49,21 @@ function Navbar() {
 
         <section className='flex items-center gap-8 text-white/90'>
           <nav className='hidden md:flex items-center gap-6'>
-            <Link href="/about" className='hover:text-white transition-colors duration-200 font-medium'>
-              About
-            </Link>
-            <Link href="/pricing" className='hover:text-white transition-colors duration-200 font-medium'>
-              Pricing
-            </Link>
+            {commonItems.map((item) => (
+              <Link key={item.name} href={item.href} className='hover:text-white transition-colors duration-200 font-medium'>
+                {item.name}
+              </Link>
+            ))}
           </nav>
 
-          <Link href={"/signup"} className='px-5 py-[7px] hidden md:block rounded-md bg-white/90 hover:bg-white text-black font-semibold 
+          {isAuthenticated ? (
+            <button onClick={handleLogout} className='px-5 py-[7px] hidden md:block rounded-md bg-red-500 hover:bg-red-600 text-black font-semibold 
+                           transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg'>Logout</button>
+          ) : (
+            <Link href={"/signup"} className='px-5 py-[7px] hidden md:block rounded-md bg-white/90 hover:bg-white text-black font-semibold 
                            transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg'>
-            Get Started
-          </Link>
+              Get Started
+            </Link>)}
 
 
           <button
@@ -68,30 +98,31 @@ function Navbar() {
                           transition-all duration-300 ease-out ${isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-95'
             }`}>
             <nav className="flex flex-col p-6 space-y-1 text-white/90">
-              <Link
-                href="/about"
-                onClick={closeMenu}
-                className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors duration-200 font-medium"
-              >
-                About
-              </Link>
-              <Link
-                href="/pricing"
-                onClick={closeMenu}
-                className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors duration-200 font-medium"
-              >
-                Pricing
-              </Link>
-
-
-              <div className="pt-4">
-                <button
+              {commonItems.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
                   onClick={closeMenu}
-                  className="w-full px-4 py-3 bg-black text-white font-semibold rounded-lg
-                           hover:bg-gray-800 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  className="block px-4 py-3 hover:bg-gray-100 rounded-lg transition-colors duration-200 font-medium"
                 >
-                  Get Started
-                </button>
+                  {item.name}
+                </Link>
+              ))}
+
+
+              <div className="pt-4 flex items-center justify-center text-center">
+                {isAuthenticated ? (
+                  <button onClick={handleLogout} className='px-5 py-[7px] hidden md:block rounded-md bg-red-500 hover:bg-red-600 text-black font-semibold 
+ transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg'>Logout</button>
+                ) : (
+                  <Link
+                    href={"/signup"}
+                    className="w-full px-4 py-3 bg-black text-white font-semibold rounded-lg
+                           hover:bg-gray-800 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Get Started
+                  </Link>
+                )}
               </div>
             </nav>
           </div>

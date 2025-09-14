@@ -7,9 +7,124 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum Role {
+  CLIENT
+  CREATOR
+  ADMIN
+}
+
+enum ProjectStatus {
+  PLANNING
+  IN_PROGRESS
+  COMPLETED
+  CANCELED
+}
+
+enum ProposalStatus {
+  DRAFT
+  SENT
+  ACCEPTED
+  DECLINED
+}
+
+enum DeliverableStatus {
+  PENDING_REVIEW
+  REVISIONS_REQUESTED
+  APPROVED
+}
+
+enum InvoiceStatus {
+  DRAFT
+  SENT
+  PAID
+  OVERDUE
+}
+
 model User {
-  id       String @id @default(uuid())
-  username String @unique
-  email    String @unique
-  password String
+  id        String   @id @default(cuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt @default(now())
+  avatarUrl String? // Optional field for user avatar
+
+  // --- Key changes for your onboarding flow ---
+  role      Role? // Role is now optional, will be set during onboarding
+  onboarded Boolean @default(false) // Flag to check if user has completed onboarding
+
+  // --- Relationships ---
+  createdProjects Project[]  @relation("CreatorProjects")
+  clientProjects  Project[]  @relation("ClientProjects")
+  proposals       Proposal[]
+  invoices        Invoice[]
+}
+
+model Project {
+  id          String        @id @default(cuid())
+  title       String
+  description String?       @db.Text
+  status      ProjectStatus @default(PLANNING)
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  creatorId String
+  creator   User   @relation("CreatorProjects", fields: [creatorId], references: [id])
+
+  clientId String
+  client   User   @relation("ClientProjects", fields: [clientId], references: [id])
+
+  deliverables Deliverable[]
+  invoices     Invoice[]
+
+  proposalId String?   @unique
+  proposal   Proposal? @relation(fields: [proposalId], references: [id])
+}
+
+// --- Project Lifecycle Models ---
+
+model Proposal {
+  id        String         @id @default(cuid())
+  title     String
+  content   String         @db.Text
+  status    ProposalStatus @default(DRAFT)
+  amount    Decimal
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  creatorId String
+  creator   User   @relation(fields: [creatorId], references: [id])
+
+  clientId String
+
+  project Project?
+}
+
+model Deliverable {
+  id          String            @id @default(cuid())
+  title       String
+  description String?           @db.Text
+  linkUrl     String?
+  fileUrl     String?
+  status      DeliverableStatus @default(PENDING_REVIEW)
+  submittedAt DateTime          @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
+}
+
+model Invoice {
+  id            String        @id @default(cuid())
+  invoiceNumber String        @unique
+  amount        Decimal
+  dueDate       DateTime
+  paidAt        DateTime?
+  status        InvoiceStatus @default(DRAFT)
+  createdAt     DateTime      @default(now())
+
+  clientId String
+  client   User   @relation(fields: [clientId], references: [id])
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id])
 }
