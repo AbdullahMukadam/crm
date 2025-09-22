@@ -8,7 +8,7 @@ const initialState: AuthState = {
     username: null,
     email: null,
     avatarUrl: null,
-    role: 'user',
+    role: 'client',
     onboarded: false,
     isLoading: false,
     error: null,
@@ -68,7 +68,7 @@ export const AuthSlice = createSlice({
     initialState,
     reducers: {
         addUserDetails: (state, action: PayloadAction<Partial<AuthState>>) => {
-            Object.assign(state, action.payload);
+           state = Object.assign(state, action.payload);
         },
         clearError: (state) => {
             state.error = null;

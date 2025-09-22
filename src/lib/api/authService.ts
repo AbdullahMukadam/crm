@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "@/constants/auth";
-import { APIResponse, SigninCredentials, SigninResponse, SignupCredentials, SignupResponse } from "@/types/auth";
+import { APIResponse, OnboardRequest, OnboardResponse, SigninCredentials, SigninResponse, SignupCredentials, SignupResponse } from "@/types/auth";
 import { FetchClient } from "./fetchClient";
 
 
@@ -26,6 +26,13 @@ class AuthService {
     async logout(): Promise<APIResponse> {
         return await FetchClient.makeRequest(API_ENDPOINTS.LOGOUT, {
             method: 'POST',
+        });
+    }
+
+    async onboarding(data: OnboardRequest): Promise<APIResponse<OnboardResponse>> {
+        return await FetchClient.makeRequest<OnboardResponse>(API_ENDPOINTS.ONBOARDING, {
+            method: 'POST',
+            body: JSON.stringify(data),
         });
     }
 }

@@ -2,7 +2,7 @@ import { Invoice } from "./invoice";
 import { Project } from "./project";
 import { Proposal } from "./proposal";
 
-export type UserRole = 'admin' | 'user' | 'creator';
+export type UserRole = 'admin' | 'client' | 'creator';
 
 export interface APIResponse<T = any> {
     success: boolean;
@@ -31,6 +31,20 @@ export interface SigninCredentials {
 }
 
 export interface SigninResponse {
+    id: string;
+    username: string;
+    email: string;
+    avatarUrl: string | null;
+    role: UserRole;
+    onboarded: boolean;
+}
+
+export interface OnboardRequest {
+    role: UserRole;
+    userId: string;
+}
+
+export interface OnboardResponse {
     id: string;
     username: string;
     email: string;

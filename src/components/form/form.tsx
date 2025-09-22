@@ -104,7 +104,7 @@ function AuthenticationForm({ headerText, TypeofTheForm }: Props) {
                             <input value={userData.password} onChange={handleChange} required className='border-[0.2px] border-gray-900 bg-zinc-900 rounded-md p-2 outline-none hover:border-gray-800' id='password' type="password" placeholder='Enter your Password' />
                         </div>
                     </section>
-                    <button disabled={isLoading} className='w-full bg-white cursor-pointer text-black rounded-md py-2 mt-3'>{isLoading ? "Please Wait" : "Continue"}</button>
+                    <button disabled={isLoading} className={`w-full bg-white ${isLoading ? "bg-gray-500" : ""} cursor-pointer text-black rounded-md py-2 mt-3`}>{isLoading ? "Please Wait.." : "Continue"}</button>
                 </form>
                 <div className='w-full items-center p-3 flex mt-3 gap-1'>
                     <hr className="h-px bg-gray-500 grow" />
