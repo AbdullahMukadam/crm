@@ -62,7 +62,9 @@ export async function POST(request: NextRequest) {
         const tokenData = {
             id: newUser.id,
             email: newUser.email,
-            username: newUser.username
+            username: newUser.username,
+            onboarded: newUser.onboarded,
+            role: newUser.role
         }
         const token = await createToken(tokenData)
 

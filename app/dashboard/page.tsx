@@ -1,9 +1,17 @@
 "use client"
 import { useAppSelector } from '@/lib/store/hooks'
-import React from 'react'
+import { useRouter } from 'next/navigation'
+import React, { useEffect } from 'react'
 
 function page() {
     const { username, role, onboarded } = useAppSelector((state) => state.auth)
+    const router = useRouter()
+
+    useEffect(() => {
+        if (onboarded) {
+            router.push(`/dashboard/${role}`)
+        }
+    }, [onboarded])
     return (
         <div className='text-white'>
             <h1 className='text-2xl font-bold'>Welcome to your Dashboard</h1>

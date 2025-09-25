@@ -53,6 +53,8 @@ export async function POST(request: NextRequest) {
             id: isUserPresent.id,
             email: isUserPresent.email,
             username: isUserPresent.username,
+            onboarded: isUserPresent.onboarded,
+            role: isUserPresent.role
         }
 
         const token = await createToken(tokenData)
