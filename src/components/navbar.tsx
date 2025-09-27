@@ -1,35 +1,17 @@
 "use client"
-import { LogoutUser } from '@/lib/store/features/authSlice'
-import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
+import { useAppSelector } from '@/lib/store/hooks'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-import { toast } from 'sonner'
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
-  const dispatch = useAppDispatch()
-  const router = useRouter()
+
 
   const toggleMenu = () => setIsOpen(!isOpen)
   const closeMenu = () => setIsOpen(false)
 
-  const handleLogout = async () => {
-    try {
-      const response = await dispatch(LogoutUser())
-      if (LogoutUser.fulfilled.match(response)) {
-        toast.success("Logged out successfully")
-        router.push("/signin")
-      } else if (LogoutUser.rejected.match(response)) {
-        toast.error(response.payload as string || "Logout failed. Please try again.")
-      }
-    } catch (error) {
-      console.error('Logout failed:', error)
-      toast(error as string || 'Logout failed. Please try again.')
-    }
 
-  }
 
   const commonItems = [
     { name: 'About', href: '/about' },
@@ -38,9 +20,9 @@ function Navbar() {
 
   return (
     <>
-      <header className='fixed top-6 left-1/2 transform -translate-x-1/2 w-[90%] max-w-6xl font-brcolage-grotesque px-4 p-2 z-50
+      <header className={`${isAuthenticated ? "hidden" : "fixed top-6"} left-1/2 transform -translate-x-1/2 w-[90%] max-w-6xl font-brcolage-grotesque px-4 p-2 z-50
                      bg-zinc-900 backdrop-blur-lg border border-white/20 rounded-2xl shadow-lg shadow-black/10
-                     flex items-center justify-between transition-all duration-300'>
+                     flex items-center justify-between transition-all duration-300`}>
         <section className='flex items-center'>
           <Link href="/" onClick={closeMenu}>
             <h1 className='text-white font-bold text-xl tracking-tight cursor-pointer'>StudioFlow</h1>
@@ -56,14 +38,10 @@ function Navbar() {
             ))}
           </nav>
 
-          {isAuthenticated ? (
-            <button onClick={handleLogout} className='px-5 py-[7px] hidden md:block rounded-md bg-red-500 hover:bg-red-600 text-black font-semibold 
-                           transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg'>Logout</button>
-          ) : (
-            <Link href={"/signup"} className='px-5 py-[7px] hidden md:block rounded-md bg-white/90 hover:bg-white text-black font-semibold 
+          <Link href={"/signup"} className='px-5 py-[7px] hidden md:block rounded-md bg-white/90 hover:bg-white text-black font-semibold 
                            transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg'>
-              Get Started
-            </Link>)}
+            Get Started
+          </Link>
 
 
           <button
@@ -111,18 +89,13 @@ function Navbar() {
 
 
               <div className="pt-4 flex items-center justify-center text-center">
-                {isAuthenticated ? (
-                  <button onClick={handleLogout} className='px-5 py-[7px] hidden md:block rounded-md bg-red-500 hover:bg-red-600 text-black font-semibold 
- transition-all duration-200 hover:scale-105 active:scale-95 shadow-lg'>Logout</button>
-                ) : (
-                  <Link
-                    href={"/signup"}
-                    className="w-full px-4 py-3 bg-black text-white font-semibold rounded-lg
+                <Link
+                  href={"/signup"}
+                  className="w-full px-4 py-3 bg-black text-white font-semibold rounded-lg
                            hover:bg-gray-800 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]"
-                  >
-                    Get Started
-                  </Link>
-                )}
+                >
+                  Get Started
+                </Link>
               </div>
             </nav>
           </div>

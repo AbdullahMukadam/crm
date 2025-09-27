@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
-  const publicRoutes = ['/signin', '/signup', '/access-denied'];
+  const publicRoutes = ['/signin', '/signup', '/access-denied', "/"];
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }
@@ -90,6 +90,6 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+   '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|access-denied|$).*)',
   ],
 };
