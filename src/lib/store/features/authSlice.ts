@@ -13,7 +13,42 @@ const initialState: AuthState = {
     isLoading: false,
     error: null,
     isAuthenticated: false,
+    isInitialized: false, // Track if we've checked for existing auth
 }
+
+// Validate existing JWT token on app startup
+export const ValidateStoredAuth = createAsyncThunk(
+    'auth/validateStored',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await authService.validateSession();
+
+            if (!response.success) {
+                return rejectWithValue(response.message || 'Session expired');
+            }
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Session validation failed');
+        }
+    }
+)
+
+// Get current user data
+export const GetCurrentUser = createAsyncThunk(
+    'auth/getCurrentUser',
+    async (_, { rejectWithValue }) => {
+        try {
+            const response = await authService.getCurrentUser();
+
+            if (!response.success) {
+                return rejectWithValue(response.message || 'Failed to get user data');
+            }
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to get user data');
+        }
+    }
+)
 
 export const SignupUser = createAsyncThunk(
     'auth/signup',
@@ -53,12 +88,12 @@ export const LogoutUser = createAsyncThunk(
         try {
             const response = await authService.logout();
 
-            if (!response.success) {
-                return rejectWithValue(response.message || 'Failed to logout user');
-            }
+            // Note: We don't check response.success here because we want to
+            // clear the local state regardless of server response
             return response;
         } catch (error: any) {
-            return rejectWithValue(error.message || 'Failed to logout user');
+            // Even if logout fails on server, clear local state
+            return { success: true };
         }
     }
 )
@@ -68,7 +103,7 @@ export const AuthSlice = createSlice({
     initialState,
     reducers: {
         addUserDetails: (state, action: PayloadAction<Partial<AuthState>>) => {
-           state = Object.assign(state, action.payload);
+            Object.assign(state, action.payload);
         },
         clearError: (state) => {
             state.error = null;
@@ -76,12 +111,59 @@ export const AuthSlice = createSlice({
         logout: (state) => {
             Object.assign(state, {
                 ...initialState,
-                isLoading: false
+                isLoading: false,
+                isInitialized: true
             });
+        },
+        setInitialized: (state) => {
+            state.isInitialized = true;
         }
     },
     extraReducers(builder) {
         builder
+
+            // validate stored auth (JWT token)
+            .addCase(ValidateStoredAuth.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(ValidateStoredAuth.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.error = null;
+                state.isAuthenticated = true;
+                state.isInitialized = true;
+                if (action.payload) {
+                    Object.assign(state, action.payload);
+                }
+            })
+            .addCase(ValidateStoredAuth.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = null; // Don't show error for expired sessions
+                state.isAuthenticated = false;
+                state.isInitialized = true;
+                Object.assign(state, {
+                    ...initialState,
+                    isLoading: false,
+                    isInitialized: true
+                });
+            })
+
+            // get current user
+            .addCase(GetCurrentUser.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(GetCurrentUser.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.error = null;
+                if (action.payload) {
+                    Object.assign(state, action.payload);
+                }
+            })
+            .addCase(GetCurrentUser.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+            })
 
             //signup user
             .addCase(SignupUser.pending, (state) => {
@@ -92,13 +174,15 @@ export const AuthSlice = createSlice({
                 state.isLoading = false;
                 state.error = null;
                 state.isAuthenticated = true;
+                state.isInitialized = true;
                 if (action.payload) {
-                    state = Object.assign(state, action.payload);
+                    Object.assign(state, action.payload);
                 }
             })
             .addCase(SignupUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
+                state.isInitialized = true;
             })
 
             //signin user
@@ -110,13 +194,15 @@ export const AuthSlice = createSlice({
                 state.isLoading = false;
                 state.error = null;
                 state.isAuthenticated = true;
+                state.isInitialized = true;
                 if (action.payload) {
-                    state = Object.assign(state, action.payload);
+                    Object.assign(state, action.payload);
                 }
             })
             .addCase(SigninUser.rejected, (state, action) => {
                 state.isLoading = false;
                 state.error = action.payload as string;
+                state.isInitialized = true;
             })
 
             //logout user
@@ -128,18 +214,26 @@ export const AuthSlice = createSlice({
                 state.isLoading = false;
                 state.error = null;
                 state.isAuthenticated = false;
-                state = Object.assign(state, {
+                state.isInitialized = true;
+                Object.assign(state, {
                     ...initialState,
-                    isLoading: false
+                    isLoading: false,
+                    isInitialized: true
                 });
             })
-            .addCase(LogoutUser.rejected, (state, action) => {
+            .addCase(LogoutUser.rejected, (state) => {
                 state.isLoading = false;
-                state.error = action.payload as string;
+                state.isAuthenticated = false;
+                state.isInitialized = true;
+                Object.assign(state, {
+                    ...initialState,
+                    isLoading: false,
+                    isInitialized: true
+                });
             })
     },
 })
 
-export const { addUserDetails, clearError, logout } = AuthSlice.actions
+export const { addUserDetails, clearError, logout, setInitialized } = AuthSlice.actions
 
 export default AuthSlice.reducer

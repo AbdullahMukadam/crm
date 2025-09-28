@@ -35,6 +35,18 @@ class AuthService {
             body: JSON.stringify(data),
         });
     }
+
+    async validateSession(): Promise<APIResponse<SigninResponse>> {
+        return await FetchClient.makeRequest<SigninResponse>(API_ENDPOINTS.VALIDATE, {
+            method: 'GET',
+        });
+    }
+
+    async getCurrentUser(): Promise<APIResponse<SigninResponse>> {
+        return await FetchClient.makeRequest<SigninResponse>(API_ENDPOINTS.ME, {
+            method: 'GET',
+        });
+    }
 }
 
 export const authService = new AuthService();

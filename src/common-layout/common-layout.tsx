@@ -1,4 +1,5 @@
 
+import { AuthInitializer } from '@/components/common/authInitializer'
 import Navbar from '@/components/navbar'
 import { Toaster } from '@/components/ui/sonner'
 import ReduxProvider from '@/providers/ReduxProvider'
@@ -10,13 +11,16 @@ type Props = {
 function CommonLayout({ children }: Props) {
     return (
         <ReduxProvider>
-            <div className='w-full h-full bg-black'>
-                <Navbar />
-                <main className='w-full'>
-                    {children}
-                </main>
-                <Toaster />
-            </div>
+            <AuthInitializer>
+                <div className='w-full h-full bg-black'>
+                    <Navbar />
+                    <main className='w-full'>
+                        {children}
+                    </main>
+                    <Toaster />
+                </div>
+            </AuthInitializer>
+
         </ReduxProvider>
 
     )

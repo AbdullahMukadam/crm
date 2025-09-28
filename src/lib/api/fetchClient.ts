@@ -23,18 +23,9 @@ class fetchClient {
                 ...options.headers,
             },
             ...options,
+            credentials: 'include',
         };
 
-        // // Add auth token if available
-        // if (typeof window !== 'undefined') {
-        //     const token = localStorage.getItem('access_token');
-        //     if (token) {
-        //         config.headers = {
-        //             ...config.headers,
-        //             Authorization: `Bearer ${token}`,
-        //         };
-        //     }
-        // }
 
         try {
             const response = await fetch(url, config);

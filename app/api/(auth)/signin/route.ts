@@ -3,7 +3,7 @@
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt"
-import { createToken } from "@/lib/create-token";
+import { createToken } from "@/utils/create-token";
 
 const prismaClient = new PrismaClient()
 

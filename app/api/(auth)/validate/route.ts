@@ -1,0 +1,60 @@
+import { verifyToken } from "@/utils/verify-token";
+import { PrismaClient } from "@prisma/client";
+import { NextRequest, NextResponse } from "next/server";
+
+const prismaClient = new PrismaClient();
+
+export async function GET(request: NextRequest) {
+    const token = request.cookies.get('token')?.value;
+
+    if (!token) {
+        return new Response(JSON.stringify({
+            success: false,
+            message: "No token found"
+        }), { status: 401 });
+    }
+
+    try {
+        const isverifiedToken = await verifyToken(token);
+
+        if (!isverifiedToken || !isverifiedToken.id) {
+            return new Response(JSON.stringify({
+                success: false,
+                message: "Invalid token"
+            }), { status: 401 });
+        }
+
+        const userDetails = await prismaClient.user.findUnique({
+            where: {
+                id: isverifiedToken.id
+            },
+            select: {
+                id: true,
+                email: true,
+                username: true,
+                role: true,
+                onboarded: true,
+            }
+        })
+
+        if (!userDetails) {
+            return new Response(JSON.stringify({
+                success: false,
+                message: "User not found"
+            }), { status: 404 });
+        }
+
+        return NextResponse.json({
+            success: true,
+            message: "Token is valid",
+            data: userDetails
+        });
+    } catch (error) {
+        console.error("Token validation error:", error);
+        return NextResponse.json({
+            success: false,
+            message: "Token validation failed"
+        }, { status: 401 });
+    }
+
+}
