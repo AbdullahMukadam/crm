@@ -3,7 +3,7 @@ import KanbanBoardClient from './kanbanBoard.Client'
 
 function DashboardClient() {
   return (
-    <div className='w-full bg-amber-400 overflow-hidden'>
+    <div className='w-full overflow-hidden'>
       <KanbanBoardClient />
     </div>
   )

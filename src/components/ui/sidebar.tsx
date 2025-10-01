@@ -65,13 +65,8 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
                     <Link
                         key={item.href}
                         href={item.href}
-                        className={cn(
-                            "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-200 transition-all hover:text-gray-400 dark:text-gray-400 dark:hover:text-gray-50",
-                            isCollapsed && "justify-center",
-                            {
-                                "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-50": pathname === item.href,
-                            }
-                        )}
+                        className={
+                            `flex items-center gap-3 ${item.isActive ? "bg-zinc-800" : ""} rounded-lg px-3 py-2 text-gray-200 transition-all hover:text-gray-400 dark:text-gray-400 dark:hover:text-gray-50`}
                         title={isCollapsed ? item.label : undefined}
                     >
                         <item.icon className="h-5 w-5" />

@@ -11,17 +11,14 @@ import {
     DragEndEvent,
     DragStartEvent,
     UniqueIdentifier,
-    useDndMonitor,
 } from '@dnd-kit/core';
 import {
     SortableContext,
-    useSortable,
-    verticalListSortingStrategy,
     arrayMove,
     sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { Plus, MoreHorizontal, X } from 'lucide-react';
+import { X } from 'lucide-react';
+import KanbanColumn from './kanbanColoumn';
 
 // Types
 interface Task {
@@ -76,126 +73,9 @@ const initialData: Column[] = [
     }
 ];
 
-// Task Card Component
-const TaskCard = ({ task, columnId }: { task: Task; columnId: string }) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({
-        id: task.id,
-        data: {
-            type: 'task',
-            task,
-            columnId,
-        },
-    });
 
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
 
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            {...attributes}
-            {...listeners}
-            className={`
-                bg-white p-3 rounded-lg shadow-sm border border-gray-200 
-                cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow
-                ${isDragging ? 'opacity-50 rotate-2 scale-105' : ''}
-            `}
-        >
-            <h4 className="font-medium text-gray-900 mb-1">{task.title}</h4>
-            {task.description && (
-                <p className="text-sm text-gray-600">{task.description}</p>
-            )}
-            <div className="mt-2 flex justify-end">
-                <button className="text-gray-400 hover:text-gray-600 p-1 rounded">
-                    <MoreHorizontal size={14} />
-                </button>
-            </div>
-        </div>
-    );
-};
 
-// Column Component
-const KanbanColumn = ({
-    column,
-    onAddTask
-}: {
-    column: Column;
-    onAddTask: (columnId: string) => void;
-}) => {
-    const {
-        attributes,
-        listeners,
-        setNodeRef,
-        transform,
-        transition,
-        isDragging,
-    } = useSortable({
-        id: column.id,
-        data: {
-            type: 'column',
-            column,
-        },
-    });
-
-    const style = {
-        transform: CSS.Transform.toString(transform),
-        transition,
-    };
-
-    return (
-        <div
-            ref={setNodeRef}
-            style={style}
-            className={`
-                bg-gray-50 rounded-lg p-4 min-w-fit min-h-96
-                ${isDragging ? 'opacity-50' : ''}
-            `}
-        >
-            {/* Column Header */}
-            <div
-                {...attributes}
-                {...listeners}
-                className="flex items-center justify-between mb-4 cursor-grab active:cursor-grabbing"
-            >
-                <h3 className="font-semibold text-gray-800 flex items-center">
-                    {column.title}
-                    <span className="ml-2 bg-gray-200 text-gray-600 text-xs px-2 py-1 rounded-full">
-                        {column.tasks.length}
-                    </span>
-                </h3>
-                <button
-                    onClick={() => onAddTask(column.id)}
-                    className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-200"
-                >
-                    <Plus size={18} />
-                </button>
-            </div>
-
-            {/* Tasks */}
-            <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-3 min-h-24">
-                    {column.tasks.map((task) => (
-                        <TaskCard
-                            key={task.id}
-                            task={task}
-                            columnId={column.id}
-                        />
-                    ))}
-                </div>
-            </SortableContext>
-        </div>
-    );
-};
 
 // Add Task Modal Component
 const AddTaskModal = ({
@@ -452,10 +332,10 @@ const KanbanBoard = () => {
     const selectedColumn = columns.find(col => col.id === selectedColumnId);
 
     return (
-        <div className="w-full h-screen bg-gray-100 p-6">
+        <div className="w-full min-h-screen">
             <div className="mb-6">
-                <h1 className="text-3xl font-bold text-gray-900">Sales Pipeline</h1>
-                <p className="text-gray-600 mt-1">Track your leads through the sales process</p>
+                <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+                <p className="text-gray-300 mt-1">Track your leads through the sales process</p>
             </div>
 
             <DndContext
@@ -465,13 +345,20 @@ const KanbanBoard = () => {
                 onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <div className="w-full flex gap-6 overflow-x-auto pb-6">
+                <div className="w-full flex flex-wrap md:flex-nowrap gap-4 overflow-x-auto pb-4 scrollbar-hide">
                     <SortableContext items={columns.map(col => col.id)}>
                         {columns.map((column) => (
                             <KanbanColumn
                                 key={column.id}
                                 column={column}
                                 onAddTask={handleAddTask}
+                                statusColor={
+                                    column.id === 'new-lead' ? 'bg-red-500' :
+                                        column.id === 'contacted' ? 'bg-white' :
+                                            column.id === 'qualified' ? 'bg-blue-500' :
+                                                column.id === 'proposal-sent' ? 'bg-purple-500' :
+                                                    column.id === 'won' ? 'bg-green-500' : undefined
+                                }
                             />
                         ))}
                     </SortableContext>
