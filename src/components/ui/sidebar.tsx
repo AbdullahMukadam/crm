@@ -10,7 +10,7 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { LogOut, PanelLeftClose, PanelRightClose } from 'lucide-react';
 
-// Props for the Sidebar component now include collapse state management
+
 interface SidebarProps {
     navItems: NavItem[];
     isCollapsed: boolean;
@@ -21,6 +21,7 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
     const pathname = usePathname();
     const dispatch = useAppDispatch();
     const router = useRouter();
+
 
     const handleLogout = async () => {
         try {
@@ -61,18 +62,21 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
 
             {/* Navigation Links */}
             <nav className="flex-1 space-y-2 p-4">
-                {navItems.map((item) => (
-                    <Link
-                        key={item.href}
-                        href={item.href}
-                        className={
-                            `flex items-center gap-3 ${item.isActive ? "bg-zinc-800" : ""} rounded-lg px-3 py-2 text-gray-200 transition-all hover:text-gray-400 dark:text-gray-400 dark:hover:text-gray-50`}
-                        title={isCollapsed ? item.label : undefined}
-                    >
-                        <item.icon className="h-5 w-5" />
-                        <span className={cn("text-sm", isCollapsed && "hidden")}>{item.label}</span>
-                    </Link>
-                ))}
+                {navItems.map((item) => {
+                    const isActive = pathname === item.href;
+                    return (
+                        <Link
+                            key={item.href}
+                            href={item.href}
+                            className={
+                                `flex items-center gap-3 ${isActive ? "bg-zinc-800" : ""} rounded-lg px-3 py-2 text-gray-200 transition-all hover:text-gray-400 dark:text-gray-400 dark:hover:text-gray-50`}
+                            title={isCollapsed ? item.label : undefined}
+                        >
+                            <item.icon className="h-5 w-5" />
+                            <span className={cn("text-sm", isCollapsed && "hidden")}>{item.label}</span>
+                        </Link>
+                    )
+                })}
             </nav>
 
             {/* Sidebar Footer */}

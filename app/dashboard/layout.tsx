@@ -1,16 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import type { NavItem } from '@/types/ui';
+import { useEffect, useState } from 'react';
 import { Sidebar, MobileSidebar } from '@/components/ui/sidebar';
-import { LayoutDashboard, Users, Settings, Menu } from 'lucide-react';
-
-// Define your navigation items here
-const navItems: NavItem[] = [
-    { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, isActive: true },
-    { href: '/dashboard/proposals', label: 'Proposals', icon: Users, isActive: false },
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings, isActive: false },
-];
+import { CreatorSidebarItems } from '@/config/sidebarConfig';
+import { useAppSelector } from '@/lib/store/hooks';
+import { NavItem } from '@/types/ui';
 
 
 export default function DashboardLayout({
@@ -19,20 +13,34 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+    const { role } = useAppSelector((state) => state.auth);
     const [isDesktopSidebarCollapsed, setIsDesktopSidebarCollapsed] = useState(false);
+    const [sidebarItems, setsidebarItems] = useState<NavItem[]>([]);
+
+    useEffect(() => {
+        if (role === "admin") {
+            setsidebarItems(CreatorSidebarItems)
+        } else if (role === "creator") {
+            setsidebarItems(CreatorSidebarItems)
+        } else {
+            setsidebarItems(CreatorSidebarItems)
+        }
+    }, [role])
+
+
 
     return (
         <div className="flex h-screen w-full">
             {/* Desktop Sidebar */}
             <Sidebar
-                navItems={navItems}
+                navItems={sidebarItems}
                 isCollapsed={isDesktopSidebarCollapsed}
                 setIsCollapsed={setIsDesktopSidebarCollapsed}
             />
 
             {/* Mobile Sidebar */}
             <MobileSidebar
-                navItems={navItems}
+                navItems={sidebarItems}
                 isOpen={isMobileSidebarOpen}
                 setIsOpen={setIsMobileSidebarOpen}
             />
