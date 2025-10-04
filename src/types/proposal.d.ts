@@ -10,3 +10,9 @@ export interface Proposal {
     amount: number;
     status: ProposalStatus;
 }
+
+export interface Block {
+    id: string;
+    type: 'text' | 'image' | 'video' | 'file' | 'code';
+    props: Record<string, any>;
+}
