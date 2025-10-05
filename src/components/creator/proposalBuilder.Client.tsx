@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
     DndContext,
     closestCorners,
@@ -11,27 +11,24 @@ import {
     PointerSensor,
     useSensor,
     useSensors,
-    DragOverlay
+    DragOverlay,
+    pointerWithin
 } from '@dnd-kit/core';
-import { SortableContext, arrayMove, sortableKeyboardCoordinates } from '@dnd-kit/sortable';
-import { nanoid } from 'nanoid'; // For generating unique IDs
-
+import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { nanoid } from 'nanoid';
 import { Block } from '@/types/proposal';
-import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig'; // Assuming this is your sidebar config
+import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig';
 import ProposalSidebar from './proposalSidebar';
 import ProposalCanvas from './proposalCanvas';
-import { BlockRenderer } from './blockRenderer'; // For the DragOverlay
 
 function ProposalBuilderClient() {
-    // Blocks that are actually on the canvas
     const [blocks, setBlocks] = useState<Block[]>([]);
-    // The block being dragged (for visual overlay)
     const [activeBlock, setActiveBlock] = useState<Block | null>(null);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 10, // A higher distance prevents accidental drags
+                distance: 8,
             },
         }),
         useSensor(KeyboardSensor, {
@@ -41,96 +38,85 @@ function ProposalBuilderClient() {
 
     const handleDragStart = (event: DragStartEvent) => {
         const { active } = event;
-        // Check if it's a new item from the sidebar or an existing block
+
         if (active.data.current?.type === 'sidebar-item') {
             setActiveBlock(active.data.current.item);
-        } else {
-            const activeBlock = blocks.find(block => block.id === active.id);
-            setActiveBlock(activeBlock || null);
-        }
-    };
-
-    const handleDragOver = (event: DragOverEvent) => {
-        const { active, over } = event;
-        if (!over) return;
-
-        const isSidebarItem = active.data.current?.type === 'sidebar-item';
-        // The droppable area is identified by its ID, not data.type
-        const isOverCanvas = over.id === 'canvas';
-
-        // --- Logic for dropping a NEW item onto the canvas ---
-        if (isSidebarItem && isOverCanvas && active.data.current) {
-            const newBlockTemplate = active.data.current.item as Block;
-
-            // Check if this specific drag action has already added the block
-            const blockIsAlreadyOnCanvas = blocks.some(b => b.id === active.id);
-            if (blockIsAlreadyOnCanvas) return;
-
-            setBlocks((prevBlocks) => [
-                ...prevBlocks,
-                {
-                    ...newBlockTemplate,
-                    id: nanoid(), // **CRITICAL FIX**: Generate a new unique ID
-                },
-            ]);
+        } else if (active.data.current?.type === 'canvas-block') {
+            setActiveBlock(active.data.current.block);
         }
     };
 
     const handleDragEnd = (event: DragEndEvent) => {
-        setActiveBlock(null); // Clear the active block for the overlay
         const { active, over } = event;
+        setActiveBlock(null);
+
         if (!over) return;
 
         const isSidebarItem = active.data.current?.type === 'sidebar-item';
-        
-        // If dragging from sidebar, the logic is handled in onDragOver, so we do nothing here.
-        if (isSidebarItem) return;
+        const isCanvasBlock = active.data.current?.type === 'canvas-block';
 
-        // --- **FIX**: Logic for REORDERING existing blocks ---
-        const activeId = active.id;
-        const overId = over.id;
+        // CASE 1: Adding a new block from sidebar to canvas
+        if (isSidebarItem && over.id === 'canvas') {
+            const newBlockTemplate = active.data.current?.item as Block;
+            const newBlock: Block = {
+                ...newBlockTemplate,
+                id: `block-${Date.now()}-${nanoid(6)}`,
+            };
 
-        if (activeId !== overId) {
-            setBlocks((items) => {
-                const oldIndex = items.findIndex((item) => item.id === activeId);
-                const newIndex = items.findIndex((item) => item.id === overId);
-                return arrayMove(items, oldIndex, newIndex);
-            });
+            setBlocks((prev) => [...prev, newBlock]);
+            return;
+        }
+
+        // CASE 2: Reordering existing blocks on canvas
+        if (isCanvasBlock) {
+            const activeId = active.id;
+            const overId = over.id;
+
+            if (activeId !== overId) {
+                setBlocks((items) => {
+                    const oldIndex = items.findIndex((item) => item.id === activeId);
+                    const newIndex = items.findIndex((item) => item.id === overId);
+
+                    if (oldIndex === -1 || newIndex === -1) return items;
+
+                    return arrayMove(items, oldIndex, newIndex);
+                });
+            }
         }
     };
 
     return (
-        <div className='w-full h-full bg-zinc-900'>
+        <div className="w-full bg-zinc-900">
             <DndContext
                 sensors={sensors}
-                collisionDetection={closestCorners}
+                collisionDetection={pointerWithin}
                 onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
                 onDragEnd={handleDragEnd}
             >
-                <div className='w-full flex h-full'>
-                    {/* The sidebar now gets its items from a static config, not the canvas state */}
+                <div className="w-full flex">
                     <ProposalSidebar isCollapsed={false} setIsCollapsed={() => { }} sidebarDragableItems={ProposalBuilderBlocks} />
 
-                    <main className='p-8 flex-grow h-full'>
-                        <h1 className='text-3xl font-bold text-white mb-8'>Proposal Builder</h1>
-                        <SortableContext items={blocks.map(b => b.id)}>
+                    <main className="p-8 flex-grow h-full">
+                        <h1 className="text-3xl font-bold text-white mb-4">Proposal Builder</h1>
+                        <p className="text-gray-400 mb-8">Drag and drop blocks to build your proposal. You can reorder them by dragging.</p>
+                        <SortableContext
+                            items={blocks.map(b => b.id)}
+                            strategy={verticalListSortingStrategy}
+                        >
                             <ProposalCanvas blocks={blocks} setBlocks={setBlocks} />
                         </SortableContext>
+
+                        
                     </main>
                 </div>
-                
-                {/* DragOverlay provides a clean visual feedback during drag */}
+
                 <DragOverlay>
                     {activeBlock ? (
-                        <BlockRenderer 
-                           block={activeBlock} 
-                           deleteBlock={() => {}} 
-                           updateBlockProps={() => {}} 
-                        />
+                        <div className="bg-zinc-950 text-white p-4 rounded-md shadow-2xl border-2 border-white opacity-90">
+                            <div className="font-semibold">{activeBlock.type} Block</div>
+                        </div>
                     ) : null}
                 </DragOverlay>
-
             </DndContext>
         </div>
     );

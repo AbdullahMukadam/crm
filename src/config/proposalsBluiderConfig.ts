@@ -20,5 +20,15 @@ export const ProposalBuilderBlocks : Block[] = [
         id: '5',
         type: 'code',
         props: { language: 'javascript', code: 'console.log("Hello, world!");' },
-    }
+    },
+    {
+        id: '6',
+        type: 'chart',
+        props: { chartType: 'bar', data: [5, 10, 15, 20], labels: ['Q1', 'Q2', 'Q3', 'Q4'] },
+    }, 
+    {
+        id: '4',
+        type: 'file',
+        props: { fileName: 'example.pdf', fileSize: '2MB', fileUrl: '#' },
+    },
 ]

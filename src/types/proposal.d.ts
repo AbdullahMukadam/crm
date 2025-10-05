@@ -13,6 +13,6 @@ export interface Proposal {
 
 export interface Block {
     id: string;
-    type: 'text' | 'image' | 'video' | 'file' | 'code';
+    type: 'text' | 'image' | 'video' | 'file' | 'code' | 'chart';
     props: Record<string, any>;
 }

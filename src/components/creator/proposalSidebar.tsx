@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { PanelLeftClose, PanelRightClose } from 'lucide-react';
 import { Block } from '@/types/proposal';
 import DragableSidebarItem from './dragableSidebarItem';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 
 interface SidebarProps {
@@ -18,12 +18,18 @@ interface SidebarProps {
 }
 
 function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed }: SidebarProps) {
-    const [blocks, setblocks] = useState<Block[]>(sidebarDragableItems);
+    const blocksRef = useRef<Block[] | null>(null);
+    useEffect(() => {
+        if (!blocksRef.current) {
+            blocksRef.current = sidebarDragableItems;
+        }
+
+    }, [sidebarDragableItems])
 
     return (
         <aside
             className={cn(
-                "hidden h-screen flex-col font-brcolage-grotesque border-r bg-[#0A0A0A] dark:border-gray-800 dark:bg-gray-900 md:flex transition-all duration-300 ease-in-out",
+                "hidden h-dvh sticky top-0 left-0 flex-col font-brcolage-grotesque border-r bg-[#0A0A0A] dark:border-gray-800 dark:bg-gray-900 md:flex transition-all duration-300 ease-in-out",
                 isCollapsed ? "w-20" : "w-64"
             )}
         >
@@ -48,9 +54,11 @@ function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed }: 
 
             {/* Navigation Links */}
             <nav className="flex-1 space-y-2 p-4">
-                {blocks.map((item) => {
-                    return <DragableSidebarItem key={item.id} item={item} />
-                })}
+                {
+                    blocksRef.current?.map((item) => (
+                        <DragableSidebarItem item={item} key={item.id} />
+                    ))
+                }
             </nav>
         </aside>
     );
