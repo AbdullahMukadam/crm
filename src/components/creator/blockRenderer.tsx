@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { Button } from '../ui/button';
+import Editor from '../common/Editor';
 
 interface Block {
     id: string;
@@ -79,14 +80,7 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock }: BlockRen
             case 'text':
                 return (
                     <div className="space-y-2">
-                        <textarea
-                            className="w-full px-3 py-2.5 rounded-lg resize-none focus:outline-none focus:border-transparent transition-shadow text-sm"
-                            placeholder="Enter your text here..."
-                            value={block.props.text || ''}
-                            onChange={(e) => updateBlockProps(block.id, { text: e.target.value })}
-                            rows={4}
-                            style={{ height: block.props.height ? '100%' : 'auto' }}
-                        />
+                        <Editor />
                     </div>
                 );
 

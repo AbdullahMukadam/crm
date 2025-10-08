@@ -18,7 +18,7 @@ interface SidebarProps {
 }
 
 function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed }: SidebarProps) {
-    const blocksRef = useRef<Block[] | null>(null);
+    const blocksRef = useRef<Block[] | null>(sidebarDragableItems);
     useEffect(() => {
         if (!blocksRef.current) {
             blocksRef.current = sidebarDragableItems;

@@ -6,9 +6,8 @@ import { cn } from '@/lib/utils';
 
 interface DragableSidebarItemProps {
     item: Block,
-    key: string
 }
-function DragableSidebarItem({ item, key }: DragableSidebarItemProps) {
+function DragableSidebarItem({ item }: DragableSidebarItemProps) {
     const { id, type, props } = item;
     const { isDragging, attributes, listeners, setNodeRef } = useDraggable({
         id: id,
