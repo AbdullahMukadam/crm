@@ -1,7 +1,11 @@
+"use client"
 import React, { useState, useRef } from 'react';
 import { useSortable } from '@dnd-kit/sortable';
 import { Button } from '../ui/button';
 import Editor from '../common/Editor';
+import { ImageUploadRequest } from '@/types/proposal';
+import { toast } from 'sonner';
+import { useAppSelector } from '@/lib/store/hooks';
 
 interface Block {
     id: string;
@@ -13,13 +17,43 @@ interface BlockRendererProps {
     block: Block;
     updateBlockProps: (blockId: string, newProps: Record<string, any>) => void;
     deleteBlock: (blockId: string) => void;
+    uploadImage: (data: ImageUploadRequest) => Promise<any>;
 }
 
-export function BlockRenderer({ block, updateBlockProps, deleteBlock }: BlockRendererProps) {
+export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImage }: BlockRendererProps) {
+    const { id } = useAppSelector((state) => state.auth)
     const [isSelected, setIsSelected] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
     const [isImageUrlUpdating, setisImageUrlUpdating] = useState(false)
     const blockRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isUploading, setisUploading] = useState(false)
+
+    const handleFileUploadClick = () => {
+        fileInputRef.current?.click();
+    }
+
+    const handleFileUpload = async () => {
+        const files = fileInputRef.current?.files;
+        console.log(files, id)
+        if (!files || files.length === 0 || !id) return;
+        try {
+            setisUploading(true)
+            const response = await uploadImage({
+                imageFile: files[0],
+                userId: id
+            })
+            if (response && response.data) {
+                updateBlockProps(block.id, { url: response.data.secure_url });
+                toast.success("Image uploaded successfully")
+            }
+        } catch (error) {
+            console.error("Image upload failed", error);
+            toast.error("Image upload failed. Please try again.")
+        } finally {
+            setisUploading(false)
+        }
+    }
 
     const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
         id: block.id,
@@ -126,11 +160,16 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock }: BlockRen
                             </div>
                         ) : (
                             <>
-                                <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg flex flex-col items-center justify-center">
+                                <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg flex flex-col items-center justify-center" onClick={handleFileUploadClick}>
                                     <svg className="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
                                     <span className="text-sm text-gray-400">No image selected</span>
+                                    {isUploading ? (
+                                        <p className='text-xl text-black animate-bounce'>Image uploading, Please Wait</p>
+                                    ) : (
+                                        <span className="text-sm text-gray-400">Paste and Url Image below or Click to upload your Image</span>
+                                    )}
                                 </div>
                                 <input
                                     type="text"
@@ -138,6 +177,14 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock }: BlockRen
                                     placeholder="Paste image URL"
                                     value={block.props.url || ''}
                                     onChange={(e) => updateBlockProps(block.id, { url: e.target.value })}
+                                />
+                                <input
+                                    type='file'
+                                    accept='image/*'
+                                    className='hidden'
+                                    ref={fileInputRef}
+                                    onChange={handleFileUpload}
+                                    max={1}
                                 />
                             </>
 

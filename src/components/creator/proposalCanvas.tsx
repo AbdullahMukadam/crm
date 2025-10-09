@@ -1,7 +1,8 @@
-import { Block } from '@/types/proposal'
+import { Block, ImageUploadRequest } from '@/types/proposal'
 import { useDroppable } from '@dnd-kit/core'
-import React from 'react'
+import React, { useCallback } from 'react'
 import { BlockRenderer } from './blockRenderer'
+import imageService from '@/lib/api/imageService';
 
 interface ProposalCanvasProps {
     blocks: Block[];
@@ -14,7 +15,7 @@ function ProposalCanvas({ blocks, setBlocks }: any) {
     });
 
     const updateBlockProps = (blockId: string, newProps: Record<string, any>) => {
-        setBlocks((prev: Block[]) => prev.map(b => 
+        setBlocks((prev: Block[]) => prev.map(b =>
             b.id === blockId ? { ...b, props: { ...b.props, ...newProps } } : b
         ));
     };
@@ -23,12 +24,21 @@ function ProposalCanvas({ blocks, setBlocks }: any) {
         setBlocks((prev: Block[]) => prev.filter(b => b.id !== blockId));
     };
 
+    const uploadImage = useCallback(async (data: ImageUploadRequest) => {
+        if (!data) return;
+        try {
+            const response = await imageService.uploadImage(data);
+            return response;
+        } catch (error) {
+            throw error;
+        }
+    }, [])
+
     return (
         <div
             ref={setNodeRef}
-            className={`bg-white text-black rounded-lg shadow-lg p-8 w-full min-h-[600px] transition-all ${
-                isOver ? 'ring-4 ring-blue-400 bg-blue-50' : ''
-            }`}
+            className={`bg-white text-black rounded-lg shadow-lg p-8 w-full min-h-[600px] transition-all ${isOver ? 'ring-4 ring-blue-400 bg-blue-50' : ''
+                }`}
         >
             <div className="space-y-4">
                 {blocks.length > 0 ? (
@@ -38,6 +48,7 @@ function ProposalCanvas({ blocks, setBlocks }: any) {
                             key={block.id}
                             updateBlockProps={updateBlockProps}
                             deleteBlock={deleteBlock}
+                            uploadImage={uploadImage}
                         />
                     ))
                 ) : (

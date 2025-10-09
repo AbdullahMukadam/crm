@@ -16,3 +16,8 @@ export interface Block {
     type: 'text' | 'image' | 'video' | 'file' | 'code' | 'chart';
     props: Record<string, any>;
 }
+
+export interface ImageUploadRequest{
+    imageFile: File;
+    userId: string;
+}

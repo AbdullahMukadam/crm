@@ -110,6 +110,7 @@ model Proposal {
   content   String         @db.Text
   status    ProposalStatus @default(DRAFT)
   amount    Decimal
+  
   createdAt DateTime       @default(now())
   updatedAt DateTime       @updatedAt
 
