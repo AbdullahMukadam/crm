@@ -1,10 +1,12 @@
 import { configureStore } from '@reduxjs/toolkit'
 import authReducer from './features/authSlice'
+import proposalReducer from './features/proposalsSlice'
 
 export const Store = () => {
     return configureStore({
         reducer: {
-            auth: authReducer
+            auth: authReducer,
+            proposal: proposalReducer,
         },
     })
 }

@@ -21,9 +21,10 @@ import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig';
 import ProposalSidebar from './proposalSidebar';
 import ProposalCanvas from './proposalCanvas';
 
-function ProposalBuilderClient() {
+function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const [blocks, setBlocks] = useState<Block[]>([]);
     const [activeBlock, setActiveBlock] = useState<Block | null>(null);
+    const proposalIdRef = useRef<string>(proposalId);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -106,7 +107,7 @@ function ProposalBuilderClient() {
                             <ProposalCanvas blocks={blocks} setBlocks={setBlocks} />
                         </SortableContext>
 
-                        
+
                     </main>
                 </div>
 

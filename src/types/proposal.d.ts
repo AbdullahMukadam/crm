@@ -4,11 +4,15 @@ export type ProposalStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
 
 export interface Proposal {
     id: string;
+    title: string;
+    content: string;
     project: Project;
     creatorId: string;
     clientId: string;
     amount: number;
     status: ProposalStatus;
+    createdAt: Date;
+    updatedAt: Date;
 }
 
 export interface Block {
@@ -17,7 +21,13 @@ export interface Block {
     props: Record<string, any>;
 }
 
-export interface ImageUploadRequest{
+export interface ImageUploadRequest {
     imageFile: File;
     userId: string;
+}
+
+export interface ProposalState {
+    proposals: Proposal[];
+    isLoading: boolean;
+    error: string | null;
 }

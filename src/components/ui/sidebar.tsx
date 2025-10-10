@@ -9,6 +9,7 @@ import { LogoutUser } from '@/lib/store/features/authSlice';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { LogOut, PanelLeftClose, PanelRightClose } from 'lucide-react';
+import { removeProposals } from '@/lib/store/features/proposalsSlice';
 
 
 interface SidebarProps {
@@ -28,6 +29,7 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
             const response = await dispatch(LogoutUser());
             if (LogoutUser.fulfilled.match(response)) {
                 toast.success("Logged out successfully");
+                dispatch(removeProposals());
                 router.push("/signin");
             } else if (LogoutUser.rejected.match(response)) {
                 toast.error((response.payload as string) || "Logout failed. Please try again.");
