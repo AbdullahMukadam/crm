@@ -9,7 +9,7 @@ interface ProposalCanvasProps {
     setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
 }
 
-function ProposalCanvas({ blocks, setBlocks }: any) {
+function ProposalCanvas({ blocks, setBlocks }: ProposalCanvasProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: 'canvas'
     });
@@ -17,6 +17,20 @@ function ProposalCanvas({ blocks, setBlocks }: any) {
     const updateBlockProps = (blockId: string, newProps: Record<string, any>) => {
         setBlocks((prev: Block[]) => prev.map(b =>
             b.id === blockId ? { ...b, props: { ...b.props, ...newProps } } : b
+        ));
+    };
+
+    // New function to update position
+    const updateBlockPosition = (blockId: string, position: { x: number; y: number }) => {
+        setBlocks((prev: Block[]) => prev.map(b =>
+            b.id === blockId ? { ...b, position } : b
+        ));
+    };
+
+    // New function to update size
+    const updateBlockSize = (blockId: string, size: { width: number; height: number }) => {
+        setBlocks((prev: Block[]) => prev.map(b =>
+            b.id === blockId ? { ...b, size } : b
         ));
     };
 
@@ -37,27 +51,35 @@ function ProposalCanvas({ blocks, setBlocks }: any) {
     return (
         <div
             ref={setNodeRef}
-            className={`bg-white text-black rounded-lg shadow-lg p-8 w-full min-h-[600px] transition-all ${isOver ? 'ring-4 ring-blue-400 bg-blue-50' : ''
-                }`}
+            className={`bg-white text-black rounded-lg shadow-lg w-full min-h-[600px] transition-all relative ${
+                isOver ? 'ring-4 ring-blue-400 bg-blue-50' : ''
+            }`}
+            style={{ 
+                minHeight: '800px', // Give enough space for positioning
+                position: 'relative',
+                overflow: 'auto' // Allow scrolling if blocks go beyond
+            }}
         >
-            <div className="space-y-4">
-                {blocks.length > 0 ? (
-                    blocks.map((block: Block) => (
-                        <BlockRenderer
-                            block={block}
-                            key={block.id}
-                            updateBlockProps={updateBlockProps}
-                            deleteBlock={deleteBlock}
-                            uploadImage={uploadImage}
-                        />
-                    ))
-                ) : (
-                    <div className="text-center text-gray-500 py-24 border-2 border-dashed rounded-lg">
-                        <p className="text-lg"> Drag blocks from the sidebar to start building</p>
-                        <p className="text-sm mt-2">Try dragging multiple blocks!</p>
+            {blocks.length > 0 ? (
+                blocks.map((block: Block) => (
+                    <BlockRenderer
+                        block={block}
+                        key={block.id}
+                        updateBlockProps={updateBlockProps}
+                        updateBlockPosition={updateBlockPosition}
+                        updateBlockSize={updateBlockSize}
+                        deleteBlock={deleteBlock}
+                        uploadImage={uploadImage}
+                    />
+                ))
+            ) : (
+                <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="text-center text-gray-500 py-24 border-2 border-dashed rounded-lg px-12">
+                        <p className="text-lg">Drag blocks from the sidebar to start building</p>
+                        <p className="text-sm mt-2">Position them anywhere on the canvas!</p>
                     </div>
-                )}
-            </div>
+                </div>
+            )}
         </div>
     );
 }

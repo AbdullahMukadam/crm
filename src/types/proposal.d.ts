@@ -19,6 +19,14 @@ export interface Block {
     id: string;
     type: 'text' | 'image' | 'video' | 'file' | 'code' | 'chart';
     props: Record<string, any>;
+    size: {
+        height: number,
+        width: number
+    };
+    position: {
+        x: number,
+        y: number
+    }
 }
 
 export interface ImageUploadRequest {

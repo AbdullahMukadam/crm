@@ -9,15 +9,17 @@ import { PanelLeftClose, PanelRightClose } from 'lucide-react';
 import { Block } from '@/types/proposal';
 import DragableSidebarItem from './dragableSidebarItem';
 import { useEffect, useRef, useState } from 'react';
+import { DragOverlay } from '@dnd-kit/core';
 
 
 interface SidebarProps {
     sidebarDragableItems: Block[];
     isCollapsed: boolean;
     setIsCollapsed: (isCollapsed: boolean) => void;
+    activeBlock : Block | null;
 }
 
-function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed }: SidebarProps) {
+function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed, activeBlock }: SidebarProps) {
     const blocksRef = useRef<Block[] | null>(sidebarDragableItems);
     useEffect(() => {
         if (!blocksRef.current) {
@@ -60,6 +62,14 @@ function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed }: 
                     ))
                 }
             </nav>
+
+            <DragOverlay>
+                {activeBlock ? (
+                    <div className="bg-zinc-950 text-white p-4 rounded-md shadow-2xl border-2 border-white opacity-90">
+                        <div className="font-semibold">{activeBlock.type} Block</div>
+                    </div>
+                ) : null}
+            </DragOverlay>
         </aside>
     );
 }

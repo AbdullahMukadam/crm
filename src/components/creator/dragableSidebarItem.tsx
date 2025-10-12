@@ -8,7 +8,7 @@ interface DragableSidebarItemProps {
     item: Block,
 }
 function DragableSidebarItem({ item }: DragableSidebarItemProps) {
-    const { id, type, props } = item;
+    const { id, type, props, size, position } = item;
     const { isDragging, attributes, listeners, setNodeRef } = useDraggable({
         id: id,
         data: {

@@ -95,7 +95,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                 onDragEnd={handleDragEnd}
             >
                 <div className="w-full flex">
-                    <ProposalSidebar isCollapsed={false} setIsCollapsed={() => { }} sidebarDragableItems={ProposalBuilderBlocks} />
+                    <ProposalSidebar isCollapsed={false} setIsCollapsed={() => { }} sidebarDragableItems={ProposalBuilderBlocks} activeBlock={activeBlock} />
 
                     <main className="p-8 flex-grow h-full">
                         <h1 className="text-3xl font-bold text-white mb-4">Proposal Builder</h1>
@@ -111,13 +111,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                     </main>
                 </div>
 
-                <DragOverlay>
-                    {activeBlock ? (
-                        <div className="bg-zinc-950 text-white p-4 rounded-md shadow-2xl border-2 border-white opacity-90">
-                            <div className="font-semibold">{activeBlock.type} Block</div>
-                        </div>
-                    ) : null}
-                </DragOverlay>
+                
             </DndContext>
         </div>
     );

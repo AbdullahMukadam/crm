@@ -1,6 +1,6 @@
 "use client"
-import React, { useState, useRef } from 'react';
-import { useSortable } from '@dnd-kit/sortable';
+import React, { useState, useRef, useEffect } from 'react';
+import { useDraggable } from '@dnd-kit/core';
 import { Button } from '../ui/button';
 import Editor from '../common/Editor';
 import { ImageUploadRequest } from '@/types/proposal';
@@ -11,16 +11,27 @@ interface Block {
     id: string;
     type: string;
     props: Record<string, any>;
+    position: { x: number; y: number };
+    size: { width: number; height: number };
 }
 
 interface BlockRendererProps {
     block: Block;
     updateBlockProps: (blockId: string, newProps: Record<string, any>) => void;
+    updateBlockPosition: (blockId: string, position: { x: number; y: number }) => void;
+    updateBlockSize: (blockId: string, size: { width: number; height: number }) => void;
     deleteBlock: (blockId: string) => void;
     uploadImage: (data: ImageUploadRequest) => Promise<any>;
 }
 
-export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImage }: BlockRendererProps) {
+export function BlockRenderer({ 
+    block, 
+    updateBlockProps, 
+    updateBlockPosition,
+    updateBlockSize,
+    deleteBlock, 
+    uploadImage 
+}: BlockRendererProps) {
     const { id } = useAppSelector((state) => state.auth)
     const [isSelected, setIsSelected] = useState(false);
     const [isResizing, setIsResizing] = useState(false);
@@ -29,13 +40,13 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [isUploading, setisUploading] = useState(false)
 
+
     const handleFileUploadClick = () => {
         fileInputRef.current?.click();
     }
 
     const handleFileUpload = async () => {
         const files = fileInputRef.current?.files;
-        console.log(files, id)
         if (!files || files.length === 0 || !id) return;
         try {
             setisUploading(true)
@@ -55,28 +66,61 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
         }
     }
 
-    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    // Use draggable instead of sortable for free positioning
+    const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
         id: block.id,
         data: { type: 'canvas-block', block },
         disabled: isResizing,
     });
 
-    const style = {
+    const prevIsDragging = useRef(isDragging);
+    const lastTransform = useRef(transform);
+
+    // Update position when drag ends
+    useEffect(() => {
+        // Store the current transform
+        if (transform) {
+            lastTransform.current = transform;
+        }
+
+        // Detect when dragging stops (was dragging, now not dragging)
+        if (prevIsDragging.current && !isDragging && lastTransform.current) {
+            console.log("Drag ended, updating position", lastTransform.current);
+            updateBlockPosition(block.id, {
+                x: block.position.x + lastTransform.current.x,
+                y: block.position.y + lastTransform.current.y
+            });
+            lastTransform.current = null; // Reset after updating
+        }
+
+        // Update the previous state
+        prevIsDragging.current = isDragging;
+    }, [isDragging, transform, block.id, block.position.x, block.position.y, updateBlockPosition]);
+
+    const style: React.CSSProperties = {
+        position: 'absolute',
+        left: `${block.position.x}px`,
+        top: `${block.position.y}px`,
+        width: `${block.size.width}px`,
+        height: `${block.size.height}px`,
         transform: transform ? `translate3d(${transform.x}px, ${transform.y}px, 0)` : undefined,
-        transition,
         opacity: isDragging ? 0.5 : 1,
-        width: block.props.width || 'auto',
-        height: block.props.height || 'auto',
+        cursor: isDragging ? 'grabbing' : 'default',
+        zIndex: isSelected ? 100 : 1,
     };
 
     const handleResize = (direction: string) => {
         const startResize = (e: React.MouseEvent) => {
             e.preventDefault();
+            e.stopPropagation();
             setIsResizing(true);
+            
             const startX = e.clientX;
             const startY = e.clientY;
-            const startWidth = blockRef.current?.offsetWidth || 0;
-            const startHeight = blockRef.current?.offsetHeight || 0;
+            const startWidth = block.size.width;
+            const startHeight = block.size.height;
+            const startPosX = block.position.x;
+            const startPosY = block.position.y;
 
             const handleMouseMove = (e: MouseEvent) => {
                 const deltaX = e.clientX - startX;
@@ -84,16 +128,33 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
 
                 let newWidth = startWidth;
                 let newHeight = startHeight;
+                let newX = startPosX;
+                let newY = startPosY;
 
-                if (direction.includes('e')) newWidth = startWidth + deltaX;
-                if (direction.includes('w')) newWidth = startWidth - deltaX;
-                if (direction.includes('s')) newHeight = startHeight + deltaY;
-                if (direction.includes('n')) newHeight = startHeight - deltaY;
+                // Handle width changes
+                if (direction.includes('e')) {
+                    newWidth = Math.max(200, startWidth + deltaX);
+                }
+                if (direction.includes('w')) {
+                    newWidth = Math.max(200, startWidth - deltaX);
+                    newX = startPosX + (startWidth - newWidth);
+                }
 
-                updateBlockProps(block.id, {
-                    width: Math.max(200, newWidth) + 'px',
-                    height: Math.max(100, newHeight) + 'px',
-                });
+                // Handle height changes
+                if (direction.includes('s')) {
+                    newHeight = Math.max(100, startHeight + deltaY);
+                }
+                if (direction.includes('n')) {
+                    newHeight = Math.max(100, startHeight - deltaY);
+                    newY = startPosY + (startHeight - newHeight);
+                }
+
+                updateBlockSize(block.id, { width: newWidth, height: newHeight });
+                
+                // Update position if resizing from top or left
+                if (direction.includes('w') || direction.includes('n')) {
+                    updateBlockPosition(block.id, { x: newX, y: newY });
+                }
             };
 
             const handleMouseUp = () => {
@@ -113,7 +174,7 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
         switch (block.type) {
             case 'text':
                 return (
-                    <div className="space-y-2">
+                    <div className="space-y-2 w-full h-full">
                         <Editor />
                     </div>
                 );
@@ -121,7 +182,6 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
             case 'image':
                 return (
                     <div className="space-y-3 h-full flex flex-col">
-
                         {block.props.url ? (
                             <div className="relative flex-1 rounded-lg overflow-hidden">
                                 <img
@@ -154,7 +214,6 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
                                         >
                                             {isImageUrlUpdating ? "Close URL Editor" : "Update Image URL"}
                                         </Button>
-
                                     </div>
                                 )}
                             </div>
@@ -168,7 +227,7 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
                                     {isUploading ? (
                                         <p className='text-xl text-black animate-bounce'>Image uploading, Please Wait</p>
                                     ) : (
-                                        <span className="text-sm text-gray-400">Paste and Url Image below or Click to upload your Image</span>
+                                        <span className="text-sm text-gray-400">Paste a URL below or Click to upload</span>
                                     )}
                                 </div>
                                 <input
@@ -187,12 +246,11 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
                                     max={1}
                                 />
                             </>
-
                         )}
                         {isImageUrlUpdating && (
                             <input
                                 type="text"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500-500 text-sm"
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm"
                                 placeholder="Paste image URL"
                                 value={block.props.url || ''}
                                 onChange={(e) => updateBlockProps(block.id, { url: e.target.value })}
@@ -252,11 +310,15 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
                 }
             }}
             style={style}
-            className={`relative group bg-white rounded-lg p-5 transition-all ${isSelected
-                ? 'border-gray-500 shadow-lg ring-2 ring-blue-200'
-                : 'border-gray-200'
-                }`}
-            onClick={() => setIsSelected(true)}
+            className={`bg-white rounded-lg p-5 transition-all border-2 ${
+                isSelected
+                    ? 'border-blue-500 shadow-lg ring-2 ring-blue-200'
+                    : 'border-gray-200'
+            }`}
+            onClick={(e) => {
+                e.stopPropagation();
+                setIsSelected(true);
+            }}
             onBlur={(e) => {
                 if (!e.currentTarget.contains(e.relatedTarget as Node)) {
                     setIsSelected(false);
@@ -265,85 +327,87 @@ export function BlockRenderer({ block, updateBlockProps, deleteBlock, uploadImag
             tabIndex={0}
         >
             {/* Drag Handle and Actions */}
-            <div className="absolute -left-10 top-4 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button
-                    {...attributes}
-                    {...listeners}
-                    className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 cursor-grab active:cursor-grabbing"
-                    title="Drag to reorder"
-                >
-                    <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 16 16">
-                        <circle cx="4" cy="3" r="1" />
-                        <circle cx="8" cy="3" r="1" />
-                        <circle cx="4" cy="8" r="1" />
-                        <circle cx="8" cy="8" r="1" />
-                        <circle cx="4" cy="13" r="1" />
-                        <circle cx="8" cy="13" r="1" />
-                    </svg>
-                </button>
-                <button
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        deleteBlock(block.id);
-                    }}
-                    className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-red-50 hover:border-red-200"
-                    title="Delete block"
-                >
-                    <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </button>
-            </div>
-
+            {isSelected && (
+                <div className="absolute -left-10 top-4 flex flex-col gap-1">
+                    <button
+                        {...attributes}
+                        {...listeners}
+                        className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 cursor-grab active:cursor-grabbing"
+                        title="Drag to reposition"
+                    >
+                        <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 16 16">
+                            <circle cx="4" cy="3" r="1" />
+                            <circle cx="8" cy="3" r="1" />
+                            <circle cx="4" cy="8" r="1" />
+                            <circle cx="8" cy="8" r="1" />
+                            <circle cx="4" cy="13" r="1" />
+                            <circle cx="8" cy="13" r="1" />
+                        </svg>
+                    </button>
+                    <button
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            deleteBlock(block.id);
+                        }}
+                        className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-red-50 hover:border-red-200"
+                        title="Delete block"
+                    >
+                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                    </button>
+                </div>
+            )}
 
             {/* Resize Handles - Only show when selected */}
             {isSelected && (
                 <>
                     {/* Corner Handles */}
                     <div
-                        className="absolute -top-1 -left-1 w-3 h-3 bg-blue-400 rounded-full cursor-nw-resize"
+                        className="absolute -top-1 -left-1 w-3 h-3 bg-blue-400 rounded-full cursor-nw-resize z-10"
                         onMouseDown={handleResize('nw')}
                     />
                     <div
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full cursor-ne-resize"
+                        className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full cursor-ne-resize z-10"
                         onMouseDown={handleResize('ne')}
                     />
                     <div
-                        className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-400 rounded-full cursor-sw-resize"
+                        className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-400 rounded-full cursor-sw-resize z-10"
                         onMouseDown={handleResize('sw')}
                     />
                     <div
-                        className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-400 rounded-full cursor-se-resize"
+                        className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-400 rounded-full cursor-se-resize z-10"
                         onMouseDown={handleResize('se')}
                     />
 
                     {/* Edge Handles */}
                     <div
-                        className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-n-resize"
+                        className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-n-resize z-10"
                         onMouseDown={handleResize('n')}
                     />
                     <div
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-s-resize"
+                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-s-resize z-10"
                         onMouseDown={handleResize('s')}
                     />
                     <div
-                        className="absolute -left-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-w-resize"
+                        className="absolute -left-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-w-resize z-10"
                         onMouseDown={handleResize('w')}
                     />
                     <div
-                        className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-e-resize"
+                        className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-e-resize z-10"
                         onMouseDown={handleResize('e')}
                     />
 
-                    {/* Size Display */}
-                    <div className="absolute -bottom-8 left-0 bg-gray-900 text-white text-xs px-2 py-1 rounded">
-                        {blockRef.current?.offsetWidth || 0} × {blockRef.current?.offsetHeight || 0}
+                    {/* Position & Size Display */}
+                    <div className="absolute -bottom-8 left-0 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
+                        Position: ({Math.round(block.position.x)}, {Math.round(block.position.y)}) • 
+                        Size: {Math.round(block.size.width)} × {Math.round(block.size.height)}
                     </div>
                 </>
             )}
 
             {/* Block Content */}
-            <div className="mt-1 h-full">
+            <div className="h-full overflow-hidden">
                 {renderContent()}
             </div>
         </div>
