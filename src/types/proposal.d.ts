@@ -15,6 +15,11 @@ export interface Proposal {
     updatedAt: Date;
 }
 
+export interface CreatePropsalRequest {
+    title: string,
+    creatorId: string
+}
+
 export interface Block {
     id: string;
     type: 'text' | 'image' | 'video' | 'file' | 'code' | 'chart';

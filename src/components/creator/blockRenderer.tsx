@@ -310,10 +310,9 @@ export function BlockRenderer({
                 }
             }}
             style={style}
-            className={`bg-white rounded-lg p-5 transition-all border-2 ${
+            className={`bg-white rounded-lg p-5 transition-all ${
                 isSelected
-                    ? 'border-blue-500 shadow-lg ring-2 ring-blue-200'
-                    : 'border-gray-200'
+                    && 'border-blue-500 shadow-lg ring-2 ring-blue-200'
             }`}
             onClick={(e) => {
                 e.stopPropagation();
