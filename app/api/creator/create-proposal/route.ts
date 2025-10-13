@@ -15,28 +15,32 @@ export async function POST(request: NextRequest) {
     try {
 
         const { title, creatorId } = data
-        const user = await Prisma.user.findFirst({
-            where: {
-                id: creatorId
+        const proposal = await Prisma.proposal.create({
+            data: {
+                title: title,
+                creatorId: creatorId,
+            },
+            select: {
+                id: true,
+                title: true,
             }
         })
 
-        if (!user) {
+        if (!proposal) {
             return NextResponse.json({
                 success: false,
-                message: "Unable to get the data"
+                message: "Unable to Create Proposal"
             })
         }
 
-        
-
         return NextResponse.json({
             success: true,
-            message: "Got the data"
+            message: "Got the data",
+            proposal: proposal
         })
 
-
     } catch (error) {
+        console.log(error)
         return NextResponse.json({
             success: false,
             message: error instanceof Error ? error.message : "Internal Server Error"

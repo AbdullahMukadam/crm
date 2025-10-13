@@ -47,10 +47,9 @@ function ProposalsClient() {
                 toast.error(response.message || "Error from Server")
                 return;
             }
-            console.log(response)
-            setproposalTitle("")
-            setisDialogOpen(false)
+            router.push(`/proposals/builder/${response.data?.id}`)
         } catch (error) {
+            console.log(error)
             toast.error(error instanceof Error ? error.message : "Unable to Create an Proposal")
         } finally {
             setisProposalCreatedLoadind(false)
@@ -64,13 +63,21 @@ function ProposalsClient() {
                 <div className='w-full flex items-center justify-center'>
                     <span className='text-white text-3xl animate-bounce'>Loading...</span>
                 </div>)}
-            {!isLoading && proposals.length === 0 && (
+            {!isLoading && proposals.length > 0 ? (
+                proposals.map((proposal) => (
+                    <div className='w-1/3 bg-white text-black rounded-2xl'>
+                        <h2 className='text-2xl'>{proposal.title}</h2>
+                        <p className='text-xl'>{proposal.id}</p>
+                    </div>
+                ))
+            ) : (
                 <div className='w-full h-full p-2 flex flex-col items-center justify-center'>
                     <h1 className='text-3xl text-white'>No Proposals Found</h1>
                     <p className='text-white mt-2'>You have not created any proposals yet.</p>
                     <Button onClick={() => setisDialogOpen(prev => !prev)} variant="default" className='mt-3'>Create One <Plus /></Button>
-                </div>
-            )}
+                </div >
+            )
+            }
             <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
                 <DialogContent className="sm:max-w-[425px]">
                     <DialogHeader>
@@ -113,7 +120,7 @@ function ProposalsClient() {
                 </DialogContent>
             </Dialog>
 
-        </div>
+        </div >
     )
 }
 

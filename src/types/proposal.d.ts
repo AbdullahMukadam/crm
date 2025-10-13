@@ -5,7 +5,7 @@ export type ProposalStatus = 'draft' | 'sent' | 'accepted' | 'rejected';
 export interface Proposal {
     id: string;
     title: string;
-    content: string;
+    content: any;
     project: Project;
     creatorId: string;
     clientId: string;
@@ -18,6 +18,11 @@ export interface Proposal {
 export interface CreatePropsalRequest {
     title: string,
     creatorId: string
+}
+
+export interface CreateProposalResponse {
+    id: string,
+    title: string
 }
 
 export interface Block {
@@ -44,3 +49,4 @@ export interface ProposalState {
     isLoading: boolean;
     error: string | null;
 }
+

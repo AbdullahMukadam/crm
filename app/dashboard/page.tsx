@@ -9,7 +9,7 @@ function page() {
 
     useEffect(() => {
         if (onboarded) {
-            router.push(`/dashboard/${role}`)
+            router.push(`/dashboard/${role?.toLowerCase()}`)
         }
     }, [onboarded])
     return (
