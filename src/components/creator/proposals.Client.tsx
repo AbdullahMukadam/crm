@@ -10,6 +10,8 @@ import { Input } from '../ui/input'
 import { Label } from '../ui/label'
 import { toast } from 'sonner'
 import proposalService from '@/lib/api/proposalService'
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import Link from 'next/link'
 
 function ProposalsClient() {
     const { proposals, isLoading } = useAppSelector((state) => state.proposal)
@@ -22,9 +24,9 @@ function ProposalsClient() {
 
     useEffect(() => {
         if (proposals.length === 0) {
-            dispatch(FetchProposals())
+            dispatch(FetchProposals());
         }
-    }, [])
+    }, []);
 
     const createProposal = useCallback(async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -65,10 +67,19 @@ function ProposalsClient() {
                 </div>)}
             {!isLoading && proposals.length > 0 ? (
                 proposals.map((proposal) => (
-                    <div className='w-1/3 bg-white text-black rounded-2xl'>
-                        <h2 className='text-2xl'>{proposal.title}</h2>
-                        <p className='text-xl'>{proposal.id}</p>
-                    </div>
+                    <Link href={`/proposals/builder/${proposal.id}`}>
+                        <Card key={proposal.id}>
+                            <CardHeader>
+                                <CardTitle className='text-4xl font-bold'>{proposal.title}</CardTitle>
+                            </CardHeader>
+                            <CardContent>
+                                <p className='text-xl'>{proposal.id}</p>
+                            </CardContent>
+                            <CardFooter>
+                                <p>Created At: {"NA"}</p>
+                            </CardFooter>
+                        </Card>
+                    </Link>
                 ))
             ) : (
                 <div className='w-full h-full p-2 flex flex-col items-center justify-center'>

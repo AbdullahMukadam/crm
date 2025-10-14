@@ -5,7 +5,7 @@ import { CreateProposalResponse, CreatePropsalRequest, Proposal } from "@/types/
 
 class ProposalService {
 
-    async getProposals(): Promise<APIResponse<Proposal>> {
+    async getProposals(): Promise<APIResponse<Proposal[]>> {
         return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.FETCH_PROPOSALS, {
             method: "GET",
         })

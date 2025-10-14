@@ -21,14 +21,23 @@ export async function GET(request: NextRequest) {
         const secret = new TextEncoder().encode(JWT_SECRET);
         const { payload } = await jwtVerify(token, secret);
         const userId = payload.id as string;
-        
+
         const userProposals = await prismaClient.proposal.findMany({
             where: {
                 creatorId: userId
+            },
+            select: {
+                id: true,
+                title: true,
+                content: true,
+                status: true,
+                createdAt: true,
+                updatedAt: true,
+                creator: true
             }
         })
 
-        if(!userProposals){
+        if (!userProposals) {
             return NextResponse.json({
                 success: false,
                 message: "No Proposals Found"

@@ -1,5 +1,5 @@
 import proposalService from "@/lib/api/proposalService";
-import { ProposalState } from "@/types/proposal";
+import { Proposal, ProposalState } from "@/types/proposal";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 
@@ -9,20 +9,26 @@ const initialState: ProposalState = {
     error: null
 }
 
-export const FetchProposals = createAsyncThunk(
-    "proposals/fetchAll",
-    async (_, { rejectWithValue }) => {
-        try {
-            const proposalResponse = await proposalService.getProposals()
-            if (!proposalResponse.success) {
-                return rejectWithValue(proposalResponse.message || "Failed to fetch proposals")
-            }
-            return proposalResponse.data
-        } catch (error) {
-            return rejectWithValue("Failed to fetch proposals")
-        }
+export const FetchProposals = createAsyncThunk<
+  Proposal[], 
+  void,      
+  { rejectValue: string } 
+>(
+  "proposals/fetchAll",
+  async (_, { rejectWithValue }) => {
+    try {
+      const proposalResponse = await proposalService.getProposals()
+      if (!proposalResponse.success) {
+        return rejectWithValue(proposalResponse.message || "Failed to fetch proposals")
+      }
+      console.log(proposalResponse)
+      return proposalResponse.data as Proposal[] 
+    } catch (error) {
+      return rejectWithValue("Failed to fetch proposals")
     }
+  }
 )
+
 
 export const ProposalSlice = createSlice({
     name: 'proposals',
@@ -47,7 +53,8 @@ export const ProposalSlice = createSlice({
             .addCase(FetchProposals.fulfilled, (state, action) => {
                 state.isLoading = false;
                 if (action.payload) {
-                    Object.assign(state, action.payload)
+                    console.log("redux", action.payload)
+                    state.proposals = action.payload;
                 }
             })
             .addCase(FetchProposals.rejected, (state, action) => {

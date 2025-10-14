@@ -6,13 +6,14 @@ export interface Proposal {
     id: string;
     title: string;
     content: any;
-    project: Project;
+    project?: Project;
     creatorId: string;
-    clientId: string;
-    amount: number;
+    clientId?: string;
+    amount?: number;
     status: ProposalStatus;
     createdAt: Date;
     updatedAt: Date;
+    creator: any;
 }
 
 export interface CreatePropsalRequest {
