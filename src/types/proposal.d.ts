@@ -51,3 +51,8 @@ export interface ProposalState {
     error: string | null;
 }
 
+export interface ProposalUpdateRequest {
+    blocks: Block[],
+    proposalId : string
+}
+

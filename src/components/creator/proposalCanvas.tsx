@@ -1,18 +1,27 @@
 import { Block, ImageUploadRequest } from '@/types/proposal'
 import { useDroppable } from '@dnd-kit/core'
-import React, { useCallback } from 'react'
+import React, { useCallback, useEffect } from 'react'
 import { BlockRenderer } from './blockRenderer'
 import imageService from '@/lib/api/imageService';
+import { useAutoSave } from '@/features/Proposals/hooks/useAutoSave';
 
 interface ProposalCanvasProps {
     blocks: Block[];
     setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
+    proposalId: string
 }
 
-function ProposalCanvas({ blocks, setBlocks }: ProposalCanvasProps) {
+function ProposalCanvas({ blocks, setBlocks, proposalId }: ProposalCanvasProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: 'canvas'
     });
+    const { saveProposalData } = useAutoSave({
+        AutoSaveInterval: 3000
+    })
+
+    useEffect(() => {
+        saveProposalData(blocks, proposalId)
+    }, [blocks])
 
     const updateBlockProps = (blockId: string, newProps: Record<string, any>) => {
         setBlocks((prev: Block[]) => prev.map(b =>
@@ -51,10 +60,9 @@ function ProposalCanvas({ blocks, setBlocks }: ProposalCanvasProps) {
     return (
         <div
             ref={setNodeRef}
-            className={`bg-white text-black rounded-lg shadow-lg w-full min-h-[600px] transition-all relative ${
-                isOver ? 'ring-4 ring-blue-400 bg-blue-50' : ''
-            }`}
-            style={{ 
+            className={`bg-white text-black rounded-lg shadow-lg w-full min-h-[600px] transition-all relative ${isOver ? 'ring-4 ring-blue-400 bg-blue-50' : ''
+                }`}
+            style={{
                 minHeight: '800px', // Give enough space for positioning
                 position: 'relative',
                 overflow: 'auto' // Allow scrolling if blocks go beyond

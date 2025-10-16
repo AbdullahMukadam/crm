@@ -104,7 +104,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                             items={blocks.map(b => b.id)}
                             strategy={verticalListSortingStrategy}
                         >
-                            <ProposalCanvas blocks={blocks} setBlocks={setBlocks} />
+                            <ProposalCanvas blocks={blocks} setBlocks={setBlocks} proposalId={proposalId} />
                         </SortableContext>
 
 
