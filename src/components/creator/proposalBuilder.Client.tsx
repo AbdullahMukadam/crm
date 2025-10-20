@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
     DndContext,
     closestCorners,
@@ -20,11 +20,15 @@ import { Block } from '@/types/proposal';
 import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig';
 import ProposalSidebar from './proposalSidebar';
 import ProposalCanvas from './proposalCanvas';
+import { useProposal } from '@/hooks/useProposal';
+import Loader from '../ui/loader';
 
 function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
+    const { isLoading, proposalData } = useProposal({ proposalId })
     const [blocks, setBlocks] = useState<Block[]>([]);
     const [activeBlock, setActiveBlock] = useState<Block | null>(null);
     const proposalIdRef = useRef<string>(proposalId);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -86,6 +90,19 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
         }
     };
 
+    useEffect(() => {
+        //we have to fix this
+        if(proposalData && !isInitialized){
+            console.log("proposaldata", proposalData)
+            setBlocks(proposalData.content || [])
+            setIsInitialized(true)
+        }
+    },[proposalData, isInitialized])
+
+    if (isLoading) {
+        return <Loader />
+    }
+
     return (
         <div className="w-full bg-zinc-900">
             <DndContext
@@ -111,7 +128,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                     </main>
                 </div>
 
-                
+
             </DndContext>
         </div>
     );

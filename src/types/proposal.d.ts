@@ -56,3 +56,7 @@ export interface ProposalUpdateRequest {
     proposalId : string
 }
 
+export interface getProposal {
+    proposal : Proposal
+}
+

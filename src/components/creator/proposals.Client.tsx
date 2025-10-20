@@ -67,7 +67,7 @@ function ProposalsClient() {
 
     if (isLoading) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-background">
+            <div className="w-full h-screen flex items-center justify-center bg-zinc-900 text-white">
                 <span className="text-lg text-muted-foreground animate-pulse">Loading proposals...</span>
             </div>
         );

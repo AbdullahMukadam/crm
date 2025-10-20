@@ -19,7 +19,8 @@ export function useAutoSave({ AutoSaveInterval }: useAutoSaveProps) {
     })
     const [error, seterror] = useState("")
 
-    const saveProposalData = useCallback((blocksData: Block[], proposalId: string) => {
+    const saveProposalData = (blocksData: Block[], proposalId: string) => {
+        console.log("data", blocksData, proposalId)
         if (!blocksData || !proposalId) {
             return;
         }
@@ -29,9 +30,10 @@ export function useAutoSave({ AutoSaveInterval }: useAutoSaveProps) {
             proposalIdState: proposalId
         }))
 
-    }, [])
+    }
 
     const hanldeAutoSave = useCallback(async () => {
+        console.log("auto save data", autoSaveData.Blocks, autoSaveData.proposalIdState)
         if (!autoSaveData.Blocks || !autoSaveData.proposalIdState) {
             return;
         }
@@ -51,7 +53,7 @@ export function useAutoSave({ AutoSaveInterval }: useAutoSaveProps) {
                 seterror("Unable to save the data")
             }
         }
-    }, [])
+    }, [autoSaveData])
 
     useEffect(() => {
         let timerId = setInterval(async () => {
@@ -61,7 +63,7 @@ export function useAutoSave({ AutoSaveInterval }: useAutoSaveProps) {
         return () => {
             clearInterval(timerId)
         }
-    }, [])
+    }, [autoSaveData, hanldeAutoSave])
 
     return {
         saveProposalData,
