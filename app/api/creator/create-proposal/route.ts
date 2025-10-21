@@ -36,7 +36,9 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: true,
             message: "Got the data",
-            proposal: proposal
+            data : {
+                proposal: proposal
+            }
         })
 
     } catch (error) {

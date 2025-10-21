@@ -29,6 +29,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const [activeBlock, setActiveBlock] = useState<Block | null>(null);
     const proposalIdRef = useRef<string>(proposalId);
     const [isInitialized, setIsInitialized] = useState(false);
+    const [isAutoSaveOn, setisAutoSaveOn] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -92,15 +93,19 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
 
     useEffect(() => {
         //we have to fix this
-        if(proposalData && !isInitialized){
+        if (proposalData && !isInitialized) {
             console.log("proposaldata", proposalData)
             setBlocks(proposalData.content || [])
             setIsInitialized(true)
         }
-    },[proposalData, isInitialized])
+    }, [proposalData, isInitialized])
 
     if (isLoading) {
-        return <Loader />
+        return (
+            <div className='w-full h-screen flex items-center justify-center'>
+                <Loader />
+            </div>
+        )
     }
 
     return (
@@ -115,13 +120,25 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                     <ProposalSidebar isCollapsed={false} setIsCollapsed={() => { }} sidebarDragableItems={ProposalBuilderBlocks} activeBlock={activeBlock} />
 
                     <main className="p-8 flex-grow h-full">
-                        <h1 className="text-3xl font-bold text-white mb-4">Proposal Builder</h1>
-                        <p className="text-gray-400 mb-8">Drag and drop blocks to build your proposal. You can reorder them by dragging.</p>
+                        <div className='w-full flex justify-between items-center'>
+                            <div className='w-full'>
+                                <h1 className="text-3xl font-bold text-white mb-4">Proposal Builder</h1>
+                                <p className="text-gray-400 mb-8">Drag and drop blocks to build your proposal. You can reorder them by dragging.</p>
+                            </div>
+                            <div className='w-full flex justify-end items-center gap-3 text-white'>
+                                <p className='text-xl'>Auto Save {isAutoSaveOn ? "ON" : "OFF"}</p>
+                                <div className="relative inline-block" onClick={() => setisAutoSaveOn(prev => !prev)}>
+                                    <input className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2" type="checkbox" />
+                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300"></span>
+                                </div>
+                            </div>
+                        </div>
+
                         <SortableContext
                             items={blocks.map(b => b.id)}
                             strategy={verticalListSortingStrategy}
                         >
-                            <ProposalCanvas blocks={blocks} setBlocks={setBlocks} proposalId={proposalId} />
+                            <ProposalCanvas blocks={blocks} setBlocks={setBlocks} proposalId={proposalId} isAutosaveOn={isAutoSaveOn} />
                         </SortableContext>
 
 

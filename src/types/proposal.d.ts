@@ -22,13 +22,15 @@ export interface CreatePropsalRequest {
 }
 
 export interface CreateProposalResponse {
-    id: string,
-    title: string
+    proposal: {
+        id: string,
+        title: string
+    }
 }
 
 export interface Block {
     id: string;
-    type: 'text' | 'image' | 'video' | 'file' | 'code' | 'chart';
+    type: 'text' | 'image' | 'video';
     props: Record<string, any>;
     size: {
         height: number,
@@ -53,10 +55,10 @@ export interface ProposalState {
 
 export interface ProposalUpdateRequest {
     blocks: Block[],
-    proposalId : string
+    proposalId: string
 }
 
 export interface getProposal {
-    proposal : Proposal
+    proposal: Proposal
 }
 

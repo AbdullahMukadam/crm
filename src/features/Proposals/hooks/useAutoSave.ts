@@ -5,13 +5,14 @@ import { toast } from "sonner"
 
 interface useAutoSaveProps {
     AutoSaveInterval?: number
+    autoSave: boolean
 }
 
 interface AutoSaveData {
     Blocks: Block[] | null,
     proposalIdState: string | null
 }
-export function useAutoSave({ AutoSaveInterval }: useAutoSaveProps) {
+export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
     const INTERVAL = AutoSaveInterval || 3000
     const [autoSaveData, setautoSaveData] = useState<AutoSaveData>({
         Blocks: null,
@@ -56,13 +57,16 @@ export function useAutoSave({ AutoSaveInterval }: useAutoSaveProps) {
     }, [autoSaveData])
 
     useEffect(() => {
-        let timerId = setInterval(async () => {
-            await hanldeAutoSave()
-        }, INTERVAL);
+        if (autoSave) {
+            let timerId = setInterval(async () => {
+                await hanldeAutoSave()
+            }, INTERVAL);
 
-        return () => {
-            clearInterval(timerId)
+            return () => {
+                clearInterval(timerId)
+            }
         }
+
     }, [autoSaveData, hanldeAutoSave])
 
     return {

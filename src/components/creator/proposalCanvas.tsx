@@ -8,15 +8,17 @@ import { useAutoSave } from '@/features/Proposals/hooks/useAutoSave';
 interface ProposalCanvasProps {
     blocks: Block[];
     setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
-    proposalId: string
+    proposalId: string;
+    isAutosaveOn : boolean
 }
 
-function ProposalCanvas({ blocks, setBlocks, proposalId }: ProposalCanvasProps) {
+function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: ProposalCanvasProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: 'canvas'
     });
     const { saveProposalData } = useAutoSave({
-        AutoSaveInterval: 30000
+        AutoSaveInterval: 30000,
+        autoSave : isAutosaveOn
     })
 
     useEffect(() => {

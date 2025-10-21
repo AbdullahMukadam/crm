@@ -54,7 +54,7 @@ function ProposalsClient() {
                     toast.error(response.message || "Error from server");
                     return;
                 }
-                router.push(`/proposals/builder/${response.data?.id}`);
+                router.push(`/proposals/builder/${response.data?.proposal.id}`);
             } catch (error) {
                 console.error(error);
                 toast.error("Unable to create a proposal");
