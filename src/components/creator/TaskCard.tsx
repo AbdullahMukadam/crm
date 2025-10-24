@@ -1,8 +1,7 @@
-
-import { useSortable } from '@dnd-kit/sortable';
-import { CSS } from '@dnd-kit/utilities';
-import { MoreHorizontal } from 'lucide-react';
-import React from 'react'
+import { useSortable } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import { MoreHorizontal } from "lucide-react";
+import React from "react";
 
 interface Task {
     id: string;
@@ -21,7 +20,7 @@ function TaskCard({ task, columnId }: { task: Task; columnId: string }) {
     } = useSortable({
         id: task.id,
         data: {
-            type: 'task',
+            type: "task",
             task,
             columnId,
         },
@@ -38,24 +37,32 @@ function TaskCard({ task, columnId }: { task: Task; columnId: string }) {
             style={style}
             {...attributes}
             {...listeners}
-            className={`
-                bg-zinc-700 p-3 rounded-lg shadow-sm 
-                cursor-grab active:cursor-grabbing hover:shadow-md transition-shadow
-                ${isDragging ? 'opacity-50 rotate-2 scale-105' : ''}
-            `}
+            className={`group relative bg-zinc-800/80 backdrop-blur-sm p-4 rounded-xl border border-zinc-700 hover:border-zinc-600 transition-all duration-200 
+        shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing
+        ${isDragging ? "opacity-70 scale-[1.03] shadow-lg border-zinc-500" : ""}
+      `}
         >
-            <h4 className="font-medium text-gray-300 mb-1">{task.title}</h4>
+            {/* Title */}
+            <h4 className="font-semibold text-zinc-100 tracking-tight mb-1">
+                {task.title}
+            </h4>
+
+            {/* Description */}
             {task.description && (
-                <p className="text-sm text-gray-400">{task.description}</p>
+                <p className="text-sm text-zinc-400 leading-snug line-clamp-2">
+                    {task.description}
+                </p>
             )}
-            <div className="mt-2 flex justify-end">
-                <button className="text-gray-400 hover:text-gray-600 p-1 rounded">
-                    <MoreHorizontal size={14} />
-                </button>
-            </div>
+
+            {/* More Options Button */}
+            <button
+                className="absolute top-2 right-2 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                aria-label="More options"
+            >
+                <MoreHorizontal size={16} />
+            </button>
         </div>
     );
-};
+}
 
-
-export default TaskCard
+export default TaskCard;

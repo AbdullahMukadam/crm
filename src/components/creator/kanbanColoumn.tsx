@@ -47,12 +47,12 @@ function KanbanColumn({
     };
 
 
-  return (
+    return (
         <div
             ref={setNodeRef}
             style={style}
             className={`
-                bg-zinc-800 rounded-lg p-4 w-full md:min-w-fit min-h-96
+                bg-zinc-900 border border-zinc-800 rounded-2xl  shadow-sm hover:shadow-md transition-all duration-200  p-4 w-full md:min-w-fit min-h-96
                 ${isDragging ? 'opacity-50' : ''}
             `}
         >

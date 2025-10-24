@@ -30,6 +30,13 @@ class ProposalService {
             body: JSON.stringify(data)
         })
     }
+
+    async deleteProposal(proposalId: string) : Promise<APIResponse> {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.DELETE_PROPOSAL, {
+            method: "POST",
+            body: JSON.stringify(proposalId)
+        })
+    }
 }
 
 const proposalService = new ProposalService();

@@ -1,9 +1,10 @@
 "use client";
+
 import { FetchProposals } from "@/lib/store/features/proposalsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import React, { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
+import { Plus, Loader2, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
     Dialog,
@@ -27,6 +28,7 @@ function ProposalsClient() {
     const [isDialogOpen, setisDialogOpen] = useState(false);
     const [proposalTitle, setproposalTitle] = useState("");
     const [isProposalCreatedLoadind, setisProposalCreatedLoadind] = useState(false);
+    const [isProposalDeletedLoading, setisProposalDeletedLoading] = useState(false)
     const dispatch = useAppDispatch();
     const router = useRouter();
 
@@ -50,10 +52,12 @@ function ProposalsClient() {
                     title: proposalTitle,
                     creatorId: id,
                 });
+
                 if (!response.success) {
                     toast.error(response.message || "Error from server");
                     return;
                 }
+
                 router.push(`/proposals/builder/${response.data?.proposal.id}`);
             } catch (error) {
                 console.error(error);
@@ -65,50 +69,94 @@ function ProposalsClient() {
         [proposalTitle, id]
     );
 
+    const handleDeleteProposal = useCallback(async (proposalId: string) => {
+        try {
+            setisProposalDeletedLoading(true)
+
+            const response = await proposalService.deleteProposal(proposalId)
+            if (response.success) {
+                toast.success("Proposal Deleted Successfully")
+                dispatch(FetchProposals())
+            }
+        } catch (error) {
+            toast.error( error instanceof Error ? error.message : "Unable to deletd the proposal")
+        } finally {
+            setisProposalDeletedLoading(false)
+        }
+    }, [])
+
     if (isLoading) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-zinc-900 text-white">
-                <span className="text-lg text-muted-foreground animate-pulse">Loading proposals...</span>
+            <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+                <Loader2 className="animate-spin mr-2" /> Loading proposals...
             </div>
         );
     }
 
     return (
-        <div className="w-full min-h-screen bg-zinc-950 text-white p-6 font-brcolage-grotesque flex flex-col">
-            <div className="flex justify-between items-center flex-wrap gap-3 mb-6">
-                <h1 className="text-2xl sm:text-3xl font-semibold">Your Proposals</h1>
-                <Button onClick={() => setisDialogOpen(true)} className="flex items-center gap-2 border border-gray-600">
+        <div className="w-full min-h-screen bg-zinc-950 text-zinc-100 p-6 font-brcolage-grotesque">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-8 flex-wrap gap-3">
+                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Your Proposals</h1>
+                <Button
+                    onClick={() => setisDialogOpen(true)}
+                    className="flex items-center gap-2 border border-zinc-700 hover:bg-zinc-800 transition-colors"
+                >
                     <Plus size={18} /> New Proposal
                 </Button>
             </div>
 
+            {/* Proposals List */}
             {proposals.length > 0 ? (
                 <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                     {proposals.map((proposal) => (
-                        <Link key={proposal.id} href={`/proposals/builder/${proposal.id}`}>
-                            <Card className="hover:shadow-lg bg-zinc-900 text-white transition-shadow duration-200 cursor-pointer border border-gray-400">
-                                <CardHeader>
-                                    <CardTitle className="text-lg font-semibold truncate">
-                                        {proposal.title}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent>
-                                    <p className="text-sm text-zinc-300">ID: {proposal.id}</p>
-                                </CardContent>
-                                <CardFooter>
-                                    <p className="text-xs text-zinc-400">
-                                        Created At: {proposal.createdAt ? new Date(proposal.createdAt).toLocaleDateString() : "N/A"}
-                                    </p>
-                                </CardFooter>
-                            </Card>
-                        </Link>
+                        <Card
+                            key={proposal.id}
+                            className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:shadow-md transition-all duration-200 group"
+                        >
+                            <CardHeader className="pb-2">
+                                <CardTitle className="text-lg font-medium truncate text-white">
+                                    {proposal.title}
+                                </CardTitle>
+                            </CardHeader>
+                            <CardContent className="text-sm text-zinc-400 space-y-1">
+                                <p>ID: {proposal.id}</p>
+                                <p>
+                                    Created:{" "}
+                                    {proposal.createdAt
+                                        ? new Date(proposal.createdAt).toLocaleDateString()
+                                        : "N/A"}
+                                </p>
+                            </CardContent>
+                            <CardFooter className="pt-3 flex justify-between items-center border-t border-zinc-800">
+                                <Link
+                                    href={`/proposals/builder/${proposal.id}`}
+                                    className="text-sm text-zinc-300 hover:text-white transition-colors"
+                                >
+                                    Open
+                                </Link>
+                                <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="text-zinc-400 hover:text-red-500 transition-colors"
+                                    onClick={() => handleDeleteProposal(proposal.id)}
+                                >
+                                    {isProposalDeletedLoading ? <Loader2 className="animate-spin" /> : <Trash2 size={16} />}
+                                </Button>
+                            </CardFooter>
+                        </Card>
                     ))}
                 </div>
             ) : (
-                <div className="flex flex-col items-center justify-center flex-1 text-center mt-12">
-                    <h2 className="text-2xl font-semibold">No Proposals Found</h2>
-                    <p className="text-muted-foreground mt-2">You haven’t created any proposals yet.</p>
-                    <Button onClick={() => setisDialogOpen(true)} className="mt-4 flex items-center gap-2">
+                <div className="flex flex-col items-center justify-center text-center mt-20">
+                    <h2 className="text-xl font-medium text-zinc-200">No Proposals Found</h2>
+                    <p className="text-zinc-400 mt-2 text-sm">
+                        You haven’t created any proposals yet.
+                    </p>
+                    <Button
+                        onClick={() => setisDialogOpen(true)}
+                        className="mt-5 flex items-center gap-2 border border-zinc-700 hover:bg-zinc-800"
+                    >
                         <Plus size={18} /> Create Proposal
                     </Button>
                 </div>
@@ -116,13 +164,17 @@ function ProposalsClient() {
 
             {/* Create Proposal Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
-                <DialogContent className="sm:max-w-[400px]">
+                <DialogContent className="sm:max-w-[400px] bg-zinc-900 text-zinc-100 border border-zinc-700">
                     <DialogHeader>
-                        <DialogTitle>Create New Proposal</DialogTitle>
-                        <DialogDescription>Enter a title for your new proposal.</DialogDescription>
+                        <DialogTitle className="text-lg font-semibold">
+                            Create New Proposal
+                        </DialogTitle>
+                        <DialogDescription className="text-zinc-400">
+                            Enter a title for your new proposal.
+                        </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={createProposal} className="mt-3 space-y-4">
+                    <form onSubmit={createProposal} className="mt-4 space-y-4">
                         <div className="space-y-2">
                             <Label htmlFor="title">Title</Label>
                             <Input
@@ -130,18 +182,25 @@ function ProposalsClient() {
                                 name="title"
                                 placeholder="Enter proposal title"
                                 value={proposalTitle}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) => setproposalTitle(e.target.value)}
+                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                                    setproposalTitle(e.target.value)
+                                }
                                 required
+                                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:ring-zinc-600"
                             />
                         </div>
 
-                        <DialogFooter className="mt-5 flex justify-end gap-2">
+                        <DialogFooter className="mt-6 flex justify-end gap-2">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline">
+                                <Button type="button" variant="outline" className="border-zinc-700 text-black">
                                     Cancel
                                 </Button>
                             </DialogClose>
-                            <Button type="submit" disabled={isProposalCreatedLoadind}>
+                            <Button
+                                type="submit"
+                                disabled={isProposalCreatedLoadind}
+                                className="bg-zinc-800 hover:bg-zinc-700"
+                            >
                                 {isProposalCreatedLoadind ? "Please wait..." : "Create"}
                             </Button>
                         </DialogFooter>
