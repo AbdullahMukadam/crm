@@ -17,6 +17,7 @@ export function useProposal({ proposalId }: { proposalId: string }) {
             console.log(response.data)
             if (response.success && response.data) {
                 setproposalData(response.data.proposal)
+                console.log("proposal data:" , response.data.proposal)
             }
         } catch (error) {
             seterror(error instanceof Error ? error.message : "Unable to get the proposal Data")
@@ -28,7 +29,7 @@ export function useProposal({ proposalId }: { proposalId: string }) {
 
     useEffect(() => {
         fetchProposalData()
-    }, [fetchProposalData]) // Fixed: added fetchProposalData to dependency array
+    }, [fetchProposalData]) 
 
     return {
         error,

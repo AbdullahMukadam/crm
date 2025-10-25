@@ -1,9 +1,15 @@
 import { useEditor } from '@/hooks/useEditor'
+import { Block } from '@/types/proposal'
 import { OutputData } from '@editorjs/editorjs'
 import React, { memo, useEffect, useRef } from 'react'
 
 
-function Editor() {
+interface EditorProps {
+    block: Block,
+    updateBlockProps: (blockId: string, newProps: Record<string, any>) => void
+}
+function Editor({ block, updateBlockProps }: EditorProps) {
+    console.log(block, "in the editor component")
 
     const defaultData: OutputData = {
         time: Date.now(),
@@ -17,20 +23,19 @@ function Editor() {
     };
 
     const hasInitializedRef = useRef(false);
-    const editorDataRef = useRef<OutputData>(defaultData);
-    console.log("editor component rendering")
+    const editorDataRef = useRef<OutputData>(block.props.data || defaultData);
 
     useEffect(() => {
-        // Update editor data ref when initialData changes
         if (defaultData && !hasInitializedRef.current) {
             editorDataRef.current = defaultData;
             hasInitializedRef.current = true;
-            console.log("Editor data initialized", editorDataRef.current)
         }
     }, [defaultData]);
 
     const { editorRef } = useEditor({
-        defaultData: defaultData,
+        defaultData: editorDataRef.current,
+        updateBlockProps,
+        block
     })
 
 

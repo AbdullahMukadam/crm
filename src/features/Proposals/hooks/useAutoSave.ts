@@ -45,6 +45,7 @@ export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
                 proposalId: autoSaveData.proposalIdState
             })
             if (response.success) {
+                console.log("proposal saved data", autoSaveData.Blocks)
                 toast.success("Data Saved Successfully")
             }
         } catch (error) {

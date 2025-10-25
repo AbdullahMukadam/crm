@@ -3,17 +3,9 @@ import React, { useState, useRef, useEffect } from 'react';
 import { useDraggable } from '@dnd-kit/core';
 import { Button } from '../ui/button';
 import Editor from '../common/Editor';
-import { ImageUploadRequest } from '@/types/proposal';
+import { Block, ImageUploadRequest } from '@/types/proposal';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/lib/store/hooks';
-
-interface Block {
-    id: string;
-    type: string;
-    props: Record<string, any>;
-    position: { x: number; y: number };
-    size: { width: number; height: number };
-}
 
 interface BlockRendererProps {
     block: Block;
@@ -24,13 +16,13 @@ interface BlockRendererProps {
     uploadImage: (data: ImageUploadRequest) => Promise<any>;
 }
 
-export function BlockRenderer({ 
-    block, 
-    updateBlockProps, 
+export function BlockRenderer({
+    block,
+    updateBlockProps,
     updateBlockPosition,
     updateBlockSize,
-    deleteBlock, 
-    uploadImage 
+    deleteBlock,
+    uploadImage
 }: BlockRendererProps) {
     const { id } = useAppSelector((state) => state.auth)
     const [isSelected, setIsSelected] = useState(false);
@@ -114,7 +106,7 @@ export function BlockRenderer({
             e.preventDefault();
             e.stopPropagation();
             setIsResizing(true);
-            
+
             const startX = e.clientX;
             const startY = e.clientY;
             const startWidth = block.size.width;
@@ -150,7 +142,7 @@ export function BlockRenderer({
                 }
 
                 updateBlockSize(block.id, { width: newWidth, height: newHeight });
-                
+
                 // Update position if resizing from top or left
                 if (direction.includes('w') || direction.includes('n')) {
                     updateBlockPosition(block.id, { x: newX, y: newY });
@@ -175,7 +167,7 @@ export function BlockRenderer({
             case 'text':
                 return (
                     <div className="space-y-2 w-full h-full">
-                        <Editor />
+                        <Editor block={block} updateBlockProps={updateBlockProps} />
                     </div>
                 );
 
@@ -310,10 +302,9 @@ export function BlockRenderer({
                 }
             }}
             style={style}
-            className={`bg-white rounded-lg p-5 transition-all ${
-                isSelected
-                    && 'border-blue-500 shadow-lg ring-2 ring-blue-200'
-            }`}
+            className={`bg-white rounded-lg p-5 transition-all ${isSelected
+                && 'border-blue-500 shadow-lg ring-2 ring-blue-200'
+                }`}
             onClick={(e) => {
                 e.stopPropagation();
                 setIsSelected(true);
@@ -399,7 +390,7 @@ export function BlockRenderer({
 
                     {/* Position & Size Display */}
                     <div className="absolute -bottom-8 left-0 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        Position: ({Math.round(block.position.x)}, {Math.round(block.position.y)}) • 
+                        Position: ({Math.round(block.position.x)}, {Math.round(block.position.y)}) •
                         Size: {Math.round(block.size.width)} × {Math.round(block.size.height)}
                     </div>
                 </>

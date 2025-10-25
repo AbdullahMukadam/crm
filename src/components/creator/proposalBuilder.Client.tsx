@@ -21,7 +21,7 @@ import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig';
 import ProposalSidebar from './proposalSidebar';
 import ProposalCanvas from './proposalCanvas';
 import { useProposal } from '@/hooks/useProposal';
-import Loader from '../ui/loader';
+import { Loader2 } from 'lucide-react';
 
 function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
@@ -94,7 +94,6 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     useEffect(() => {
         //we have to fix this
         if (proposalData && !isInitialized) {
-            console.log("proposaldata", proposalData)
             setBlocks(proposalData.content || [])
             setIsInitialized(true)
         }
@@ -102,9 +101,9 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
 
     if (isLoading) {
         return (
-            <div className='w-full h-screen flex items-center justify-center'>
-                <Loader />
-            </div>
+            <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+            <Loader2 className="animate-spin mr-2" /> Loading Please Wait...
+        </div>
         )
     }
 

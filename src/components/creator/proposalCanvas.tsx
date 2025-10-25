@@ -17,7 +17,7 @@ function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: Proposa
         id: 'canvas'
     });
     const { saveProposalData } = useAutoSave({
-        AutoSaveInterval: 30000,
+        AutoSaveInterval: 10000,
         autoSave : isAutosaveOn
     })
 

@@ -1,6 +1,10 @@
 import Header from '@editorjs/header';
 import List from '@editorjs/list';
 import Paragraph from '@editorjs/paragraph';
+import Quote from '@editorjs/quote';
+import Warning from '@editorjs/warning';
+import Marker from '@editorjs/marker';
+import Underline from '@editorjs/underline';
 
 export const EDITOR_TOOLS = {
     header: {
@@ -23,7 +27,27 @@ export const EDITOR_TOOLS = {
         config: {
             defaultStyle: 'unordered',
         },
-    }
+    },
+    quote: {
+        class: Quote,
+        inlineToolbar: true,
+        config: {
+            quotePlaceholder: 'Enter a quote',
+            captionPlaceholder: "Quote's author",
+        },
+    },
+    warning: {
+        class: Warning,
+        inlineToolbar: true,
+        config: {
+            titlePlaceholder: 'Title',
+            messagePlaceholder: 'Message',
+        },
+    },
+    marker: {
+        class: Marker,
+    },
+    underline: Underline,
 };
 
 export const EDITOR_CONFIG = {
