@@ -21,3 +21,38 @@ export const CreatorSettingsItems = [
         description: 'View your billing history and manage payment methods.',
     },
 ] as const;
+
+// id           String   @id @default(cuid())
+// name         String
+// email        String
+// companyName  String?
+// mobileNumber String?
+// note         String?
+
+export const LeadFormOptions = [
+    {
+        label : "Full Name",
+        type : "input",
+        required : true
+    },
+    {
+        label : "Email Address",
+        type : "input",
+        required : true
+    },
+    {
+        label : "Company Name",
+        type : "input",
+        required : false
+    },
+    {
+        label : "Mobile Number",
+        type : "input",
+        required : false
+    },
+    {
+        label : "Note",
+        type : "textArea",
+        required : false
+    }
+] as const;
