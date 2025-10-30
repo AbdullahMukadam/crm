@@ -22,37 +22,46 @@ export const CreatorSettingsItems = [
     },
 ] as const;
 
-// id           String   @id @default(cuid())
-// name         String
-// email        String
-// companyName  String?
-// mobileNumber String?
-// note         String?
 
 export const LeadFormOptions = [
     {
-        label : "Full Name",
-        type : "input",
-        required : true
+        id: "name",
+        label: "Your Full Name",
+        mapping: "Full Name",
+        type: "input",
+        required: true,
+        order: 1
     },
     {
-        label : "Email Address",
-        type : "input",
-        required : true
+        id: "email",
+        label: "Your Email Address",
+        mapping: "Email Address",
+        type: "input",
+        required: true,
+        order: 2
     },
     {
-        label : "Company Name",
-        type : "input",
-        required : false
+        id: "companyName",
+        label: "Your Company Name",
+        mapping: "Company Name",
+        type: "input",
+        required: false,
+        order: 3
     },
     {
-        label : "Mobile Number",
-        type : "input",
-        required : false
+        id: "mobileNumber",
+        label: "Your Mobile Number",
+        mapping: "Mobile Number",
+        type: "input",
+        required: false,
+        order: 4
     },
     {
-        label : "Note",
-        type : "textArea",
-        required : false
+        id: "note",
+        label: "Tell us about your Need",
+        mapping: "Note",
+        type: "textArea",
+        required: false,
+        order: 5
     }
-] as const;
+];
