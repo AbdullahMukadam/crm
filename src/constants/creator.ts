@@ -6,5 +6,5 @@ export const CREATOR_API_ENDPOINTS = {
   SAVE_PROPOSAL_DATA: '/api/creator/save-proposal-data',
   GET_PROPOSAL : '/api/creator/get-proposal',
   DELETE_PROPOSAL : '/api/creator/delete-proposal',
-  CREATE_BRANDING : '/api/create-branding'
+  CREATE_BRANDING : '/api/creator/create-branding'
 } as const;

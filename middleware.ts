@@ -27,7 +27,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
-  const publicRoutes = ['/signin', '/signup', '/access-denied', "/"];
+  const publicRoutes = ['/signin', '/signup', '/access-denied', "/", "/lead-form"];
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }

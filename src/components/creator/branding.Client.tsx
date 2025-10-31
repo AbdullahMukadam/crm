@@ -96,11 +96,16 @@ function BrandingClient() {
                                 </div>
                             </div>
                             <div className='w-full flex justify-end mt-5'>
-                                <Button onClick={handleSubmit} disabled={isLoading}>{isLoading ? "Save Order" : "Saving.."}</Button>
+                                <Button onClick={handleSubmit} disabled={isLoading}>{isLoading ? "Saving.." : "Save Order"}</Button>
                             </div>
                         </div>
                     </TabsContent>
-                    <TabsContent value="settings">Get sharable link of Lead Form</TabsContent>
+                    <TabsContent value="settings">
+                        <div className='w-10/12 p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
+                           <p className='text-white'>View your Lead Form</p>
+                           <Button variant="destructive">Open</Button>
+                        </div>
+                    </TabsContent>
                 </Tabs>
             </div>
 
