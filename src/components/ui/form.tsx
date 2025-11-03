@@ -17,10 +17,10 @@ import { Input } from "@/components/ui/input"
 
 export function LoginForm({
     className,
-    ...props
+    data
 }: React.ComponentProps<"div">) {
     return (
-        <div className={cn("flex flex-col gap-6", className)} {...props}>
+        <div className={cn("flex flex-col gap-6", className)}>
             <Card>
                 <CardHeader>
                     <CardTitle>Login to your account</CardTitle>

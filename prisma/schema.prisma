@@ -116,6 +116,7 @@ model Branding {
   id         String   @id @default(cuid())
   formFeilds Json
   creatorId  String
+  username   String   @default("")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 }

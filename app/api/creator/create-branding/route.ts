@@ -20,6 +20,7 @@ export async function POST(request: NextRequest) {
         const updateBranding = await prismaClient.branding.create({
             data: {
                 creatorId: user.id as string,
+                username : user.username as string,
                 formFeilds: feilds
             },
             select: {

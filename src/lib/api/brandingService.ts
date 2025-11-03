@@ -1,6 +1,6 @@
 import { CREATOR_API_ENDPOINTS } from "@/constants/creator";
 import { FetchClient } from "./fetchClient";
-import { createBrandingRequest } from "@/types/branding";
+import { createBrandingRequest, fetchBrandingResponse } from "@/types/branding";
 import { APIResponse } from "@/types/auth";
 
 class BrandingService {
@@ -12,6 +12,11 @@ class BrandingService {
         })
     }
 
+    async fetchBranding(): Promise<APIResponse<fetchBrandingResponse>> {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.FETCH_BRANDING, {
+            method: 'GET',
+        })
+    }
 
 }
 

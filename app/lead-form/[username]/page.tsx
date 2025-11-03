@@ -9,10 +9,12 @@ interface PublicLeadPageProps {
     searchParams: { [key: string]: string | undefined };
 }
 
-function LeadCapturePage({ params, searchParams }: PublicLeadPageProps) {
+async function LeadCapturePage({ params, searchParams }: PublicLeadPageProps) {
+    const { username } = await params
+
     return (
         <div className='w-full'>
-            <LeadCaptureForm />
+            <LeadCaptureForm username={username} />
         </div>
     )
 }

@@ -12,3 +12,12 @@ export interface FormDetails {
 export interface createBrandingRequest {
     feilds: FormDetails[]
 }
+
+export interface fetchBrandingResponse {
+    id: string
+    formFeilds: JSON,
+    creatorId: string,
+    username: string,
+    createdAt: string
+    updatedAt: string
+}
