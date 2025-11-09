@@ -1,70 +1,83 @@
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import {
-    Card,
-    CardContent,
-    CardDescription,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card"
-import {
-    Field,
-    FieldDescription,
-    FieldGroup,
-    FieldLabel,
-} from "@/components/ui/field"
-import { Input } from "@/components/ui/input"
+"use client"
+import brandingService from '@/lib/api/brandingService'
+import { fetchBrandingResponse, FormFeild } from '@/types/branding'
+import React, { FormEvent, useCallback, useEffect, useState } from 'react'
+import { toast } from 'sonner'
+import { Card } from './card'
+import { Input } from './input'
+import { Label } from './label'
+import { Button } from './button'
 
-export function LoginForm({
-    className,
-    data
-}: React.ComponentProps<"div">) {
+interface LeadForm {
+    username: string
+}
+function LeadForm({ username }: LeadForm) {
+    const [formData, setformData] = useState([])
+    const [brnadingData, setbrnadingData] = useState<FormFeild[] | null>(null)
+    const [isLoading, setisLoading] = useState(false)
+
+    const handlefetchBranding = useCallback(async () => {
+        try {
+            setisLoading(true)
+            const response = await brandingService.fetchBranding()
+            if (response.success && response.data) {
+                setbrnadingData(response.data.formFeilds)
+                console.log(response.data.formFeilds)
+                toast.success("Successfully fetch the response")
+            }
+        } catch (error) {
+            toast.error("Unable to fetch Response")
+        } finally {
+            setisLoading(false)
+        }
+    }, [])
+
+    const handleLeadSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
+        e.preventDefault()
+        try {
+            setisLoading(true)
+            const response = await brandingService.fetchBranding()
+            if (response.success && response.data) {
+                setbrnadingData(response.data.formFeilds)
+                console.log(response.data.formFeilds)
+                toast.success("Successfully fetch the response")
+            }
+        } catch (error) {
+            toast.error("Unable to fetch Response")
+        } finally {
+            setisLoading(false)
+        }
+    }, [])
+
+    useEffect(() => {
+        handlefetchBranding()
+    }, [])
+
     return (
-        <div className={cn("flex flex-col gap-6", className)}>
-            <Card>
-                <CardHeader>
-                    <CardTitle>Login to your account</CardTitle>
-                    <CardDescription>
-                        Enter your email below to login to your account
-                    </CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <form>
-                        <FieldGroup>
-                            <Field>
-                                <FieldLabel htmlFor="email">Email</FieldLabel>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    placeholder="m@example.com"
-                                    required
-                                />
-                            </Field>
-                            <Field>
-                                <div className="flex items-center">
-                                    <FieldLabel htmlFor="password">Password</FieldLabel>
-                                    <a
-                                        href="#"
-                                        className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                                    >
-                                        Forgot your password?
-                                    </a>
+        <div className='w-full h-full flex items-center justify-center'>
+            {isLoading ? (
+                <p className='animate-bounce'>Please wait</p>
+            ) : (
+                <Card className='h-fit p-10 w-[30%]'>
+                    <form onSubmit={handleLeadSubmit}>
+                        {brnadingData ? (
+                            brnadingData?.map((feild: FormFeild) => (
+                                <div key={feild.id} className='w-full'>
+                                    <Label className='text-black my-2'>{feild.mapping}</Label>
+                                    <Input placeholder={feild.label} required={feild.required} />
                                 </div>
-                                <Input id="password" type="password" required />
-                            </Field>
-                            <Field>
-                                <Button type="submit">Login</Button>
-                                <Button variant="outline" type="button">
-                                    Login with Google
-                                </Button>
-                                <FieldDescription className="text-center">
-                                    Don&apos;t have an account? <a href="#">Sign up</a>
-                                </FieldDescription>
-                            </Field>
-                        </FieldGroup>
+                            ))
+                        ) : (
+                            <p>Please fill the data in Branding</p>
+                        )}
+                        <Button className='mt-4' type='submit'>Submit</Button>
                     </form>
-                </CardContent>
-            </Card>
-        </div>
+                </Card>
+            )
+            }
+
+        </div >
     )
 }
+
+export default LeadForm

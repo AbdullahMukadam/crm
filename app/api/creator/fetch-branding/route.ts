@@ -24,11 +24,20 @@ export async function GET(request: NextRequest) {
             }
         })
 
-        if(response){
+        const data = {
+            id: response[0].id,
+            formFeilds: response[0].formFeilds,
+            creatorId: response[0].creatorId,
+            username: response[0].username,
+            createdAt: response[0].createdAt,
+            updatedAt: response[0].updatedAt,
+        }
+
+        if (response) {
             return NextResponse.json({
-                success : true,
-                message : "data fetch successfully",
-                data : response
+                success: true,
+                message: "data fetch successfully",
+                data: data
             })
         }
 

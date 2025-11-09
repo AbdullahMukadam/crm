@@ -15,9 +15,18 @@ export interface createBrandingRequest {
 
 export interface fetchBrandingResponse {
     id: string
-    formFeilds: JSON,
+    formFeilds: FormFeild[],
     creatorId: string,
     username: string,
     createdAt: string
     updatedAt: string
+}
+
+export interface FormFeild {
+    id: string;
+    label: string
+    mapping: string
+    order: number
+    required: boolean
+    type: string
 }
