@@ -4,8 +4,9 @@ export const CREATOR_API_ENDPOINTS = {
   FETCH_PROPOSALS: '/api/creator/fetch-proposals',
   CREATE_PROPOSAL: '/api/creator/create-proposal',
   SAVE_PROPOSAL_DATA: '/api/creator/save-proposal-data',
-  GET_PROPOSAL : '/api/creator/get-proposal',
-  DELETE_PROPOSAL : '/api/creator/delete-proposal',
-  CREATE_BRANDING : '/api/creator/create-branding',
-  FETCH_BRANDING : "/api/creator/fetch-branding"
+  GET_PROPOSAL: '/api/creator/get-proposal',
+  DELETE_PROPOSAL: '/api/creator/delete-proposal',
+  CREATE_BRANDING: '/api/creator/create-branding',
+  FETCH_BRANDING: "/api/creator/fetch-branding",
+  CREATE_LEAD: "/api/creator/save-lead"
 } as const;

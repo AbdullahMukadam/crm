@@ -30,3 +30,11 @@ export interface FormFeild {
     required: boolean
     type: string
 }
+
+export interface LeadFormData {
+    name: string,
+    companyName: string,
+    email: string,
+    mobileNumber: string,
+    note: data.note
+}

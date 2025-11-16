@@ -1,6 +1,6 @@
 "use client"
 import brandingService from '@/lib/api/brandingService'
-import { fetchBrandingResponse, FormFeild } from '@/types/branding'
+import { fetchBrandingResponse, FormFeild, LeadFormData } from '@/types/branding'
 import React, { FormEvent, useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { Card } from './card'
@@ -12,7 +12,7 @@ interface LeadForm {
     username: string
 }
 function LeadForm({ username }: LeadForm) {
-    const [formData, setformData] = useState([])
+    const [formData, setFormData] = useState<Record<string, string>>({})
     const [brnadingData, setbrnadingData] = useState<FormFeild[] | null>(null)
     const [isLoading, setisLoading] = useState(false)
 
@@ -22,7 +22,7 @@ function LeadForm({ username }: LeadForm) {
             const response = await brandingService.fetchBranding()
             if (response.success && response.data) {
                 setbrnadingData(response.data.formFeilds)
-                console.log(response.data.formFeilds)
+
                 toast.success("Successfully fetch the response")
             }
         } catch (error) {
@@ -36,18 +36,34 @@ function LeadForm({ username }: LeadForm) {
         e.preventDefault()
         try {
             setisLoading(true)
-            const response = await brandingService.fetchBranding()
+            const payload = {
+                ...formData,
+                username: username
+            }
+            const response = await brandingService.createLead(payload)
             if (response.success && response.data) {
-                setbrnadingData(response.data.formFeilds)
-                console.log(response.data.formFeilds)
-                toast.success("Successfully fetch the response")
+                toast.success("Successfully Create the Lead")
             }
         } catch (error) {
-            toast.error("Unable to fetch Response")
+            toast.error("Unable to submit Lead")
         } finally {
             setisLoading(false)
+            if (brnadingData) {
+                const initial: Record<string, string> = {};
+                brnadingData.forEach(f => initial[f.id] = "");
+                setFormData(initial);
+            }
         }
-    }, [])
+    }, [formData, username, brnadingData])
+
+    useEffect(() => {
+        if (brnadingData) {
+            const initialState: Record<string, string> = {};
+            brnadingData.forEach(f => initialState[f.id] = "");
+            setFormData(initialState);
+        }
+    }, [brnadingData]);
+
 
     useEffect(() => {
         handlefetchBranding()
@@ -61,10 +77,12 @@ function LeadForm({ username }: LeadForm) {
                 <Card className='h-fit p-10 w-[30%]'>
                     <form onSubmit={handleLeadSubmit}>
                         {brnadingData ? (
-                            brnadingData?.map((feild: FormFeild) => (
+                            brnadingData?.map((feild: FormFeild, i) => (
                                 <div key={feild.id} className='w-full'>
                                     <Label className='text-black my-2'>{feild.mapping}</Label>
-                                    <Input placeholder={feild.label} required={feild.required} />
+                                    <Input value={formData[feild.id] ?? ""} placeholder={feild.label} required={feild.required} onChange={(e) =>
+                                        setFormData(prev => ({ ...prev, [feild.id]: e.target.value }))
+                                    } />
                                 </div>
                             ))
                         ) : (

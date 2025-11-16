@@ -18,6 +18,13 @@ class BrandingService {
         })
     }
 
+    async createLead(formData: any): Promise<APIResponse> {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.CREATE_LEAD, {
+            method: 'POST',
+            body: JSON.stringify(formData)
+        })
+    }
+
 }
 
 const brandingService = new BrandingService()

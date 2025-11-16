@@ -65,3 +65,26 @@ export const LeadFormOptions = [
         order: 5
     }
 ];
+
+export const LeadFormGenerationOptions = [
+    {
+        id: "twitter",
+        Label: "X (Twitter)"
+    },
+    {
+        id: "google",
+        Label: "Google Ads"
+    },
+    {
+        id: "instagram",
+        Label: "Instagram"
+    },
+    {
+        id: "linkedin",
+        Label: "LinkedIn"
+    },
+    {
+        id: "normal",
+        Label: "Basic"
+    },
+]

@@ -1,7 +1,7 @@
 "use client"
 import React, { useCallback, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { LeadFormOptions } from '@/config/settingsConfig'
+import { LeadFormGenerationOptions, LeadFormOptions } from '@/config/settingsConfig'
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
 import LeadItem from '../ui/leadItem'
@@ -9,12 +9,22 @@ import { Button } from '../ui/button'
 import { toast } from 'sonner'
 import { FormDetails } from '@/types/branding'
 import brandingService from '@/lib/api/brandingService'
+import { Dialog, DialogContent, DialogFooter, DialogHeader } from '../ui/dialog'
+import { Card } from '../ui/card'
+import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
+import { LeadFormUrlCreationDropdown } from './LeadFormUrlCreationDropdown'
 
+export interface SelectedOption {
+    id: string,
+    Label: string
+}
 
 
 function BrandingClient() {
     const [items, setItems] = useState<FormDetails[]>(LeadFormOptions)
     const [isLoading, setisLoading] = useState(false)
+    const [isModalOpen, setisModalOpen] = useState(false)
+    const [selectedOption, setselectedOption] = useState<SelectedOption | null>(null)
 
 
     const sensors = useSensors(
@@ -63,6 +73,16 @@ function BrandingClient() {
         }
     }, [items])
 
+    const handleGenerateUrl = useCallback(() => {
+        if (!selectedOption) return;
+
+        console.log("SUBMITTED URL", selectedOption)
+    }, [selectedOption])
+
+    const handleSelect = (option: SelectedOption) => {
+        setselectedOption(option)
+    }
+
     return (
         <div className='w-full'>
 
@@ -102,11 +122,33 @@ function BrandingClient() {
                     </TabsContent>
                     <TabsContent value="settings">
                         <div className='w-10/12 p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
-                           <p className='text-white'>View your Lead Form</p>
-                           <Button variant="destructive">Open</Button>
+                            <p className='text-white'>View your Lead Form</p>
+                            <Button variant="destructive">Open</Button>
+                        </div>
+
+                        <div className='w-10/12 p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
+                            <p className='text-white'>Generate your Lead Form Url</p>
+                            <Button variant="destructive" onClick={() => setisModalOpen((prev) => !prev)}>Open</Button>
                         </div>
                     </TabsContent>
                 </Tabs>
+                <Dialog open={isModalOpen} onOpenChange={setisModalOpen}>
+                    <DialogContent className='sm:max-w-[400px] bg-zinc-900 text-zinc-100 border border-zinc-700'>
+                        <DialogHeader>
+                            <DialogTitle className="text-lg font-semibold">
+                                Create New Url
+                            </DialogTitle>
+                            <DialogDescription className="text-zinc-400">
+                                PLease Select an Option
+                            </DialogDescription>
+                        </DialogHeader>
+
+                        <LeadFormUrlCreationDropdown handleSelect={handleSelect} selectedOption={selectedOption} />
+                        <DialogFooter>
+                            <Button variant="destructive" onClick={handleGenerateUrl}>Generate Url</Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
             </div>
 
         </div>
