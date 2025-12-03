@@ -13,6 +13,10 @@ import { Dialog, DialogContent, DialogFooter, DialogHeader } from '../ui/dialog'
 import { Card } from '../ui/card'
 import { DialogDescription, DialogTitle } from '@radix-ui/react-dialog'
 import { LeadFormUrlCreationDropdown } from './LeadFormUrlCreationDropdown'
+import { APIResponse } from '@/types/auth'
+import { Copy } from 'lucide-react'
+import { useAppSelector } from '@/lib/store/hooks'
+import { useRouter } from 'next/navigation'
 
 export interface SelectedOption {
     id: string,
@@ -21,10 +25,13 @@ export interface SelectedOption {
 
 
 function BrandingClient() {
+    const user = useAppSelector((state) => state.auth)
     const [items, setItems] = useState<FormDetails[]>(LeadFormOptions)
     const [isLoading, setisLoading] = useState(false)
     const [isModalOpen, setisModalOpen] = useState(false)
     const [selectedOption, setselectedOption] = useState<SelectedOption | null>(null)
+    const [generatedUrl, setgeneratedUrl] = useState("")
+    const router = useRouter()
 
 
     const sensors = useSensors(
@@ -60,11 +67,13 @@ function BrandingClient() {
     const handleSubmit = useCallback(async () => {
         try {
             setisLoading(true)
+            setgeneratedUrl("")
             const response = await brandingService.createBranding({
                 feilds: items
             })
             if (response.success) {
                 toast.success("Brnading Updated Successfully")
+                setgeneratedUrl(response.data.url)
             }
         } catch (error) {
             toast.error("Unable to Update the Order")
@@ -73,14 +82,34 @@ function BrandingClient() {
         }
     }, [items])
 
-    const handleGenerateUrl = useCallback(() => {
+    const handleGenerateUrl = useCallback(async () => {
         if (!selectedOption) return;
 
-        console.log("SUBMITTED URL", selectedOption)
+        try {
+            const response = await brandingService.generatePublicLeadFormUrl(selectedOption)
+            if (response.success) {
+                toast.success("Url generated Successfully")
+                setgeneratedUrl(response.data as string)
+            }
+        } catch (error) {
+            toast.error("Unable to generate the url")
+        }
     }, [selectedOption])
 
     const handleSelect = (option: SelectedOption) => {
         setselectedOption(option)
+    }
+
+    const handleCopy = () => {
+        if (!generatedUrl) return;
+
+        navigator.clipboard.writeText(generatedUrl)
+        toast.success("Coppied Successfully")
+    }
+
+    const handleOpenLeadForm = () => {
+        const url = `/lead-form/${user.username?.toLowerCase()}`
+        router.push(url)
     }
 
     return (
@@ -123,7 +152,7 @@ function BrandingClient() {
                     <TabsContent value="settings">
                         <div className='w-10/12 p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
                             <p className='text-white'>View your Lead Form</p>
-                            <Button variant="destructive">Open</Button>
+                            <Button variant="destructive" onClick={handleOpenLeadForm}>Open</Button>
                         </div>
 
                         <div className='w-10/12 p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
@@ -144,6 +173,12 @@ function BrandingClient() {
                         </DialogHeader>
 
                         <LeadFormUrlCreationDropdown handleSelect={handleSelect} selectedOption={selectedOption} />
+                        {generatedUrl && (
+                            <div className='w-full rounded-xl bg-zinc-700 text-white flex justify-between items-center p-3'>
+                                <p>{generatedUrl}</p>
+                                <Copy onClick={handleCopy} />
+                            </div>
+                        )}
                         <DialogFooter>
                             <Button variant="destructive" onClick={handleGenerateUrl}>Generate Url</Button>
                         </DialogFooter>

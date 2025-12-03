@@ -8,5 +8,6 @@ export const CREATOR_API_ENDPOINTS = {
   DELETE_PROPOSAL: '/api/creator/delete-proposal',
   CREATE_BRANDING: '/api/creator/create-branding',
   FETCH_BRANDING: "/api/creator/fetch-branding",
-  CREATE_LEAD: "/api/creator/save-lead"
+  CREATE_LEAD: "/api/creator/save-lead",
+  GENERATE_URL : "/api/creator/generate-url"
 } as const;

@@ -2,6 +2,7 @@ import { CREATOR_API_ENDPOINTS } from "@/constants/creator";
 import { FetchClient } from "./fetchClient";
 import { createBrandingRequest, fetchBrandingResponse } from "@/types/branding";
 import { APIResponse } from "@/types/auth";
+import { SelectedOption } from "@/components/creator/branding.Client";
 
 class BrandingService {
 
@@ -22,6 +23,13 @@ class BrandingService {
         return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.CREATE_LEAD, {
             method: 'POST',
             body: JSON.stringify(formData)
+        })
+    }
+
+    async generatePublicLeadFormUrl(data : SelectedOption) {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.GENERATE_URL, {
+            method: 'POST',
+            body: JSON.stringify(data)
         })
     }
 

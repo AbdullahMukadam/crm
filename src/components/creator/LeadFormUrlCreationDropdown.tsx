@@ -36,8 +36,7 @@ export function LeadFormUrlCreationDropdown({ handleSelect, selectedOption }: Pr
             <DropdownMenuContent className="w-80" align="center">
                 {LeadFormGenerationOptions.map((option : SelectedOption) => (
                     <DropdownMenuItem onClick={() => handleSelect(option)}>
-                        {option.Label}
-                        <DropdownMenuShortcut>⌘K</DropdownMenuShortcut>
+                        {option.Label} 
                     </DropdownMenuItem>
                 ))}
             </DropdownMenuContent>
