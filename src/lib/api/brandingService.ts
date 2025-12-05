@@ -1,6 +1,6 @@
 import { CREATOR_API_ENDPOINTS } from "@/constants/creator";
 import { FetchClient } from "./fetchClient";
-import { createBrandingRequest, fetchBrandingResponse } from "@/types/branding";
+import { createBrandingRequest, fetchBrandingResponse, LeadsResponseData } from "@/types/branding";
 import { APIResponse } from "@/types/auth";
 import { SelectedOption } from "@/components/creator/branding.Client";
 
@@ -26,10 +26,16 @@ class BrandingService {
         })
     }
 
-    async generatePublicLeadFormUrl(data : SelectedOption) {
+    async generatePublicLeadFormUrl(data: SelectedOption) {
         return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.GENERATE_URL, {
             method: 'POST',
             body: JSON.stringify(data)
+        })
+    }
+
+    async fetchLeads(): Promise<APIResponse<LeadsResponseData>> {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.FETCH_LEADS, {
+            method: "GET"
         })
     }
 

@@ -9,5 +9,6 @@ export const CREATOR_API_ENDPOINTS = {
   CREATE_BRANDING: '/api/creator/create-branding',
   FETCH_BRANDING: "/api/creator/fetch-branding",
   CREATE_LEAD: "/api/creator/save-lead",
-  GENERATE_URL : "/api/creator/generate-url"
+  GENERATE_URL : "/api/creator/generate-url",
+  FETCH_LEADS : "/api/creator/fetch-leads"
 } as const;

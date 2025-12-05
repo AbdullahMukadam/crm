@@ -9,7 +9,12 @@ interface Task {
     description?: string;
 }
 
-function TaskCard({ task, columnId }: { task: Task; columnId: string }) {
+function TaskCard({ task, columnId, setselectedLead, setselectedLeadId }: {
+    task: Task;
+    columnId: string;
+    setselectedLead: React.Dispatch<React.SetStateAction<boolean>>;
+    setselectedLeadId: React.Dispatch<React.SetStateAction<string>>
+}) {
     const {
         attributes,
         listeners,
@@ -58,6 +63,10 @@ function TaskCard({ task, columnId }: { task: Task; columnId: string }) {
             <button
                 className="absolute top-2 right-2 p-1.5 rounded-lg text-zinc-400 hover:text-zinc-100 hover:bg-zinc-700/60 opacity-0 group-hover:opacity-100 transition-opacity"
                 aria-label="More options"
+                onClick={() => {
+                    setselectedLead(true)
+                    setselectedLeadId(task.id)
+                }}
             >
                 <MoreHorizontal size={16} />
             </button>

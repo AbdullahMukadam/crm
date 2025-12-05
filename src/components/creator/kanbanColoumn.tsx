@@ -20,10 +20,15 @@ function KanbanColumn({
     column,
     onAddTask,
     statusColor,
+    setselectedLead,
+    setselectedLeadId
+
 }: {
     column: Column;
     onAddTask: (columnId: string) => void;
     statusColor?: 'bg-red-500' | 'bg-white' | 'bg-green-500' | 'bg-blue-500' | 'bg-purple-500';
+    setselectedLead: React.Dispatch<React.SetStateAction<boolean>>;
+    setselectedLeadId: React.Dispatch<React.SetStateAction<string>>
 }) {
 
     const {
@@ -87,6 +92,8 @@ function KanbanColumn({
                             key={task.id}
                             task={task}
                             columnId={column.id}
+                            setselectedLeadId={setselectedLeadId}
+                            setselectedLead={setselectedLead}
                         />
                     ))}
                 </div>

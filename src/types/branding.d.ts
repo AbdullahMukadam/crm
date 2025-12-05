@@ -38,3 +38,29 @@ export interface LeadFormData {
     mobileNumber: string,
     note: data.note
 }
+
+export interface LeadsResponseData {
+    leads: {
+        id: string;
+        email: string;
+        note: string | null;
+        name: string;
+        createdAt: Date;
+        updatedAt: Date;
+        companyName: string | null;
+        mobileNumber: string | null;
+        userId: string | null;
+    }[];
+}
+
+export interface LeadsDataForDashboard {
+    id: string;
+    email: string;
+    note: string | null;
+    name: string;
+    createdAt: Date;
+    updatedAt: Date;
+    companyName: string | null;
+    mobileNumber: string | null;
+    userId: string | null;
+}
