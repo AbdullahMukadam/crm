@@ -1,6 +1,6 @@
 import { CREATOR_API_ENDPOINTS } from "@/constants/creator";
 import { FetchClient } from "./fetchClient";
-import { createBrandingRequest, fetchBrandingResponse, LeadsResponseData } from "@/types/branding";
+import { createBrandingRequest, fetchBrandingResponse, LeadsDataForDashboard, LeadsResponseData } from "@/types/branding";
 import { APIResponse } from "@/types/auth";
 import { SelectedOption } from "@/components/creator/branding.Client";
 
@@ -33,9 +33,16 @@ class BrandingService {
         })
     }
 
-    async fetchLeads(): Promise<APIResponse<LeadsResponseData>> {
+    async fetchLeads(): Promise<APIResponse<LeadsDataForDashboard[]>> {
         return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.FETCH_LEADS, {
             method: "GET"
+        })
+    }
+
+    async deleteLead(id: string): Promise<APIResponse> {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.DELETE_LEAD, {
+            method: "POST",
+            body: JSON.stringify(id)
         })
     }
 

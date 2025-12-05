@@ -13,9 +13,9 @@ export function useLeads() {
             setloadind(true)
 
             const response = await brandingService.fetchLeads()
-            if (response.success && response.data?.leads) {
-                console.log(response.data.leads)
-                setLeads(response.data?.leads)
+            if (response.success && response.data) {
+                console.log(response.data)
+                setLeads(response.data)
                 toast.success("Leads fetched Successfully")
             }
         } catch (error) {

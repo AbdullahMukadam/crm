@@ -18,9 +18,12 @@ interface LeadsDetailsProps {
     selectedLead: boolean;
     selectedLeadData: LeadsDataForDashboard | null;
     onOpenChnage: React.Dispatch<React.SetStateAction<boolean>>
+    deleteLead: (id: string) => Promise<void>
+    isLoading: boolean
+
 }
 
-export function LeadsDetails({ selectedLead, selectedLeadData, onOpenChnage }: LeadsDetailsProps) {
+export function LeadsDetails({ selectedLead, selectedLeadData, onOpenChnage, deleteLead, isLoading }: LeadsDetailsProps) {
     return (
         <Dialog open={selectedLead} onOpenChange={onOpenChnage}>
             <DialogContent className="sm:max-w-[425px]">
@@ -38,7 +41,7 @@ export function LeadsDetails({ selectedLead, selectedLeadData, onOpenChnage }: L
                     <h1 id="Note">{selectedLeadData?.note || "Not Provided"}</h1>
                 </div>
                 <DialogFooter>
-                    <Button type="submit">Delete Lead</Button>
+                    <Button disabled={isLoading} onClick={() => deleteLead(selectedLeadData?.id || "")}>Delete Lead</Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

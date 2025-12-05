@@ -22,6 +22,9 @@ import KanbanColumn from './kanbanColoumn';
 import { useLeads } from '@/features/Leads/hooks/useLeads';
 import { LeadsDataForDashboard } from '@/types/branding';
 import { LeadsDetails } from './LeadDetails';
+import { toast } from 'sonner';
+import brandingService from '@/lib/api/brandingService';
+import { useAppSelector } from '@/lib/store/hooks';
 
 // Types
 interface Task {
@@ -56,26 +59,35 @@ const COLUMN_DEFINITIONS: ColoumDefinations[] = [
 const AddTaskModal = ({
     isOpen,
     onClose,
-    onAdd,
     columnTitle,
+    handleSubmit,
+    isLoading,
+    username
 }: {
     isOpen: boolean;
     onClose: () => void;
-    onAdd: (title: string, description: string) => void;
     columnTitle: string;
+    handleSubmit: (e: any, formData: any) => Promise<void>
+    isLoading: boolean,
+    username: string
 }) => {
-    const [title, setTitle] = useState("");
-    const [description, setDescription] = useState("");
+    const [name, setName] = useState("");
+    const [companyName, setcompanyName] = useState("");
+    const [email, setEmail] = useState("");
+    const [mobileNumber, setmobileNumber] = useState("");
+    const [note, setnote] = useState("");
 
-    const handleSubmit = (e?: any) => {
-        if (e) e.preventDefault();
-        if (title.trim()) {
-            onAdd(title.trim(), description.trim());
-            setTitle("");
-            setDescription("");
-            onClose();
+    const AddTask = async (e: any) => {
+        const formData = {
+            name,
+            companyName,
+            email,
+            mobileNumber,
+            note,
+            username
         }
-    };
+        await handleSubmit(e, formData)
+    }
 
     if (!isOpen) return null;
 
@@ -89,33 +101,76 @@ const AddTaskModal = ({
                     </button>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4">
+                <form onSubmit={AddTask} className="space-y-4">
                     <div>
-                        <label htmlFor="title" className="block text-sm font-medium text-zinc-300 mb-1">
-                            Task Title *
+                        <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-1">
+                            Name
                         </label>
                         <input
-                            id="title"
+                            id="name"
                             type="text"
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            value={name}
+                            onChange={(e) => setName(e.target.value)}
                             className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Enter task title"
+                            placeholder="Enter Name"
                             autoFocus
+                            required
                         />
                     </div>
 
                     <div>
-                        <label htmlFor="description" className="block text-sm font-medium text-zinc-300 mb-1">
-                            Description
+                        <label htmlFor="companyName" className="block text-sm font-medium text-zinc-300 mb-1">
+                            Company Name
                         </label>
-                        <textarea
-                            id="description"
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            rows={3}
+                        <input
+                            id="companyName"
+                            value={companyName}
+                            onChange={(e) => setcompanyName(e.target.value)}
                             className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                            placeholder="Enter task description (optional)"
+                            placeholder="Enter Company Name"
+                            required
+                        />
+                    </div>
+                    <div>
+                        <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1">
+                            Email
+                        </label>
+                        <input
+                            id="email"
+                            type="text"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Enter Email"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="mobileNumber" className="block text-sm font-medium text-zinc-300 mb-1">
+                            Mobile Number
+                        </label>
+                        <input
+                            id="mobileNumber"
+                            value={mobileNumber}
+                            onChange={(e) => setmobileNumber(e.target.value)}
+                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Enter Mobile Number"
+                            required
+                        />
+                    </div>
+
+                    <div>
+                        <label htmlFor="note" className="block text-sm font-medium text-zinc-300 mb-1">
+                            Note
+                        </label>
+                        <input
+                            id="note"
+                            value={note}
+                            onChange={(e) => setnote(e.target.value)}
+                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            placeholder="Enter Note"
+                            required
                         />
                     </div>
 
@@ -129,7 +184,7 @@ const AddTaskModal = ({
                         </button>
                         <button
                             type="submit"
-                            disabled={!title.trim()}
+                            disabled={isLoading}
                             className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50"
                         >
                             Add Task
@@ -144,6 +199,7 @@ const AddTaskModal = ({
 // Main Kanban Board Component
 const KanbanBoard = () => {
     const { leads, loadind, error } = useLeads();
+    const { username } = useAppSelector((state) => state.auth)
     const [columns, setColumns] = useState<Column[]>([]);
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
@@ -151,6 +207,7 @@ const KanbanBoard = () => {
     const [selectedLead, setselectedLead] = useState(false)
     const [selectedLeadId, setselectedLeadId] = useState("")
     const [selectedLeadData, setselectedLeadData] = useState<LeadsDataForDashboard | null>(null)
+    const [isLoading, setisLoading] = useState(false)
 
     // Convert leads to tasks and initialize columns
     useEffect(() => {
@@ -334,31 +391,73 @@ const KanbanBoard = () => {
         setShowAddModal(true);
     };
 
-    const handleTaskCreate = (title: string, description: string) => {
-        // Create a mock lead for now - in production, this should create a new lead via API
-        const newTask: Task = {
-            id: `task-${Date.now()}`,
-            title,
-            description,
-            leadData: {
-                id: `lead-${Date.now()}`,
-                name: title,
-                email: '',
-                note: description,
-                companyName: null,
-                mobileNumber: null,
-                userId: null,
-                createdAt: new Date(),
-                updatedAt: new Date()
-            }
-        };
+    const handleSubmit = async (e: any, formData: any) => {
+        if (e) e.preventDefault();
+        setisLoading(true)
 
-        setColumns(prev => prev.map(column =>
-            column.id === selectedColumnId
-                ? { ...column, tasks: [...column.tasks, newTask] }
-                : column
-        ));
+        try {
+            const response = await brandingService.createLead(formData)
+            if (response.success) {
+                toast.success("Lead Created Successfully")
+                const newLead: Task = {
+                    id: response.data.id,
+                    title: response.data.name,
+                    description: `${response.data.companyName || 'No company'} - ${response.data.email}\n${response.data.note || ''}`,
+                    leadData: response.data
+                }
+
+                setColumns((prev) => {
+                    const newColumns = [...prev];
+                    // Find the column index (should be 'new-lead' or selectedColumnId)
+                    const columnIndex = newColumns.findIndex(col => col.id === selectedColumnId || col.id === 'new-lead');
+
+                    if (columnIndex !== -1) {
+                        newColumns[columnIndex] = {
+                            ...newColumns[columnIndex],
+                            tasks: [...newColumns[columnIndex].tasks, newLead]
+                        };
+                    }
+
+                    return newColumns;
+                });
+
+                setShowAddModal(false)
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Unable to create a Lead")
+        } finally {
+            setisLoading(false)
+        }
     };
+
+    const deleteLead = async (id: string) => {
+        setisLoading(true)
+        try {
+            const response = await brandingService.deleteLead(id)
+            if (response.success) {
+                toast.success("Lead Deleted Succesfully")
+                setColumns((prev) => {
+                    const newColumns = [...prev];
+                    // Find the column index (should be 'new-lead' or selectedColumnId)
+                    const columnIndex = newColumns.findIndex(col => col.id === selectedColumnId || col.id === 'new-lead');
+
+                    if (columnIndex !== -1) {
+                        newColumns[columnIndex] = {
+                            ...newColumns[columnIndex],
+                            tasks: newColumns[columnIndex].tasks.filter((task) => task.id !== id)
+                        };
+                    }
+
+                    return newColumns;
+                });
+                setselectedLead(false)
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Unable to create a Lead")
+        } finally {
+            setisLoading(false)
+        }
+    }
 
     const selectedColumn = columns.find(col => col.id === selectedColumnId);
 
@@ -417,13 +516,17 @@ const KanbanBoard = () => {
                 selectedLead={selectedLead}
                 selectedLeadData={selectedLeadData}
                 onOpenChnage={setselectedLead}
+                deleteLead={deleteLead}
+                isLoading={isLoading}
             />
 
             <AddTaskModal
                 isOpen={showAddModal}
                 onClose={() => setShowAddModal(false)}
-                onAdd={handleTaskCreate}
                 columnTitle={selectedColumn?.title || ''}
+                handleSubmit={handleSubmit}
+                isLoading={isLoading}
+                username={username || ""}
             />
         </div>
     );

@@ -1,36 +1,36 @@
-import { verifyUser } from "@/lib/middleware/verify-user";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
+
 const prismaClient = new PrismaClient()
-export async function GET(request: NextRequest) {
-    const { user, error } = await verifyUser(request)
-    if (!user || error) {
+export async function POST(request: NextRequest) {
+    const data = await request.json()
+    if (!data) {
         return NextResponse.json({
             success: false,
-            message: "Unable to get the User"
+            message: "Data not received"
         })
-    }
-
+    }   
     try {
-        const leads = await prismaClient.lead.findMany({
+        const deletedlead = await prismaClient.lead.delete({
             where: {
-                userId : user.id as string
-            }
+                id: data
+            },
         })
 
-        if (!leads) {
+        if (!deletedlead) {
             return NextResponse.json({
                 success: false,
-                message: "Leads not found"
+                message: "Unable to Delete Lead"
             })
         }
 
         return NextResponse.json({
             success: true,
-            message: "Leads retrieved succesfully",
-            data: leads
+            message: "Deleted Successfully"
         })
+
+
     } catch (error) {
         return NextResponse.json({
             success: false,
