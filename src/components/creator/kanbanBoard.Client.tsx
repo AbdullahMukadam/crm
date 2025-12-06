@@ -31,7 +31,7 @@ interface Task {
     id: string;
     title: string;
     description?: string;
-    leadData: LeadsDataForDashboard; // Store full lead data
+    leadData: LeadsDataForDashboard;
 }
 
 interface Column {
@@ -209,7 +209,6 @@ const KanbanBoard = () => {
     const [selectedLeadData, setselectedLeadData] = useState<LeadsDataForDashboard | null>(null)
     const [isLoading, setisLoading] = useState(false)
 
-    // Convert leads to tasks and initialize columns
     useEffect(() => {
         if (leads && leads.length > 0) {
             const initialColumns: Column[] = COLUMN_DEFINITIONS.map(colDef => ({
@@ -218,16 +217,23 @@ const KanbanBoard = () => {
                 tasks: []
             }));
 
-            // Convert leads to tasks and add to "new-lead" column
-            const leadTasks: Task[] = leads.map(lead => ({
-                id: lead.id,
-                title: lead.name,
-                description: `${lead.companyName || 'No company'} - ${lead.email}\n${lead.note || ''}`,
-                leadData: lead
-            }));
+            // Convert leads to tasks and organize by their status
+            leads.forEach(lead => {
+                const task: Task = {
+                    id: lead.id,
+                    title: lead.name,
+                    description: `${lead.companyName || 'No company'} - ${lead.email}`,
+                    leadData: lead
+                };
 
-            // Add all leads to the first column (new-lead)
-            initialColumns[0].tasks = leadTasks;
+                const columnIndex = initialColumns.findIndex(col => col.id === (lead.status || 'new-lead'));
+
+                if (columnIndex !== -1) {
+                    initialColumns[columnIndex].tasks.push(task);
+                } else {
+                    initialColumns[0].tasks.push(task);
+                }
+            });
 
             setColumns(initialColumns);
         } else if (leads && leads.length === 0) {
@@ -271,6 +277,16 @@ const KanbanBoard = () => {
             }
         }
         return null;
+    };
+
+    // Update lead status in backend
+    const updateLeadStatus = async (leadId: string, newStatus: string) => {
+        try {
+            await brandingService.updateLeadStatus(leadId, newStatus);
+            toast.success("Lead status updated");
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to update lead status");
+        }
     };
 
     const handleDragStart = (event: DragStartEvent) => {
@@ -342,10 +358,15 @@ const KanbanBoard = () => {
 
         const activeId = active.id;
         const overId = over.id;
+        const activeData = active.data.current;
+
+        const movedTask = findTask(activeId);
+        if (movedTask && activeData?.type === 'task') {
+            updateLeadStatus(movedTask.task.leadData.id, movedTask.column.id);
+        }
 
         if (activeId === overId) return;
 
-        const activeData = active.data.current;
 
         // Handle task reordering within the same column
         if (activeData?.type === 'task') {
@@ -379,11 +400,6 @@ const KanbanBoard = () => {
             setColumns(prev => arrayMove(prev, activeColumnIndex, overColumnIndex));
         }
 
-        // TODO: Here you can add API call to update lead status in backend
-        // const movedTask = findTask(activeId);
-        // if (movedTask && activeData?.type === 'task') {
-        //     updateLeadStatus(movedTask.task.leadData.id, newColumnId);
-        // }
     };
 
     const handleAddTask = (columnId: string) => {
@@ -396,7 +412,13 @@ const KanbanBoard = () => {
         setisLoading(true)
 
         try {
-            const response = await brandingService.createLead(formData)
+            // Add status to formData
+            const leadData = {
+                ...formData,
+                status: selectedColumnId || 'new-lead'
+            };
+
+            const response = await brandingService.createLead(leadData)
             if (response.success) {
                 toast.success("Lead Created Successfully")
                 const newLead: Task = {
@@ -408,8 +430,7 @@ const KanbanBoard = () => {
 
                 setColumns((prev) => {
                     const newColumns = [...prev];
-                    // Find the column index (should be 'new-lead' or selectedColumnId)
-                    const columnIndex = newColumns.findIndex(col => col.id === selectedColumnId || col.id === 'new-lead');
+                    const columnIndex = newColumns.findIndex(col => col.id === selectedColumnId);
 
                     if (columnIndex !== -1) {
                         newColumns[columnIndex] = {
@@ -435,25 +456,17 @@ const KanbanBoard = () => {
         try {
             const response = await brandingService.deleteLead(id)
             if (response.success) {
-                toast.success("Lead Deleted Succesfully")
+                toast.success("Lead Deleted Successfully")
                 setColumns((prev) => {
-                    const newColumns = [...prev];
-                    // Find the column index (should be 'new-lead' or selectedColumnId)
-                    const columnIndex = newColumns.findIndex(col => col.id === selectedColumnId || col.id === 'new-lead');
-
-                    if (columnIndex !== -1) {
-                        newColumns[columnIndex] = {
-                            ...newColumns[columnIndex],
-                            tasks: newColumns[columnIndex].tasks.filter((task) => task.id !== id)
-                        };
-                    }
-
-                    return newColumns;
+                    return prev.map(column => ({
+                        ...column,
+                        tasks: column.tasks.filter((task) => task.id !== id)
+                    }));
                 });
                 setselectedLead(false)
             }
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Unable to create a Lead")
+            toast.error(error instanceof Error ? error.message : "Unable to delete Lead")
         } finally {
             setisLoading(false)
         }

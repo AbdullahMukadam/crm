@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { type NavItem } from '@/types/ui';
 import { cn } from '@/lib/utils';
-import { useAppDispatch } from '@/lib/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { LogoutUser } from '@/lib/store/features/authSlice';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
@@ -22,6 +22,7 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
     const pathname = usePathname();
     const dispatch = useAppDispatch();
     const router = useRouter();
+    const {username, role} = useAppSelector((state) => state.auth)
 
 
     const handleLogout = async () => {
@@ -83,15 +84,15 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
 
             {/* Sidebar Footer */}
             <div className="mt-auto p-4">
-                <div className={cn("flex items-center gap-3", isCollapsed && "justify-center")}>
-                    <div className="h-9 w-9 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center">
-                        <span className="font-semibold text-gray-600 dark:text-gray-300">AM</span>
+                <div className={cn("flex items-center gap-3")}>
+                    <div className={cn("h-9 w-9 rounded-full bg-gray-300 dark:bg-gray-700 flex items-center justify-center",isCollapsed && "hidden")}>
+                        <span className="font-semibold text-gray-600 dark:text-gray-300">{username?.charAt(0)}</span>
                     </div>
                     <div className={cn(isCollapsed && "hidden")}>
-                        <p className="text-sm font-medium text-gray-50">Abdullah M.</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Creator</p>
+                        <p className="text-sm font-medium text-gray-50">{username || ""}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">{role?.toUpperCase() || ""}</p>
                     </div>
-                    <Button variant="ghost" size="icon" onClick={handleLogout} className={cn(isCollapsed ? "flex" : "hidden", "ml-auto")}>
+                    <Button variant="ghost" size="icon" onClick={handleLogout} className={cn(isCollapsed ? "flex" : "hidden", "ml-auto text-black bg-white")}>
                         <LogOut className="h-5 w-5" />
                     </Button>
                     <Button onClick={handleLogout} variant="outline" size="sm" className={cn(isCollapsed && "hidden", "ml-auto")}>Logout</Button>
@@ -106,6 +107,7 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
     const pathname = usePathname();
     const dispatch = useAppDispatch();
     const router = useRouter();
+    const {username, role} = useAppSelector((state) => state.auth)
 
     const handleLogout = async () => {
         try {
@@ -141,8 +143,8 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
                 <div className='mt-auto absolute bottom-0 p-4'>
                     <div className={"flex items-center gap-3"}>
                         <div>
-                            <p className="text-sm font-medium text-gray-50">Abdullah M.</p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400">Creator</p>
+                            <p className="text-sm font-medium text-gray-50">{username || ""}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400">{role?.toUpperCase() || ""}</p>
                         </div>
                         <Button variant="ghost" size="icon" onClick={handleLogout} className={"flex ml-auto"}>
                             <LogOut className="h-5 w-5" />

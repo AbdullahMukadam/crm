@@ -63,4 +63,5 @@ export interface LeadsDataForDashboard {
     companyName: string | null;
     mobileNumber: string | null;
     userId: string | null;
+    status : string;
 }

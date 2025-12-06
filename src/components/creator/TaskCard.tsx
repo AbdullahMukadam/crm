@@ -42,7 +42,7 @@ function TaskCard({ task, columnId, setselectedLead, setselectedLeadId }: {
             style={style}
             {...attributes}
             {...listeners}
-            className={`group relative bg-zinc-800/80 backdrop-blur-sm p-4 rounded-xl border border-zinc-700 hover:border-zinc-600 transition-all duration-200 
+            className={`group w-[200px] relative bg-zinc-800/80 backdrop-blur-sm p-4 rounded-xl border border-zinc-700 hover:border-zinc-600 transition-all duration-200 
         shadow-sm hover:shadow-md cursor-grab active:cursor-grabbing
         ${isDragging ? "opacity-70 scale-[1.03] shadow-lg border-zinc-500" : ""}
       `}

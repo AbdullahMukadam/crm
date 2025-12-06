@@ -107,6 +107,7 @@ model Lead {
   mobileNumber String?
   note         String?
   userId       String?
+  status       String   @default("new-lead")
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   User         User?    @relation(fields: [userId], references: [id])

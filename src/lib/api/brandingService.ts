@@ -46,6 +46,14 @@ class BrandingService {
         })
     }
 
+    async updateLeadStatus(leadId: string, status: string): Promise<APIResponse> {
+        const url = `/api/creator/update-leads/${leadId}`
+        return FetchClient.makeRequest(url, {
+            method: "PATCH",
+            body: JSON.stringify({ status })
+        })
+    }
+
 }
 
 const brandingService = new BrandingService()
