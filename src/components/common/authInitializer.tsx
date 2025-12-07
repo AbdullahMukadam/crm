@@ -13,7 +13,7 @@ export const AuthInitializer: React.FC<AuthInitializerProps> = ({
     children,
     fallback = (
         <div className="flex justify-center items-center h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-black"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
         </div>
     )
 }) => {

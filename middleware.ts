@@ -12,7 +12,6 @@ const roleBasedRoutes: Record<string, string[]> = {
   '/dashboard/client': ['CLIENT'],
   '/portal': ['CLIENT'],
   '/settings': ['ADMIN', 'CREATOR'],
-  '/proposals': ['ADMIN', 'CREATOR'],
   '/dashboard': ['ADMIN', 'CREATOR'], 
 };
 
@@ -27,7 +26,7 @@ export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const token = request.cookies.get('token')?.value;
 
-  const publicRoutes = ['/signin', '/signup', '/access-denied', "/", "/lead-form"];
+  const publicRoutes = ['/signin', '/signup', '/access-denied', "/", "/lead-form", "/proposals"];
   if (publicRoutes.includes(pathname)) {
     return NextResponse.next();
   }

@@ -4,7 +4,7 @@ import { FetchProposals } from "@/lib/store/features/proposalsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import React, { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Plus, Loader2, Trash2 } from "lucide-react";
+import { Plus, Loader2, Trash2, EllipsisVertical } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
     Dialog,
@@ -15,6 +15,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from "../ui/dialog";
+import {
+    Menubar,
+    MenubarContent,
+    MenubarItem,
+    MenubarMenu,
+    MenubarSeparator,
+    MenubarShortcut,
+    MenubarTrigger,
+} from "@/components/ui/menubar"
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
@@ -79,10 +88,16 @@ function ProposalsClient() {
                 dispatch(FetchProposals())
             }
         } catch (error) {
-            toast.error( error instanceof Error ? error.message : "Unable to deletd the proposal")
+            toast.error(error instanceof Error ? error.message : "Unable to deletd the proposal")
         } finally {
             setisProposalDeletedLoading(false)
         }
+    }, [])
+
+    const handleCreateSharableLink = useCallback((proposalId: string) => {
+        const url = process.env.NEXT_PUBLIC_APP_URL + `/proposals/viewer/${proposalId}`
+        navigator.clipboard.writeText(url)
+        toast.success("Link Coppied Successfully")
     }, [])
 
     if (isLoading) {
@@ -114,10 +129,22 @@ function ProposalsClient() {
                             key={proposal.id}
                             className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:shadow-md transition-all duration-200 group"
                         >
-                            <CardHeader className="pb-2">
+                            <CardHeader className="pb-2 flex items-center justify-between">
                                 <CardTitle className="text-lg font-medium truncate text-white">
                                     {proposal.title}
                                 </CardTitle>
+                                <Menubar className="bg-transparent border-none p-0">
+                                    <MenubarMenu>
+                                        <MenubarTrigger>
+                                            <EllipsisVertical size={16} color="white" />
+                                        </MenubarTrigger>
+                                        <MenubarContent>
+                                            <MenubarItem onClick={()=> handleCreateSharableLink(proposal.id)}>Share</MenubarItem>
+                                            <MenubarSeparator />
+                                            <MenubarItem>Print</MenubarItem>
+                                        </MenubarContent>
+                                    </MenubarMenu>
+                                </Menubar>
                             </CardHeader>
                             <CardContent className="text-sm text-zinc-400 space-y-1">
                                 <p>ID: {proposal.id}</p>
@@ -199,7 +226,7 @@ function ProposalsClient() {
                             <Button
                                 type="submit"
                                 disabled={isProposalCreatedLoadind}
-                                
+
                             >
                                 {isProposalCreatedLoadind ? "Please wait..." : "Create"}
                             </Button>

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     DndContext,
     DragEndEvent,
@@ -18,7 +18,9 @@ import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig';
 import ProposalSidebar from './proposalSidebar';
 import ProposalCanvas from './proposalCanvas';
 import { useProposal } from '@/hooks/useProposal';
-import { Loader2 } from 'lucide-react';
+import { Link, Loader2 } from 'lucide-react';
+import { Button } from '../ui/button';
+import { toast } from 'sonner';
 
 function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
@@ -89,6 +91,12 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
         }
     };
 
+    const handleCreateSharableLink = useCallback((proposalId: string) => {
+        const url = process.env.NEXT_PUBLIC_APP_URL + `/proposals/viewer/${proposalId}`
+        navigator.clipboard.writeText(url)
+        toast.success("Link Coppied Successfully")
+    }, [])
+
     useEffect(() => {
         if (proposalData && !isInitialized) {
             setBlocks(proposalData.content || [])
@@ -114,8 +122,6 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                 onDragEnd={handleDragEnd}
             >
                 <div className="w-full flex h-screen overflow-hidden">
-
-                    {/* Sidebar Wrapper - Dark Background, Dark Border */}
                     <div className="border-r border-zinc-800 bg-zinc-900 h-full overflow-y-auto">
                         <ProposalSidebar
                             isCollapsed={isCollapsed}
@@ -140,6 +146,10 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
 
                             {/* Dark Mode Toggle Switch */}
                             <div className='flex items-center gap-4'>
+                                <Button variant={"link"} onClick={() => handleCreateSharableLink(proposalId)}>
+                                    <Link />
+                                    Share
+                                </Button>
                                 <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${isAutoSaveOn ? 'text-white' : 'text-zinc-500'}`}>
                                     Auto Save
                                 </span>
@@ -154,23 +164,19 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                                         checked={isAutoSaveOn}
                                         readOnly
                                     />
-                                    {/* Switch Track: Zinc-700 (Off) -> White (On) */}
                                     <div className="w-11 h-6 bg-zinc-700 rounded-full peer-checked:bg-white peer-focus:ring-2 peer-focus:ring-zinc-600 transition-colors duration-200 ease-in-out"></div>
 
-                                    {/* Switch Knob: Zinc-300 (Off) -> Black (On) */}
                                     <div className="absolute left-1 top-1 bg-zinc-300 peer-checked:bg-black w-4 h-4 rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-full shadow-sm"></div>
                                 </div>
                             </div>
                         </div>
 
-                        {/* Scrollable Canvas Area - Deep Dark Background */}
                         <div className="flex-grow overflow-auto p-8 bg-zinc-950">
                             <div className="max-w-5xl mx-auto">
                                 <SortableContext
                                     items={blocks.map(b => b.id)}
                                     strategy={verticalListSortingStrategy}
                                 >
-                                    {/* NOTE: Ensure ProposalCanvas also supports dark mode or pass a className to it */}
                                     <ProposalCanvas
                                         blocks={blocks}
                                         setBlocks={setBlocks}
