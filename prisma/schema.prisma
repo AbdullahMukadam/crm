@@ -113,6 +113,17 @@ model Lead {
   User         User?    @relation(fields: [userId], references: [id])
 }
 
+model FormVisit {
+  id         String   @id @default(cuid())
+  username   String   
+  deviceType String   
+  visitDate  DateTime @default(now())
+  createdAt  DateTime @default(now())
+  
+  @@index([username, visitDate])
+  @@index([username, deviceType])
+}
+
 model Branding {
   id         String   @id @default(cuid())
   formFeilds Json

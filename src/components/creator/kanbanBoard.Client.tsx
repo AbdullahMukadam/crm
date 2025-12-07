@@ -25,6 +25,8 @@ import { LeadsDetails } from './LeadDetails';
 import { toast } from 'sonner';
 import brandingService from '@/lib/api/brandingService';
 import { useAppSelector } from '@/lib/store/hooks';
+import { ChartAreaInteractive } from '../ui/chart-area-interactive';
+import { LeadVisitsChart } from '../ui/leads-visit';
 
 // Types
 interface Task {
@@ -491,7 +493,7 @@ const KanbanBoard = () => {
     }
 
     return (
-        <div className="w-full min-h-screen">
+        <div className="w-full min-h-screen flex flex-col">
             <div className="mb-6">
                 <h1 className="text-3xl font-bold text-white">Dashboard</h1>
                 <p className="text-gray-300 mt-1">
@@ -524,6 +526,8 @@ const KanbanBoard = () => {
                     </SortableContext>
                 </div>
             </DndContext>
+
+            <LeadVisitsChart username={username || ""}/>
 
             <LeadsDetails
                 selectedLead={selectedLead}

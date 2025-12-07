@@ -33,8 +33,6 @@ export async function GET(request: NextRequest, { params }: { params: { proposal
             }
         })
 
-        console.log("api proposal", proposal)
-
         if (proposal) {
             return NextResponse.json({
                 success: true,

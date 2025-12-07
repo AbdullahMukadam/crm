@@ -201,7 +201,7 @@ export function BlockRenderer({
                                         <Button
                                             onClick={() => setisImageUrlUpdating(!isImageUrlUpdating)}
                                             variant={"outline"}
-                                            className='mt-2'
+                                            className='mt-2 text-white'
                                             title="Delete block"
                                         >
                                             {isImageUrlUpdating ? "Close URL Editor" : "Update Image URL"}
@@ -302,7 +302,7 @@ export function BlockRenderer({
                 }
             }}
             style={style}
-            className={`bg-white rounded-lg p-5 transition-all ${isSelected
+            className={`bg-white text-black rounded-lg p-5 transition-all ${isSelected
                 && 'border-blue-500 shadow-lg ring-2 ring-blue-200'
                 }`}
             onClick={(e) => {

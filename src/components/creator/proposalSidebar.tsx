@@ -51,7 +51,7 @@ function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed, ac
             </div>
 
             <div className='pt-4 pl-4 space-x-2'>
-                <h2 className='text-white text-2xl font-bold'>Blocks</h2>
+                <h2 className='text-white text-xl font-bold'>Blocks</h2>
             </div>
 
             {/* Navigation Links */}

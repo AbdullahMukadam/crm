@@ -3,15 +3,12 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
     DndContext,
-    closestCorners,
     DragEndEvent,
-    DragOverEvent,
     DragStartEvent,
     KeyboardSensor,
     PointerSensor,
     useSensor,
     useSensors,
-    DragOverlay,
     pointerWithin
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
@@ -30,6 +27,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const proposalIdRef = useRef<string>(proposalId);
     const [isInitialized, setIsInitialized] = useState(false);
     const [isAutoSaveOn, setisAutoSaveOn] = useState(false)
+    const [isCollapsed, setisCollapsed] = useState(false)
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
@@ -92,7 +90,6 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     };
 
     useEffect(() => {
-        //we have to fix this
         if (proposalData && !isInitialized) {
             setBlocks(proposalData.content || [])
             setIsInitialized(true)
@@ -101,50 +98,90 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
 
     if (isLoading) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
-            <Loader2 className="animate-spin mr-2" /> Loading Please Wait...
-        </div>
+            <div className="w-full h-screen flex flex-col items-center justify-center bg-zinc-950 text-zinc-100">
+                <Loader2 className="animate-spin mb-4 h-8 w-8 text-zinc-400" />
+                <p className="uppercase tracking-widest text-sm font-semibold text-zinc-500">Loading Proposal...</p>
+            </div>
         )
     }
 
     return (
-        <div className="w-full bg-zinc-900">
+        <div className="w-full min-h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-zinc-800">
             <DndContext
                 sensors={sensors}
                 collisionDetection={pointerWithin}
                 onDragStart={handleDragStart}
                 onDragEnd={handleDragEnd}
             >
-                <div className="w-full flex">
-                    <ProposalSidebar isCollapsed={false} setIsCollapsed={() => { }} sidebarDragableItems={ProposalBuilderBlocks} activeBlock={activeBlock} />
+                <div className="w-full flex h-screen overflow-hidden">
 
-                    <main className="p-8 flex-grow h-full">
-                        <div className='w-full flex justify-between items-center'>
-                            <div className='w-full'>
-                                <h1 className="text-3xl font-bold text-white mb-4">Proposal Builder</h1>
-                                <p className="text-gray-400 mb-8">Drag and drop blocks to build your proposal. You can reorder them by dragging.</p>
+                    {/* Sidebar Wrapper - Dark Background, Dark Border */}
+                    <div className="border-r border-zinc-800 bg-zinc-900 h-full overflow-y-auto">
+                        <ProposalSidebar
+                            isCollapsed={isCollapsed}
+                            setIsCollapsed={setisCollapsed}
+                            sidebarDragableItems={ProposalBuilderBlocks}
+                            activeBlock={activeBlock}
+                        />
+                    </div>
+
+                    <main className="flex-grow h-full flex flex-col overflow-hidden">
+
+                        {/* Page Header - Dark Theme */}
+                        <div className='w-full px-8 py-6 border-b border-zinc-800 bg-zinc-900 flex justify-between items-center z-10 shadow-sm shadow-zinc-950/50'>
+                            <div>
+                                <h1 className="text-2xl font-bold uppercase tracking-tight text-white">
+                                    Proposal Builder
+                                </h1>
+                                <p className="text-zinc-500 text-xs mt-1 font-medium tracking-wide">
+                                    Drag blocks to canvas &bull; Reorder freely
+                                </p>
                             </div>
-                            <div className='w-full flex justify-end items-center gap-3 text-white'>
-                                <p className='text-xl'>Auto Save {isAutoSaveOn ? "ON" : "OFF"}</p>
-                                <div className="relative inline-block" onClick={() => setisAutoSaveOn(prev => !prev)}>
-                                    <input className="peer h-6 w-12 cursor-pointer appearance-none rounded-full border border-gray-300 bg-gary-400 checked:border-green-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-900 focus-visible:ring-offset-2" type="checkbox" />
-                                    <span className="pointer-events-none absolute left-1 top-1 block h-4 w-4 rounded-full bg-slate-600 transition-all duration-200 peer-checked:left-7 peer-checked:bg-green-300"></span>
+
+                            {/* Dark Mode Toggle Switch */}
+                            <div className='flex items-center gap-4'>
+                                <span className={`text-xs font-bold uppercase tracking-widest transition-colors ${isAutoSaveOn ? 'text-white' : 'text-zinc-500'}`}>
+                                    Auto Save
+                                </span>
+
+                                <div
+                                    className="relative inline-flex items-center cursor-pointer"
+                                    onClick={() => setisAutoSaveOn(prev => !prev)}
+                                >
+                                    <input
+                                        className="sr-only peer"
+                                        type="checkbox"
+                                        checked={isAutoSaveOn}
+                                        readOnly
+                                    />
+                                    {/* Switch Track: Zinc-700 (Off) -> White (On) */}
+                                    <div className="w-11 h-6 bg-zinc-700 rounded-full peer-checked:bg-white peer-focus:ring-2 peer-focus:ring-zinc-600 transition-colors duration-200 ease-in-out"></div>
+
+                                    {/* Switch Knob: Zinc-300 (Off) -> Black (On) */}
+                                    <div className="absolute left-1 top-1 bg-zinc-300 peer-checked:bg-black w-4 h-4 rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-full shadow-sm"></div>
                                 </div>
                             </div>
                         </div>
 
-                        <SortableContext
-                            items={blocks.map(b => b.id)}
-                            strategy={verticalListSortingStrategy}
-                        >
-                            <ProposalCanvas blocks={blocks} setBlocks={setBlocks} proposalId={proposalId} isAutosaveOn={isAutoSaveOn} />
-                        </SortableContext>
-
-
+                        {/* Scrollable Canvas Area - Deep Dark Background */}
+                        <div className="flex-grow overflow-auto p-8 bg-zinc-950">
+                            <div className="max-w-5xl mx-auto">
+                                <SortableContext
+                                    items={blocks.map(b => b.id)}
+                                    strategy={verticalListSortingStrategy}
+                                >
+                                    {/* NOTE: Ensure ProposalCanvas also supports dark mode or pass a className to it */}
+                                    <ProposalCanvas
+                                        blocks={blocks}
+                                        setBlocks={setBlocks}
+                                        proposalId={proposalId}
+                                        isAutosaveOn={isAutoSaveOn}
+                                    />
+                                </SortableContext>
+                            </div>
+                        </div>
                     </main>
                 </div>
-
-
             </DndContext>
         </div>
     );

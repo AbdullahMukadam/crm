@@ -4,21 +4,23 @@ import React, { useCallback, useEffect } from 'react'
 import { BlockRenderer } from './blockRenderer'
 import imageService from '@/lib/api/imageService';
 import { useAutoSave } from '@/features/Proposals/hooks/useAutoSave';
+import { cn } from '@/lib/utils'; // Assuming you have this, if not, standard class strings work too
 
 interface ProposalCanvasProps {
     blocks: Block[];
     setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
     proposalId: string;
-    isAutosaveOn : boolean
+    isAutosaveOn: boolean
 }
 
 function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: ProposalCanvasProps) {
     const { setNodeRef, isOver } = useDroppable({
         id: 'canvas'
     });
+    
     const { saveProposalData } = useAutoSave({
         AutoSaveInterval: 10000,
-        autoSave : isAutosaveOn
+        autoSave: isAutosaveOn
     })
 
     useEffect(() => {
@@ -31,14 +33,12 @@ function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: Proposa
         ));
     };
 
-    // New function to update position
     const updateBlockPosition = (blockId: string, position: { x: number; y: number }) => {
         setBlocks((prev: Block[]) => prev.map(b =>
             b.id === blockId ? { ...b, position } : b
         ));
     };
 
-    // New function to update size
     const updateBlockSize = (blockId: string, size: { width: number; height: number }) => {
         setBlocks((prev: Block[]) => prev.map(b =>
             b.id === blockId ? { ...b, size } : b
@@ -60,36 +60,55 @@ function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: Proposa
     }, [])
 
     return (
-        <div
-            ref={setNodeRef}
-            className={`bg-white text-black rounded-lg shadow-lg w-full min-h-[600px] transition-all relative ${isOver ? 'ring-4 ring-blue-400 bg-blue-50' : ''
-                }`}
-            style={{
-                minHeight: '800px', // Give enough space for positioning
-                position: 'relative',
-                overflow: 'auto' // Allow scrolling if blocks go beyond
-            }}
-        >
-            {blocks.length > 0 ? (
-                blocks.map((block: Block) => (
-                    <BlockRenderer
-                        block={block}
-                        key={block.id}
-                        updateBlockProps={updateBlockProps}
-                        updateBlockPosition={updateBlockPosition}
-                        updateBlockSize={updateBlockSize}
-                        deleteBlock={deleteBlock}
-                        uploadImage={uploadImage}
-                    />
-                ))
-            ) : (
-                <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center text-gray-500 py-24 border-2 border-dashed rounded-lg px-12">
-                        <p className="text-lg">Drag blocks from the sidebar to start building</p>
-                        <p className="text-sm mt-2">Position them anywhere on the canvas!</p>
+        <div className="flex flex-col w-full h-full gap-4">
+
+            {/* --- CANVAS AREA --- */}
+            <div
+                ref={setNodeRef}
+                className={cn(
+                    // Base Layout & Sizing
+                    "w-full min-h-[800px] relative transition-all duration-300",
+                    "rounded-none overflow-hidden", // Sharp corners for Swiss look
+                    
+                    // Colors & Borders (Default)
+                    "bg-white border border-neutral-200",
+                    
+                    // Drag Over State (Replaces Blue Ring with Black Border)
+                    isOver && "bg-neutral-50 border-neutral-900 border-dashed"
+                )}
+                style={{
+                    position: 'relative',
+                    overflow: 'auto', // Allow scrolling
+                    backgroundImage: 'radial-gradient(#e5e5e5 1px, transparent 1px)', // Optional: Very subtle dot grid
+                    backgroundSize: '24px 24px'
+                }}
+            >
+                {blocks.length > 0 ? (
+                    blocks.map((block: Block) => (
+                        <BlockRenderer
+                            block={block}
+                            key={block.id}
+                            updateBlockProps={updateBlockProps}
+                            updateBlockPosition={updateBlockPosition}
+                            updateBlockSize={updateBlockSize}
+                            deleteBlock={deleteBlock}
+                            uploadImage={uploadImage}
+                        />
+                    ))
+                ) : (
+                    // Empty State
+                    <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                        <div className={`text-center py-24 px-12 border border-dashed transition-colors duration-300 ${isOver ? 'border-neutral-900' : 'border-neutral-300'}`}>
+                            <p className="text-sm font-bold uppercase tracking-widest text-neutral-900">
+                                Canvas Empty
+                            </p>
+                            <p className="text-xs text-neutral-500 mt-2">
+                                Drag blocks here to initialize
+                            </p>
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
+            </div>
         </div>
     );
 }

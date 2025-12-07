@@ -11,5 +11,6 @@ export const CREATOR_API_ENDPOINTS = {
   CREATE_LEAD: "/api/creator/save-lead",
   GENERATE_URL : "/api/creator/generate-url",
   FETCH_LEADS : "/api/creator/fetch-leads",
-  DELETE_LEAD : "/api/creator/delete-leads"
+  DELETE_LEAD : "/api/creator/delete-leads",
+  TRACK_VISIT : "/api/creator/track-visit"
 } as const;

@@ -100,7 +100,7 @@ function ProposalsClient() {
                 <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Your Proposals</h1>
                 <Button
                     onClick={() => setisDialogOpen(true)}
-                    className="flex items-center gap-2 border border-zinc-700 hover:bg-zinc-800 transition-colors"
+                    className="flex items-center gap-2 border border-zinc-700"
                 >
                     <Plus size={18} /> New Proposal
                 </Button>
@@ -192,14 +192,14 @@ function ProposalsClient() {
 
                         <DialogFooter className="mt-6 flex justify-end gap-2">
                             <DialogClose asChild>
-                                <Button type="button" variant="outline" className="border-zinc-700 text-black">
+                                <Button type="button" variant="outline" className="py-4">
                                     Cancel
                                 </Button>
                             </DialogClose>
                             <Button
                                 type="submit"
                                 disabled={isProposalCreatedLoadind}
-                                className="bg-zinc-800 hover:bg-zinc-700"
+                                
                             >
                                 {isProposalCreatedLoadind ? "Please wait..." : "Create"}
                             </Button>
