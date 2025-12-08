@@ -17,7 +17,7 @@ import {
     arrayMove,
     sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import { X } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import KanbanColumn from './kanbanColoumn';
 import { useLeads } from '@/features/Leads/hooks/useLeads';
 import { LeadsDataForDashboard } from '@/types/branding';
@@ -27,6 +27,16 @@ import brandingService from '@/lib/api/brandingService';
 import { useAppSelector } from '@/lib/store/hooks';
 import { ChartAreaInteractive } from '../ui/chart-area-interactive';
 import { LeadVisitsChart } from '../ui/leads-visit';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogFooter,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
 
 // Types
 interface Task {
@@ -57,7 +67,6 @@ const COLUMN_DEFINITIONS: ColoumDefinations[] = [
     { id: 'won', title: 'Won', color: 'bg-green-500' },
 ];
 
-// Add Task Modal Component
 const AddTaskModal = ({
     isOpen,
     onClose,
@@ -79,6 +88,17 @@ const AddTaskModal = ({
     const [mobileNumber, setmobileNumber] = useState("");
     const [note, setnote] = useState("");
 
+    // Reset form when modal opens/closes
+    useEffect(() => {
+        if(!isOpen) {
+             setName("");
+             setcompanyName("");
+             setEmail("");
+             setmobileNumber("");
+             setnote("");
+        }
+    }, [isOpen]);
+
     const AddTask = async (e: any) => {
         const formData = {
             name,
@@ -91,110 +111,100 @@ const AddTaskModal = ({
         await handleSubmit(e, formData)
     }
 
-    if (!isOpen) return null;
+    // Handle Open Change for Shadcn
+    const handleOpenChange = (open: boolean) => {
+        if (!open) onClose();
+    }
 
     return (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50">
-            <div className="bg-zinc-900 border border-zinc-700 text-white rounded-2xl p-6 w-96 shadow-2xl">
-                <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-lg font-semibold">Add Task to {columnTitle}</h3>
-                    <button onClick={onClose} className="text-zinc-400 hover:text-white transition">
-                        <X size={20} />
-                    </button>
-                </div>
-
-                <form onSubmit={AddTask} className="space-y-4">
-                    <div>
-                        <label htmlFor="name" className="block text-sm font-medium text-zinc-300 mb-1">
-                            Name
-                        </label>
-                        <input
+        <Dialog open={isOpen} onOpenChange={handleOpenChange}>
+            <DialogContent className="bg-zinc-900 border-zinc-700 text-white sm:max-w-[425px]">
+                <DialogHeader>
+                    <DialogTitle>Add Task to {columnTitle}</DialogTitle>
+                </DialogHeader>
+                
+                <form onSubmit={AddTask} className="grid gap-4 py-2">
+                    <div className="grid gap-2">
+                        <Label htmlFor="name" className="text-zinc-300">Name</Label>
+                        <Input
                             id="name"
-                            type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Name"
-                            autoFocus
                             required
                         />
                     </div>
 
-                    <div>
-                        <label htmlFor="companyName" className="block text-sm font-medium text-zinc-300 mb-1">
-                            Company Name
-                        </label>
-                        <input
+                    <div className="grid gap-2">
+                        <Label htmlFor="companyName" className="text-zinc-300">Company Name</Label>
+                        <Input
                             id="companyName"
                             value={companyName}
                             onChange={(e) => setcompanyName(e.target.value)}
-                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Company Name"
                             required
                         />
                     </div>
-                    <div>
-                        <label htmlFor="email" className="block text-sm font-medium text-zinc-300 mb-1">
-                            Email
-                        </label>
-                        <input
+
+                    <div className="grid gap-2">
+                        <Label htmlFor="email" className="text-zinc-300">Email</Label>
+                        <Input
                             id="email"
-                            type="text"
+                            type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Email"
                             required
                         />
                     </div>
 
-                    <div>
-                        <label htmlFor="mobileNumber" className="block text-sm font-medium text-zinc-300 mb-1">
-                            Mobile Number
-                        </label>
-                        <input
+                    <div className="grid gap-2">
+                        <Label htmlFor="mobileNumber" className="text-zinc-300">Mobile Number</Label>
+                        <Input
                             id="mobileNumber"
                             value={mobileNumber}
                             onChange={(e) => setmobileNumber(e.target.value)}
-                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Mobile Number"
                             required
                         />
                     </div>
 
-                    <div>
-                        <label htmlFor="note" className="block text-sm font-medium text-zinc-300 mb-1">
-                            Note
-                        </label>
-                        <input
+                    <div className="grid gap-2">
+                        <Label htmlFor="note" className="text-zinc-300">Note</Label>
+                        <Input
                             id="note"
                             value={note}
                             onChange={(e) => setnote(e.target.value)}
-                            className="w-full border border-zinc-700 bg-zinc-800 text-white rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Note"
                             required
                         />
                     </div>
 
-                    <div className="flex justify-end space-x-3 pt-2">
-                        <button
-                            type="button"
+                    <DialogFooter className="mt-4">
+                        <Button 
+                            type="button" 
+                            variant="outline" 
                             onClick={onClose}
-                            className="px-4 py-2 text-zinc-300 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition"
+                            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
                         >
                             Cancel
-                        </button>
-                        <button
-                            type="submit"
+                        </Button>
+                        <Button 
+                            type="submit" 
                             disabled={isLoading}
-                            className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg disabled:opacity-50"
                         >
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                             Add Task
-                        </button>
-                    </div>
+                        </Button>
+                    </DialogFooter>
                 </form>
-            </div>
-        </div>
+            </DialogContent>
+        </Dialog>
     );
 };
 
@@ -478,8 +488,8 @@ const KanbanBoard = () => {
 
     if (loadind) {
         return (
-            <div className="w-full min-h-screen flex items-center justify-center">
-                <div className="text-white text-xl">Loading leads...</div>
+            <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+                <Loader2 className="animate-spin mr-2" /> Loading Leads...
             </div>
         );
     }
@@ -494,12 +504,12 @@ const KanbanBoard = () => {
 
     return (
         <div className="w-full min-h-screen flex flex-col">
-            <div className="mb-6">
+            {/* <div className="mb-6">
                 <h1 className="text-3xl font-bold text-white">Dashboard</h1>
                 <p className="text-gray-300 mt-1">
                     Track your leads through the sales process ({leads?.length || 0} total leads)
                 </p>
-            </div>
+            </div> */}
 
             <DndContext
                 sensors={sensors}
@@ -527,7 +537,7 @@ const KanbanBoard = () => {
                 </div>
             </DndContext>
 
-            <LeadVisitsChart username={username || ""}/>
+            <LeadVisitsChart username={username || ""} />
 
             <LeadsDetails
                 selectedLead={selectedLead}

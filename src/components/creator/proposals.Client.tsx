@@ -141,7 +141,7 @@ function ProposalsClient() {
                                         <MenubarContent>
                                             <MenubarItem onClick={()=> handleCreateSharableLink(proposal.id)}>Share</MenubarItem>
                                             <MenubarSeparator />
-                                            <MenubarItem>Print</MenubarItem>
+                                            <MenubarItem  onClick={() => handleDeleteProposal(proposal.id)}>{isProposalDeletedLoading ? <Loader2 className="animate-spin" /> : "Delete" }</MenubarItem>
                                         </MenubarContent>
                                     </MenubarMenu>
                                 </Menubar>

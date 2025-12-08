@@ -2,6 +2,7 @@
 import { useAppSelector } from '@/lib/store/hooks'
 import Link from 'next/link'
 import React, { useState } from 'react'
+import { Header } from './header'
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)

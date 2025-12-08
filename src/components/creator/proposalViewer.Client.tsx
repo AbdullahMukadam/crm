@@ -1,17 +1,58 @@
 "use client"
 
 import { useProposal } from '@/hooks/useProposal'
-import React from 'react'
+import React, { useCallback, useState } from 'react'
 import { BlockRenderer } from './blockRenderer'
 import { Loader2, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Block } from '@/types/proposal'
+import { toast } from 'sonner'
+import brandingService from '@/lib/api/brandingService'
+import proposalService from '@/lib/api/proposalService'
 
 function ProposalViewerClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
+    const [isProposalLoading, setisProposalLoading] = useState(false)
 
     // Dummy functions to disable editing
     const noop = () => { };
+
+
+    const handleAcceptProposal = useCallback(async (status: string) => {
+        try {
+            setisProposalLoading(true)
+            const data = {
+                proposalId,
+                status
+            }
+            const response = await proposalService.updateProposalStatus(data)
+            if (response.success) {
+                toast.success("Proposal Accepted Successfully")
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to Accept Proposal")
+        } finally {
+            setisProposalLoading(false)
+        }
+    }, [])
+
+    const handleRejectProposal = useCallback(async (status : string) => {
+        try {
+            setisProposalLoading(true)
+            const data = {
+                proposalId,
+                status
+            }
+            const response = await proposalService.updateProposalStatus(data)
+            if (response.success) {
+                toast.success("Proposal Rejected Successfully")
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Failed to Reject Proposal")
+        } finally {
+            setisProposalLoading(false)
+        }
+    }, [])
 
     if (isLoading) {
         return (
@@ -80,7 +121,7 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
             {/* Moved outside the document container to span full width */}
             <div className="fixed bottom-0 left-0 w-full border-t border-zinc-800 bg-zinc-950/80 backdrop-blur-md px-6 py-4 z-50">
                 <div className="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
-                    
+
                     <div className="text-zinc-400 text-xs sm:text-sm text-center sm:text-left">
                         By accepting, you confirm you have read the proposal above.
                     </div>
@@ -89,18 +130,20 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
                         <Button
                             variant="outline"
                             className="flex-1 sm:flex-none border-zinc-800 bg-transparent hover:bg-zinc-900 text-zinc-400 hover:text-white transition-colors"
-                            onClick={() => console.log("Rejected")}
+                            onClick={() => handleRejectProposal("DECLINED")}
+                            disabled={isProposalLoading}
                         >
                             <X className="w-4 h-4 mr-2" />
-                            Reject
+                            {isProposalLoading ? "Please Wait" : "Reject"}
                         </Button>
 
                         <Button
                             className="flex-1 sm:flex-none bg-white text-black hover:bg-zinc-200 border-none"
-                            onClick={() => console.log("Accepted")}
+                            onClick={() => handleAcceptProposal("ACCEPTED")}
+                            disabled={isProposalLoading}
                         >
                             <Check className="w-4 h-4 mr-2" />
-                            Accept Proposal
+                            {isProposalLoading ? "Please Wait" : "Accept Proposal"}
                         </Button>
                     </div>
                 </div>

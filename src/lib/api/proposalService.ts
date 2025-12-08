@@ -31,10 +31,17 @@ class ProposalService {
         })
     }
 
-    async deleteProposal(proposalId: string) : Promise<APIResponse> {
+    async deleteProposal(proposalId: string): Promise<APIResponse> {
         return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.DELETE_PROPOSAL, {
             method: "POST",
             body: JSON.stringify(proposalId)
+        })
+    }
+
+    async updateProposalStatus(data: { proposalId: string, status: string }): Promise<APIResponse> {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.UPDATE_PROPOSAL_STATUS, {
+            method: "POST",
+            body: JSON.stringify(data)
         })
     }
 }

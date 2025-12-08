@@ -5,6 +5,7 @@ import { Sidebar, MobileSidebar } from '@/components/ui/sidebar';
 import { CreatorSidebarItems } from '@/config/sidebarConfig';
 import { useAppSelector } from '@/lib/store/hooks';
 import { NavItem } from '@/types/ui';
+import { Header } from '@/components/header';
 
 
 export default function DashboardLayout({
@@ -66,6 +67,7 @@ export default function DashboardLayout({
                 </label>
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto overflow-x-hidden">
+                    <Header />
                     {children}
                 </main>
             </div>
