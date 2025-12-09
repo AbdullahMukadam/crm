@@ -1,3 +1,4 @@
+import { createNotification } from "@/lib/createNotifications";
 import { verifyUser } from "@/lib/middleware/verify-user";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
@@ -31,6 +32,16 @@ export async function POST(request: NextRequest) {
                 message: "Error Occured"
             })
         }
+
+
+        const ProposalStatus = status === "ACCEPTED" ? "PROPOSAL_ACCEPTED" : "PROPOSAL_DECLINED"
+
+        await createNotification({
+            userId: response.creatorId,
+            title: `Proposal ${status === "ACCEPTED" ? "Accepted!" : "Rejected"}`,
+            message: `Your proposal "${response.title}" ${status === "ACCEPTED" ? "has been Accepted!" : "has been Rejected"}`,
+            type: ProposalStatus,
+        });
 
         return NextResponse.json({
             success: true,

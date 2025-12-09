@@ -54,6 +54,13 @@ class BrandingService {
         })
     }
 
+    async searchLeads(data: { query: string }): Promise<APIResponse<LeadsDataForDashboard[] | []>> {
+        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.SEARCH_LEADS, {
+            method: "POST",
+            body: JSON.stringify(data)
+        })
+    }
+
 }
 
 const brandingService = new BrandingService()

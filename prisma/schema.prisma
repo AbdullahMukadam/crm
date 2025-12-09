@@ -8,21 +8,22 @@ datasource db {
 }
 
 model User {
-  id              String     @id @default(cuid())
-  username        String     @unique
-  email           String     @unique
+  id              String         @id @default(cuid())
+  username        String         @unique
+  email           String         @unique
   password        String
   avatarUrl       String?
-  createdAt       DateTime   @default(now())
-  onboarded       Boolean    @default(false)
+  createdAt       DateTime       @default(now())
+  onboarded       Boolean        @default(false)
   role            Role?
-  updatedAt       DateTime   @default(now()) @updatedAt
+  updatedAt       DateTime       @default(now()) @updatedAt
   invoices        Invoice[]
   leads           Lead[]
-  clientProjects  Project[]  @relation("ClientProjects")
-  createdProjects Project[]  @relation("CreatorProjects")
+  clientProjects  Project[]      @relation("ClientProjects")
+  createdProjects Project[]      @relation("CreatorProjects")
   proposals       Proposal[]
-  team            Team[]     @relation("TeamToUser")
+  team            Team[]         @relation("TeamToUser")
+  Notification    Notification[]
 }
 
 model Team {
@@ -115,11 +116,11 @@ model Lead {
 
 model FormVisit {
   id         String   @id @default(cuid())
-  username   String   
-  deviceType String   
+  username   String
+  deviceType String
   visitDate  DateTime @default(now())
   createdAt  DateTime @default(now())
-  
+
   @@index([username, visitDate])
   @@index([username, deviceType])
 }
@@ -131,6 +132,28 @@ model Branding {
   username   String   @default("")
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+}
+
+model Notification {
+  id     String @id @default(cuid())
+  userId String 
+  user   User   @relation(fields: [userId], references: [id])
+
+  title   String
+  message String
+  type    NotificationType
+  isRead  Boolean          @default(false)
+  link    String? // URL to redirect to (e.g., /proposals/123)
+
+  createdAt DateTime @default(now())
+}
+
+enum NotificationType {
+  PROPOSAL_ACCEPTED
+  PROPOSAL_DECLINED
+  NEW_LEAD
+  PAYMENT_RECEIVED
+  SYSTEM
 }
 
 enum Role {
