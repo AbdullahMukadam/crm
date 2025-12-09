@@ -37,13 +37,18 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        if (response) {
+        if (!response) {
             return NextResponse.json({
-                success: true,
-                message: 'Lead Created Successfully',
-                data: response
+                success: false,
+                message: 'Error Occured',
             })
         }
+
+        return NextResponse.json({
+            success: true,
+            message: 'Lead Created Successfully',
+            data: response
+        })
 
     } catch (error) {
         return NextResponse.json({

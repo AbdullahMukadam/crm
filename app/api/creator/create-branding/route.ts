@@ -30,13 +30,18 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        if (updateBranding) {
+        if (!updateBranding) {
             return NextResponse.json({
-                success: true,
-                message: 'Branding Created sucessfully',
-                data: updateBranding
+                success: false,
+                message: 'Unknown Error Occured'
             })
         }
+
+        return NextResponse.json({
+            success: true,
+            message: 'Branding Created sucessfully',
+            data: updateBranding
+        })
 
     } catch (error) {
         return NextResponse.json({

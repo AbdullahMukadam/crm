@@ -4,10 +4,10 @@ import { FetchClient } from '@/lib/api/fetchClient';
 import React from 'react';
 
 interface PublicLeadPageProps {
-    params: {
+    params: Promise<{
         username: string;
-    };
-    searchParams: { [key: string]: string | undefined };
+    }>
+    searchParams: Promise<{ [key: string]: string | undefined }>;
 }
 
 async function LeadCapturePage({ params, searchParams }: PublicLeadPageProps) {

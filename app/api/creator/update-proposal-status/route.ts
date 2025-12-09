@@ -25,12 +25,17 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        if (response) {
+        if (!response) {
             return NextResponse.json({
-                success: true,
-                message: "Proposal Status Updated Successfully"
+                success: false,
+                message: "Error Occured"
             })
         }
+
+        return NextResponse.json({
+            success: true,
+            message: "Proposal Status Updated Successfully"
+        })
     } catch (error) {
         return NextResponse.json({
             success: false,

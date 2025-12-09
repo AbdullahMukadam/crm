@@ -1,7 +1,7 @@
 import ProposalBuilderClient from '@/components/creator/proposalBuilder.Client'
 import React from 'react'
 
-async function ProposalBuilder({ params }: { params: { ['proposal-id']: string } }) {
+async function ProposalBuilder({ params }: { params: Promise<{ ['proposal-id']: string }> }) {
   const data = await params
   const proposalId = data['proposal-id']
   return (

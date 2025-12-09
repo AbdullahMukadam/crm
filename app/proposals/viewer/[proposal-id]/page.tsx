@@ -2,7 +2,7 @@
 import ProposalViewerClient from '@/components/creator/proposalViewer.Client'
 import React from 'react'
 
-async function ProposalViewer({ params }: { params: { ['proposal-id']: string } }) {
+async function ProposalViewer({ params }: { params: Promise< { ['proposal-id']: string }> }) {
   const data = await params
   const proposalId = data['proposal-id']
   return (

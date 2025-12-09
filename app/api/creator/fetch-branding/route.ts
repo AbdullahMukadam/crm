@@ -33,13 +33,19 @@ export async function GET(request: NextRequest) {
             updatedAt: response[0].updatedAt,
         }
 
-        if (response) {
+        if (!response) {
             return NextResponse.json({
-                success: true,
-                message: "data fetch successfully",
-                data: data
+                success: false,
+                message: "Error Occured",
             })
         }
+
+        return NextResponse.json({
+            success: true,
+            message: "data fetch successfully",
+            data: data
+        })
+
 
     } catch (error) {
         return NextResponse.json({

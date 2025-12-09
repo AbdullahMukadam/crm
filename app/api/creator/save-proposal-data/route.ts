@@ -30,13 +30,17 @@ export async function POST(request: NextRequest) {
             }
         })
 
-        if (proposal) {
+        if (!proposal) {
             return NextResponse.json({
-                success: true,
-                message: "Data received"
+                success: false,
+                message: "Error Occured"
             })
         }
 
+        return NextResponse.json({
+            success: true,
+            message: "Data received"
+        })
     } catch (error) {
         return NextResponse.json({
             success: false,

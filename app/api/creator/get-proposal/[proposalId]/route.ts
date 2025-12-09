@@ -33,15 +33,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
             }
         })
 
-        if (proposal) {
+        if (!proposal) {
             return NextResponse.json({
-                success: true,
-                message: "Successfully fetched the data",
-                data: {
-                    proposal: proposal
-                }
+                success: false,
+                message: "Error Occured",
             })
         }
+
+        return NextResponse.json({
+            success: true,
+            message: "Successfully fetched the data",
+            data: {
+                proposal: proposal
+            }
+        })
 
     } catch (error) {
         return NextResponse.json({
