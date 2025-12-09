@@ -2,13 +2,16 @@
 
 import { useProposal } from '@/hooks/useProposal'
 import React, { useCallback, useState } from 'react'
-import { BlockRenderer } from './blockRenderer'
 import { Loader2, Check, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Block } from '@/types/proposal'
 import { toast } from 'sonner'
-import brandingService from '@/lib/api/brandingService'
 import proposalService from '@/lib/api/proposalService'
+import dynamic from 'next/dynamic'
+
+const BlockRenderer = dynamic(() => import('./blockRenderer').then(mod => mod.BlockRenderer), {
+    ssr: false
+})
 
 function ProposalViewerClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
@@ -36,7 +39,7 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
         }
     }, [])
 
-    const handleRejectProposal = useCallback(async (status : string) => {
+    const handleRejectProposal = useCallback(async (status: string) => {
         try {
             setisProposalLoading(true)
             const data = {

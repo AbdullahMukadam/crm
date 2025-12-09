@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useCallback, useEffect, useRef, useState } from 'react';
+import dynamic from 'next/dynamic';
 import {
     DndContext,
     DragEndEvent,
@@ -15,12 +16,24 @@ import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSo
 import { nanoid } from 'nanoid';
 import { Block } from '@/types/proposal';
 import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig';
-import ProposalSidebar from './proposalSidebar';
-import ProposalCanvas from './proposalCanvas';
 import { useProposal } from '@/hooks/useProposal';
 import { Link, Loader2 } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
+
+const ProposalSidebar = dynamic(() => import('./proposalSidebar'), {
+    ssr: false,
+    loading: () => <div className="w-[300px] h-full bg-zinc-900 border-r border-zinc-800" />
+  });
+  
+  const ProposalCanvas = dynamic(() => import('./proposalCanvas'), {
+    ssr: false,
+    loading: () => (
+      <div className="w-full h-full flex items-center justify-center text-zinc-500">
+        <Loader2 className="animate-spin h-8 w-8" />
+      </div>
+    )
+  });
 
 function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
