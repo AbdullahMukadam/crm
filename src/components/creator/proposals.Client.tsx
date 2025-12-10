@@ -2,10 +2,22 @@
 
 import { FetchProposals } from "@/lib/store/features/proposalsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
-import React, { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Plus, Loader2, Trash2, EllipsisVertical } from "lucide-react";
+import { Plus, Loader2, Trash2, Search, FileInput, MoreHorizontal, Copy, Share2, ExternalLink, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown, CheckCircle2, XCircle, Clock, Send } from "lucide-react";
 import { useRouter } from "next/navigation";
+import {
+    ColumnDef,
+    ColumnFiltersState,
+    flexRender,
+    getCoreRowModel,
+    getFilteredRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    SortingState,
+    useReactTable,
+    VisibilityState,
+} from "@tanstack/react-table";
 import {
     Dialog,
     DialogClose,
@@ -16,20 +28,201 @@ import {
     DialogTitle,
 } from "../ui/dialog";
 import {
-    Menubar,
-    MenubarContent,
-    MenubarItem,
-    MenubarMenu,
-    MenubarSeparator,
-    MenubarShortcut,
-    MenubarTrigger,
-} from "@/components/ui/menubar"
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuLabel,
+    DropdownMenuSeparator,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+} from "@/components/ui/table";
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
 import proposalService from "@/lib/api/proposalService";
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "../ui/card";
-import Link from "next/link";
+import { Proposal, ProposalStatus } from "@/types/proposal";
+import { Checkbox } from "../ui/checkbox";
+import { cn } from "@/lib/utils";
+
+const statusStyles: Record<string, {
+    label: string;
+    icon: React.ElementType;
+    color: string;
+    borderColor: string;
+    bgColor: string;
+}> = {
+    accepted: {
+        label: "Accepted",
+        icon: CheckCircle2,
+        color: "text-emerald-500",
+        borderColor: "border-emerald-500/20", // Low opacity border
+        bgColor: "bg-emerald-500/10",         // Very low opacity background
+    },
+    rejected: {
+        label: "Rejected",
+        icon: XCircle,
+        color: "text-red-500",
+        borderColor: "border-red-500/20",
+        bgColor: "bg-red-500/10",
+    },
+    draft: {
+        label: "Draft",
+        icon: Clock,
+        color: "text-orange-500",
+        borderColor: "border-orange-500/20",
+        bgColor: "bg-orange-500/10",
+    },
+    sent: {
+        label: "Sent",
+        icon: Send, // or Loader2 for 'processing' look
+        color: "text-blue-500",
+        borderColor: "border-blue-500/20",
+        bgColor: "bg-blue-500/10",
+    },
+};
+
+const createColumns = (
+    onDelete: (id: string) => void,
+    onShare: (id: string) => void,
+    onOpen: (id: string) => void,
+    isDeleting: boolean
+): ColumnDef<Proposal>[] => [
+        {
+            id: "select",
+            header: ({ table }) => (
+                <Checkbox
+                    checked={
+                        table.getIsAllPageRowsSelected() ||
+                        (table.getIsSomePageRowsSelected() && "indeterminate")
+                    }
+                    onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
+                    aria-label="Select all"
+                    className="translate-y-[2px] border-[0.1px] border-zinc-600"
+                />
+            ),
+            cell: ({ row }) => (
+                <Checkbox
+                    checked={row.getIsSelected()}
+                    onCheckedChange={(value) => row.toggleSelected(!!value)}
+                    aria-label="Select row"
+                    className="translate-y-[2px] border-[0.1px] border-zinc-600"
+                />
+            ),
+            enableSorting: false,
+            enableHiding: false,
+        },
+        {
+            accessorKey: "id",
+            header: "Proposal ID",
+            cell: ({ row }) => (
+                <span className="text-sm font-medium text-muted-foreground">
+                    {row.getValue("id")}
+                </span>
+            ),
+        },
+        {
+            accessorKey: "title",
+            header: "Title",
+            cell: ({ row }) => (
+                <span className="text-sm font-medium">{row.getValue("title")}</span>
+            ),
+        },
+        {
+            accessorKey: "createdAt",
+            header: "Created Date",
+            cell: ({ row }) => {
+                const date = new Date(row.getValue("createdAt"));
+                return (
+                    <span className="text-sm text-muted-foreground">
+                        {date.toLocaleDateString("en-US", {
+                            month: "short",
+                            day: "numeric",
+                            year: "numeric",
+                        })}
+                    </span>
+                );
+            },
+        },
+        {
+            accessorKey: "status",
+            header: "Status",
+            cell: ({ row }) => {
+                const data : string = row.getValue("status")
+                const config = statusStyles[data.toLowerCase()] || statusStyles.draft;
+                const Icon = config.icon;
+
+                return (
+                    <div className="flex items-center">
+                        <span
+                            className={`
+              flex items-center gap-1.5 
+              px-2.5 py-0.5 rounded-full text-xs font-medium border
+              ${config.color} 
+              ${config.borderColor} 
+              ${config.bgColor}
+            `}
+                        >
+                            {/* The Icon */}
+                            <Icon className="h-3.5 w-3.5" />
+
+                            {/* The Text */}
+                            <span className="capitalize">{config.label}</span>
+                        </span>
+                    </div>
+                );
+            },
+        },
+        {
+            id: "actions",
+            enableHiding: false,
+            cell: ({ row }) => {
+                const proposal = row.original;
+                return (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Open menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                            <DropdownMenuItem
+                                onClick={() => navigator.clipboard.writeText(proposal.id)}
+                            >
+                                <Copy className="mr-2 h-4 w-4" />
+                                Copy Proposal ID
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                                onClick={() => onShare(proposal.id)}
+                            >
+                                <Share2 className="mr-2 h-4 w-4" />
+                                Share Link
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => onOpen(proposal.id)}>
+                                <ExternalLink className="mr-2 h-4 w-4" />
+                                Open Builder
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-destructive" onClick={() => onDelete(proposal.id)}>
+                                <Trash2 className="mr-2 h-4 w-4" />
+                                {isDeleting ? "deleting" : "Delete"}
+                            </DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                );
+            },
+        },
+    ];
+
 
 function ProposalsClient() {
     const { proposals, isLoading } = useAppSelector((state) => state.proposal);
@@ -37,17 +230,30 @@ function ProposalsClient() {
     const [isDialogOpen, setisDialogOpen] = useState(false);
     const [proposalTitle, setproposalTitle] = useState("");
     const [isProposalCreatedLoadind, setisProposalCreatedLoadind] = useState(false);
-    const [isProposalDeletedLoading, setisProposalDeletedLoading] = useState(false)
+    const [isProposalDeletedLoading, setisProposalDeletedLoading] = useState(false);
+    const [searchQuery, setSearchQuery] = useState("");
     const dispatch = useAppDispatch();
     const router = useRouter();
+
+    const [sorting, setSorting] = useState<SortingState>([]);
+    const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+    const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
+    const [rowSelection, setRowSelection] = useState({});
 
     useEffect(() => {
         if (proposals.length === 0) dispatch(FetchProposals());
     }, []);
 
+    const filteredProposals = React.useMemo(() => {
+        return proposals.filter((proposal) =>
+            searchQuery === "" ||
+            proposal.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            proposal.title.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [proposals, searchQuery]);
+
     const createProposal = useCallback(
-        async (e: FormEvent<HTMLFormElement>) => {
-            e.preventDefault();
+        async () => {
             setisProposalCreatedLoadind(true);
 
             if (!proposalTitle || !id) {
@@ -100,6 +306,44 @@ function ProposalsClient() {
         toast.success("Link Coppied Successfully")
     }, [])
 
+    const handleOpenBuilder = useCallback((proposalId: string) => {
+        router.push(`/proposals/builder/${proposalId}`);
+    }, []);
+
+    const columns = React.useMemo(
+        () => createColumns(
+            handleDeleteProposal,
+            handleCreateSharableLink,
+            handleOpenBuilder,
+            isProposalDeletedLoading
+        ),
+        [handleDeleteProposal, handleCreateSharableLink, handleOpenBuilder, isProposalDeletedLoading]
+    );
+
+    const table = useReactTable({
+        data: filteredProposals,
+        columns,
+        onSortingChange: setSorting,
+        onColumnFiltersChange: setColumnFilters,
+        getCoreRowModel: getCoreRowModel(),
+        getPaginationRowModel: getPaginationRowModel(),
+        getSortedRowModel: getSortedRowModel(),
+        getFilteredRowModel: getFilteredRowModel(),
+        onColumnVisibilityChange: setColumnVisibility,
+        onRowSelectionChange: setRowSelection,
+        initialState: {
+            pagination: {
+                pageSize: 8,
+            },
+        },
+        state: {
+            sorting,
+            columnFilters,
+            columnVisibility,
+            rowSelection,
+        },
+    });
+
     if (isLoading) {
         return (
             <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
@@ -109,129 +353,258 @@ function ProposalsClient() {
     }
 
     return (
-        <div className="w-full min-h-screen bg-zinc-950 text-zinc-100 p-6 font-brcolage-grotesque">
-            {/* Header */}
-            <div className="flex justify-between items-center mb-8 flex-wrap gap-3">
-                <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Your Proposals</h1>
-                <Button
-                    onClick={() => setisDialogOpen(true)}
-                    className="flex items-center gap-2 border border-zinc-700"
-                >
-                    <Plus size={18} /> New Proposal
-                </Button>
-            </div>
-
-            {/* Proposals List */}
-            {proposals.length > 0 ? (
-                <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                    {proposals.map((proposal) => (
-                        <Card
-                            key={proposal.id}
-                            className="bg-zinc-900 border border-zinc-800 hover:border-zinc-700 hover:shadow-md transition-all duration-200 group"
-                        >
-                            <CardHeader className="pb-2 flex items-center justify-between">
-                                <CardTitle className="text-lg font-medium truncate text-white">
-                                    {proposal.title}
-                                </CardTitle>
-                                <Menubar className="bg-transparent border-none p-0">
-                                    <MenubarMenu>
-                                        <MenubarTrigger>
-                                            <EllipsisVertical size={16} color="white" />
-                                        </MenubarTrigger>
-                                        <MenubarContent>
-                                            <MenubarItem onClick={()=> handleCreateSharableLink(proposal.id)}>Share</MenubarItem>
-                                            <MenubarSeparator />
-                                            <MenubarItem  onClick={() => handleDeleteProposal(proposal.id)}>{isProposalDeletedLoading ? <Loader2 className="animate-spin" /> : "Delete" }</MenubarItem>
-                                        </MenubarContent>
-                                    </MenubarMenu>
-                                </Menubar>
-                            </CardHeader>
-                            <CardContent className="text-sm text-zinc-400 space-y-1">
-                                <p>ID: {proposal.id}</p>
-                                <p>
-                                    Created:{" "}
-                                    {proposal.createdAt
-                                        ? new Date(proposal.createdAt).toLocaleDateString()
-                                        : "N/A"}
-                                </p>
-                            </CardContent>
-                            <CardFooter className="pt-3 flex justify-between items-center border-t border-zinc-800">
-                                <Link
-                                    href={`/proposals/builder/${proposal.id}`}
-                                    className="text-sm text-zinc-300 hover:text-white transition-colors"
-                                >
-                                    Open
-                                </Link>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    className="text-zinc-400 hover:text-red-500 transition-colors"
-                                    onClick={() => handleDeleteProposal(proposal.id)}
-                                >
-                                    {isProposalDeletedLoading ? <Loader2 className="animate-spin" /> : <Trash2 size={16} />}
-                                </Button>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center text-center mt-20">
-                    <h2 className="text-xl font-medium text-zinc-200">No Proposals Found</h2>
-                    <p className="text-zinc-400 mt-2 text-sm">
-                        You haven’t created any proposals yet.
-                    </p>
-                    <Button
-                        onClick={() => setisDialogOpen(true)}
-                        className="mt-5 flex items-center gap-2 border border-zinc-700 hover:bg-zinc-800"
-                    >
-                        <Plus size={18} /> Create Proposal
+        <div className="w-full min-h-screen bg-background p-4 sm:p-6 lg:p-8">
+            <div className="max-w-7xl mx-auto space-y-6">
+                {/* Header */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div>
+                        <h1 className="text-3xl font-semibold tracking-tight">Proposals</h1>
+                        <p className="text-sm text-muted-foreground mt-1">
+                            Manage and organize your proposals
+                        </p>
+                    </div>
+                    <Button onClick={() => setisDialogOpen(true)} className="gap-2">
+                        <Plus size={18} />
+                        New Proposal
                     </Button>
                 </div>
-            )}
+
+                {/* Table */}
+                <div className="rounded-xl border border-border bg-card">
+                    {/* Filters Bar */}
+                    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 border-b border-border p-4">
+                        <div className="flex flex-wrap items-center gap-2">
+                            <div className="relative w-full md:w-auto">
+                                <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                    placeholder="Search proposals..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    className="pl-8 h-9 w-full md:w-[700px] border border-zinc-800"
+                                />
+                            </div>
+                        </div>
+
+                        <Button variant="outline" size="sm" className="h-9 gap-2">
+                            <FileInput className="size-4" />
+                            Export
+                        </Button>
+                    </div>
+
+                    {/* Table Content */}
+                    <div className="overflow-x-auto">
+                        <Table>
+                            <TableHeader>
+                                {table.getHeaderGroups().map((headerGroup) => (
+                                    <TableRow key={headerGroup.id} className="bg-muted/50">
+                                        {headerGroup.headers.map((header) => (
+                                            <TableHead
+                                                key={header.id}
+                                                className="text-muted-foreground font-medium bg-[#1E1E1E]"
+                                            >
+                                                {header.isPlaceholder
+                                                    ? null
+                                                    : flexRender(
+                                                        header.column.columnDef.header,
+                                                        header.getContext()
+                                                    )}
+                                            </TableHead>
+                                        ))}
+                                    </TableRow>
+                                ))}
+                            </TableHeader>
+                            <TableBody>
+                                {table.getRowModel().rows?.length ? (
+                                    table.getRowModel().rows.map((row) => (
+                                        <TableRow
+                                            key={row.id}
+                                            data-state={row.getIsSelected() && "selected"}
+                                        >
+                                            {row.getVisibleCells().map((cell) => (
+                                                <TableCell key={cell.id}>
+                                                    {flexRender(
+                                                        cell.column.columnDef.cell,
+                                                        cell.getContext()
+                                                    )}
+                                                </TableCell>
+                                            ))}
+                                        </TableRow>
+                                    ))
+                                ) : (
+                                    <TableRow>
+                                        <TableCell
+                                            colSpan={columns.length}
+                                            className="h-24 text-center"
+                                        >
+                                            No results.
+                                        </TableCell>
+                                    </TableRow>
+                                )}
+                            </TableBody>
+                        </Table>
+                    </div>
+
+                    {/* Pagination */}
+                    <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border p-4">
+                        <div className="flex items-center gap-4">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => table.setPageIndex(0)}
+                                disabled={!table.getCanPreviousPage()}
+                            >
+                                <ChevronsLeft className="size-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => table.previousPage()}
+                                disabled={!table.getCanPreviousPage()}
+                            >
+                                <ChevronLeft className="size-4" />
+                            </Button>
+
+                            <div className="flex items-center gap-1">
+                                {Array.from(
+                                    { length: Math.min(5, table.getPageCount()) },
+                                    (_, i) => {
+                                        const pageIndex = i;
+                                        const isActive =
+                                            table.getState().pagination.pageIndex === pageIndex;
+                                        return (
+                                            <button
+                                                key={i}
+                                                onClick={() => table.setPageIndex(pageIndex)}
+                                                className={cn(
+                                                    "size-8 rounded-lg text-sm font-semibold",
+                                                    isActive
+                                                        ? "bg-muted text-foreground"
+                                                        : "text-foreground hover:bg-muted"
+                                                )}
+                                            >
+                                                {pageIndex + 1}
+                                            </button>
+                                        );
+                                    }
+                                )}
+                                {table.getPageCount() > 5 && (
+                                    <>
+                                        <span className="px-2 text-muted-foreground">...</span>
+                                        <button
+                                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                            className="size-8 rounded-lg text-sm font-semibold text-foreground hover:bg-muted"
+                                        >
+                                            {table.getPageCount()}
+                                        </button>
+                                    </>
+                                )}
+                            </div>
+
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => table.nextPage()}
+                                disabled={!table.getCanNextPage()}
+                            >
+                                <ChevronRight className="size-4" />
+                            </Button>
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                className="size-8"
+                                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
+                                disabled={!table.getCanNextPage()}
+                            >
+                                <ChevronsRight className="size-4" />
+                            </Button>
+                        </div>
+
+                        <div className="flex items-center gap-4">
+                            <span className="text-sm text-muted-foreground">
+                                Showing{" "}
+                                {table.getState().pagination.pageIndex *
+                                    table.getState().pagination.pageSize +
+                                    1}{" "}
+                                to{" "}
+                                {Math.min(
+                                    (table.getState().pagination.pageIndex + 1) *
+                                    table.getState().pagination.pageSize,
+                                    table.getFilteredRowModel().rows.length
+                                )}{" "}
+                                of {table.getFilteredRowModel().rows.length} entries
+                            </span>
+
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="h-8 gap-2">
+                                        Show {table.getState().pagination.pageSize}
+                                        <ChevronDown className="size-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    {[5, 8, 10, 20, 50].map((size) => (
+                                        <DropdownMenuItem
+                                            key={size}
+                                            onClick={() => table.setPageSize(size)}
+                                        >
+                                            Show {size}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {/* Create Proposal Dialog */}
             <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
-                <DialogContent className="sm:max-w-[400px] bg-zinc-900 text-zinc-100 border border-zinc-700">
+                <DialogContent className="sm:max-w-[400px]">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-semibold">
                             Create New Proposal
                         </DialogTitle>
-                        <DialogDescription className="text-zinc-400">
+                        <DialogDescription>
                             Enter a title for your new proposal.
                         </DialogDescription>
                     </DialogHeader>
 
-                    <form onSubmit={createProposal} className="mt-4 space-y-4">
+                    <div className="space-y-4 mt-4">
                         <div className="space-y-2">
                             <Label htmlFor="title">Title</Label>
                             <Input
                                 id="title"
-                                name="title"
                                 placeholder="Enter proposal title"
                                 value={proposalTitle}
-                                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                                    setproposalTitle(e.target.value)
-                                }
-                                required
-                                className="bg-zinc-800 border-zinc-700 text-zinc-100 placeholder:text-zinc-500 focus:ring-zinc-600"
+                                onChange={(e) => setproposalTitle(e.target.value)}
                             />
                         </div>
+                    </div>
 
-                        <DialogFooter className="mt-6 flex justify-end gap-2">
-                            <DialogClose asChild>
-                                <Button type="button" variant="outline" className="py-4">
-                                    Cancel
-                                </Button>
-                            </DialogClose>
-                            <Button
-                                type="submit"
-                                disabled={isProposalCreatedLoadind}
-
-                            >
-                                {isProposalCreatedLoadind ? "Please wait..." : "Create"}
+                    <DialogFooter className="mt-6">
+                        <DialogClose asChild>
+                            <Button type="button" variant="outline">
+                                Cancel
                             </Button>
-                        </DialogFooter>
-                    </form>
+                        </DialogClose>
+                        <Button
+                            type="button"
+                            onClick={createProposal}
+                            disabled={isProposalCreatedLoadind}
+                        >
+                            {isProposalCreatedLoadind ? (
+                                <>
+                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                    Creating...
+                                </>
+                            ) : (
+                                "Create"
+                            )}
+                        </Button>
+                    </DialogFooter>
                 </DialogContent>
             </Dialog>
         </div>

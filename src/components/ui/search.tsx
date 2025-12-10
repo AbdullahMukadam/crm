@@ -83,7 +83,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
             {/* Search Results Dropdown */}
             {shouldShowResults && (
                 // Adjusted Card for Black/Red Theme: Dark background, slight red border/shadow
-                <Card className="absolute mt-2 w-full rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50">
+                <Card className="absolute mt-2 w-full rounded-lg shadow-2xl max-h-96 overflow-y-auto z-50 p-0">
                     <CardContent className="p-0">
                         {isLoading ? (
                             // Loading State

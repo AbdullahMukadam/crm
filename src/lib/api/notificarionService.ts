@@ -10,6 +10,13 @@ class NotificationService {
             method: "GET",
         })
     }
+
+    async markasRead(notificationId : string): Promise<APIResponse> {
+        return FetchClient.makeRequest(NOTIFICATIONS_API_ENDPOINTS.MARK_AS_READ, {
+            method: "POST",
+            body : JSON.stringify(notificationId)
+        })
+    }
 }
 
 const notificationService = new NotificationService()

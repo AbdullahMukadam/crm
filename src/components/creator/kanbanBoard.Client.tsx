@@ -368,42 +368,41 @@ const KanbanBoard = () => {
     }
 
     return (
-        <div className="w-full min-h-screen flex flex-col">
-            {/* <div className="mb-6">
-                <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-                <p className="text-gray-300 mt-1">
-                    Track your leads through the sales process ({leads?.length || 0} total leads)
-                </p>
-            </div> */}
-
-            <DndContext
-                sensors={sensors}
-                collisionDetection={closestCorners}
-                onDragStart={handleDragStart}
-                onDragOver={handleDragOver}
-                onDragEnd={handleDragEnd}
-            >
-                <div className="w-full flex flex-wrap md:flex-nowrap gap-4 overflow-x-auto pb-4 scrollbar-hide">
+        <div className="grid grid-cols-1 w-full h-full gap-6">
+            <div className="w-full min-w-0">
+                <DndContext
+                    sensors={sensors}
+                    collisionDetection={closestCorners}
+                    onDragStart={handleDragStart}
+                    onDragOver={handleDragOver}
+                    onDragEnd={handleDragEnd}
+                >
                     <SortableContext items={columns.map(col => col.id)}>
-                        {columns.map((column) => {
-                            const colDef = COLUMN_DEFINITIONS.find(def => def.id === column.id);
-                            return (
-                                <KanbanColumn
-                                    key={column.id}
-                                    column={column}
-                                    onAddTask={handleAddTask}
-                                    statusColor={colDef?.color}
-                                    setselectedLeadId={setselectedLeadId}
-                                    setselectedLead={setselectedLead}
-                                />
-                            );
-                        })}
+                        <div className="w-full overflow-x-auto pb-4">
+                            <div className="flex gap-4 w-max min-w-full">
+                                {columns.map((column) => {
+                                    const colDef = COLUMN_DEFINITIONS.find(def => def.id === column.id);
+                                    return (
+                                        <div key={column.id} className="w-[320px] shrink-0">
+                                            <KanbanColumn
+                                                column={column}
+                                                onAddTask={handleAddTask}
+                                                statusColor={colDef?.color}
+                                                setselectedLeadId={setselectedLeadId}
+                                                setselectedLead={setselectedLead}
+                                            />
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     </SortableContext>
-                </div>
-            </DndContext>
+                </DndContext>
+            </div>
 
             <LeadVisitsChart username={username || ""} />
 
+            {/* Modals */}
             <LeadsDetails
                 selectedLead={selectedLead}
                 selectedLeadData={selectedLeadData}
@@ -421,6 +420,7 @@ const KanbanBoard = () => {
                 username={username || ""}
             />
         </div>
+
     );
 };
 

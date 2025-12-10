@@ -12,7 +12,7 @@ const roleBasedRoutes: Record<string, string[]> = {
   '/dashboard/client': ['CLIENT'],
   '/portal': ['CLIENT'],
   '/settings': ['ADMIN', 'CREATOR'],
-  '/dashboard': ['ADMIN', 'CREATOR'], 
+  '/dashboard': ['ADMIN', 'CREATOR', 'CLIENT'], 
 };
 
 const homePages: Record<string, string> = {

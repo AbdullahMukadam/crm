@@ -1,8 +1,8 @@
 import { SortableContext, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
-import React from 'react'
+import React from 'react';
 import TaskCard from './TaskCard';
-import { Plus } from 'lucide-react';
+import { Plus, MoreHorizontal } from 'lucide-react';
 
 interface Task {
     id: string;
@@ -14,6 +14,7 @@ interface Column {
     id: string;
     title: string;
     tasks: Task[];
+    icon?: React.ComponentType<{ className?: string }>;
 }
 
 function KanbanColumn({
@@ -22,7 +23,6 @@ function KanbanColumn({
     statusColor,
     setselectedLead,
     setselectedLeadId
-
 }: {
     column: Column;
     onAddTask: (columnId: string) => void;
@@ -51,55 +51,75 @@ function KanbanColumn({
         transition,
     };
 
+    const StatusIcon = column.icon;
 
     return (
         <div
             ref={setNodeRef}
             style={style}
-            className={`
-                bg-zinc-900 border border-zinc-800 rounded-2xl  shadow-sm hover:shadow-md transition-all duration-200  p-4 w-full md:min-w-fit min-h-96
-                ${isDragging ? 'opacity-50' : ''}
-            `}
+            className={`shrink-0 min-w-[300px] flex flex-col h-full ${isDragging ? 'opacity-50' : ''}`}
         >
-            {/* Column Header */}
-            <div
-                {...attributes}
-                {...listeners}
-                className="flex items-center justify-between mb-4 cursor-grab active:cursor-grabbing"
-            >
-                <div className='flex gap-2 items-center'>
-                    <span className={`h-2.5 w-2.5 ${statusColor} rounded-full`}></span>
-                    <h3 className="font-semibold text-gray-200 flex items-center">
-                        {column.title}
-                        <span className="ml-2 text-gray-400 ">
+            <div className="rounded-lg border border-border p-3 bg-muted/70 dark:bg-muted/50 flex flex-col max-h-full">
+                {/* Column Header */}
+                <div
+                    {...attributes}
+                    {...listeners}
+                    className="flex items-center justify-between mb-2 rounded-lg cursor-grab active:cursor-grabbing"
+                >
+                    <div className="flex items-center gap-2">
+                        {StatusIcon ? (
+                            <div className="size-4 flex items-center justify-center">
+                                <StatusIcon className="size-4" />
+                            </div>
+                        ) : (
+                            <span className={`h-2.5 w-2.5 ${statusColor} rounded-full`}></span>
+                        )}
+                        <span className="text-sm font-medium">{column.title}</span>
+                        <span className="text-sm text-muted-foreground">
                             {column.tasks.length}
                         </span>
-                    </h3>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onAddTask(column.id);
+                            }}
+                            className="h-6 w-6 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                        >
+                            <Plus className="size-4" />
+                        </button>
+                        <button className="h-6 w-6 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                            <MoreHorizontal className="size-4" />
+                        </button>
+                    </div>
                 </div>
-                <button
-                    onClick={() => onAddTask(column.id)}
-                    className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-200"
-                >
-                    <Plus size={18} />
-                </button>
-            </div>
 
-            {/* Tasks */}
-            <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
-                <div className="space-y-3 min-h-24">
-                    {column.tasks.map((task) => (
-                        <TaskCard
-                            key={task.id}
-                            task={task}
-                            columnId={column.id}
-                            setselectedLeadId={setselectedLeadId}
-                            setselectedLead={setselectedLead}
-                        />
-                    ))}
-                </div>
-            </SortableContext>
+                {/* Tasks */}
+                <SortableContext items={column.tasks.map(task => task.id)} strategy={verticalListSortingStrategy}>
+                    <div className="flex flex-col gap-3 overflow-y-auto h-full">
+                        {column.tasks.map((task) => (
+                            <TaskCard
+                                key={task.id}
+                                task={task}
+                                columnId={column.id}
+                                setselectedLeadId={setselectedLeadId}
+                                setselectedLead={setselectedLead}
+                            />
+                        ))}
+
+                        <button
+                            onClick={() => onAddTask(column.id)}
+                            className="gap-2 text-xs h-auto py-1 px-0 self-start hover:bg-background rounded-md inline-flex items-center text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                            <Plus className="size-4" />
+                            <span>Add task</span>
+                        </button>
+                    </div>
+                </SortableContext>
+            </div>
         </div>
     );
-};
+}
 
-export default KanbanColumn
+export default KanbanColumn;
