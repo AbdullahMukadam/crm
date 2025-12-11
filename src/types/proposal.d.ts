@@ -18,6 +18,7 @@ export interface Proposal {
 
 export interface CreatePropsalRequest {
     title: string,
+    description : string,
     creatorId: string
 }
 

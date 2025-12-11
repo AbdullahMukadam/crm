@@ -8,6 +8,8 @@ import { Block } from '@/types/proposal'
 import { toast } from 'sonner'
 import proposalService from '@/lib/api/proposalService'
 import dynamic from 'next/dynamic'
+import { useAppDispatch } from '@/lib/store/hooks'
+import { updateProposalStatus } from '@/lib/store/features/proposalsSlice'
 
 const BlockRenderer = dynamic(() => import('./blockRenderer').then(mod => mod.BlockRenderer), {
     ssr: false
@@ -16,6 +18,7 @@ const BlockRenderer = dynamic(() => import('./blockRenderer').then(mod => mod.Bl
 function ProposalViewerClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
     const [isProposalLoading, setisProposalLoading] = useState(false)
+    const dispatch = useAppDispatch()
 
     // Dummy functions to disable editing
     const noop = () => { };
@@ -28,8 +31,9 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
                 proposalId,
                 status
             }
-            const response = await proposalService.updateProposalStatus(data)
-            if (response.success) {
+            const response = await dispatch(updateProposalStatus(data))
+
+            if (updateProposalStatus.fulfilled.match(response)) {
                 toast.success("Proposal Accepted Successfully")
             }
         } catch (error) {
@@ -46,8 +50,9 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
                 proposalId,
                 status
             }
-            const response = await proposalService.updateProposalStatus(data)
-            if (response.success) {
+            const response = await dispatch(updateProposalStatus(data))
+
+            if (updateProposalStatus.fulfilled.match(response)) {
                 toast.success("Proposal Rejected Successfully")
             }
         } catch (error) {

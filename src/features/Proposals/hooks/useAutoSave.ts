@@ -1,4 +1,6 @@
-import proposalService from "@/lib/api/proposalService"
+
+import { saveProposal } from "@/lib/store/features/proposalsSlice"
+import { useAppDispatch } from "@/lib/store/hooks"
 import { Block } from "@/types/proposal"
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
@@ -19,9 +21,9 @@ export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
         proposalIdState: null
     })
     const [error, seterror] = useState("")
+    const dispatch = useAppDispatch()
 
     const saveProposalData = (blocksData: Block[], proposalId: string) => {
-        console.log("data", blocksData, proposalId)
         if (!blocksData || !proposalId) {
             return;
         }
@@ -34,19 +36,20 @@ export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
     }
 
     const hanldeAutoSave = useCallback(async () => {
-        console.log("auto save data", autoSaveData.Blocks, autoSaveData.proposalIdState)
         if (!autoSaveData.Blocks || !autoSaveData.proposalIdState) {
             return;
         }
 
         try {
-            const response = await proposalService.saveProposal({
+            const response = await dispatch(saveProposal({
                 blocks: autoSaveData.Blocks,
                 proposalId: autoSaveData.proposalIdState
-            })
-            if (response.success) {
-                console.log("proposal saved data", autoSaveData.Blocks)
+            }))
+
+            if (saveProposal.fulfilled.match(response)) {
                 toast.success("Data Saved Successfully")
+            } else if (saveProposal.rejected.match(response)) {
+                seterror("Unable to get the proposal Data")
             }
         } catch (error) {
             if (error instanceof Error) {

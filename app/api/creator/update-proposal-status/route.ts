@@ -7,7 +7,7 @@ const prisma = new PrismaClient()
 export async function POST(request: NextRequest) {
     const { user, error } = await verifyUser(request)
 
-    if (!user && error) {
+    if (!user || error) {
         return NextResponse.json({
             success: false,
             message: "Not Authenticated, Please Login First"
@@ -22,7 +22,8 @@ export async function POST(request: NextRequest) {
                 id: proposalId
             },
             data: {
-                status: status
+                status: status,
+                clientId: user.id as string
             }
         })
 
@@ -36,6 +37,24 @@ export async function POST(request: NextRequest) {
 
         const ProposalStatus = status === "ACCEPTED" ? "PROPOSAL_ACCEPTED" : "PROPOSAL_DECLINED"
 
+        if (status === "ACCEPTED") {
+            const newProject = await prisma.project.create({
+                data: {
+                    title: response.title,
+                    creatorId: response.creatorId,
+                    clientId: response.clientId || user.id as string,
+                    proposalId: proposalId,
+                }
+            })
+
+            if (!newProject) {
+                return NextResponse.json({
+                    success: false,
+                    message: "Unable to Create an Project"
+                })
+            }
+        }
+
         await createNotification({
             userId: response.creatorId,
             title: `Proposal ${status === "ACCEPTED" ? "Accepted!" : "Rejected"}`,
@@ -45,7 +64,7 @@ export async function POST(request: NextRequest) {
 
         return NextResponse.json({
             success: true,
-            message: "Proposal Status Updated Successfully"
+            message: "Proposal Status Updated Successfully, Login to your Portal to get More details."
         })
     } catch (error) {
         return NextResponse.json({

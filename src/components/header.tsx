@@ -98,7 +98,7 @@ export const Header: React.FC = () => {
         handleFetchNotifications();
         const timerId = setInterval(() => {
             handleFetchNotifications()
-        }, 30000)
+        }, 300000)
 
         return () => clearInterval(timerId)
     }, [handleFetchNotifications])

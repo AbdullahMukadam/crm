@@ -1,6 +1,6 @@
 "use client";
 
-import { FetchProposals } from "@/lib/store/features/proposalsSlice";
+import { createProposalSlice, deleteProposal, fetchProposals } from "@/lib/store/features/proposalsSlice";
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
@@ -46,10 +46,10 @@ import {
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import proposalService from "@/lib/api/proposalService";
 import { Proposal, ProposalStatus } from "@/types/proposal";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
+import { Textarea } from "../ui/textarea";
 
 const statusStyles: Record<string, {
     label: string;
@@ -154,7 +154,7 @@ const createColumns = (
             accessorKey: "status",
             header: "Status",
             cell: ({ row }) => {
-                const data : string = row.getValue("status")
+                const data: string = row.getValue("status")
                 const config = statusStyles[data.toLowerCase()] || statusStyles.draft;
                 const Icon = config.icon;
 
@@ -225,10 +225,11 @@ const createColumns = (
 
 
 function ProposalsClient() {
-    const { proposals, isLoading } = useAppSelector((state) => state.proposal);
+    const { proposals, isLoading, error } = useAppSelector((state) => state.proposal);
     const { id } = useAppSelector((state) => state.auth);
     const [isDialogOpen, setisDialogOpen] = useState(false);
     const [proposalTitle, setproposalTitle] = useState("");
+    const [proposalDescription, setproposalDescription] = useState("");
     const [isProposalCreatedLoadind, setisProposalCreatedLoadind] = useState(false);
     const [isProposalDeletedLoading, setisProposalDeletedLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -241,7 +242,7 @@ function ProposalsClient() {
     const [rowSelection, setRowSelection] = useState({});
 
     useEffect(() => {
-        if (proposals.length === 0) dispatch(FetchProposals());
+        if (proposals.length === 0) dispatch(fetchProposals());
     }, []);
 
     const filteredProposals = React.useMemo(() => {
@@ -256,26 +257,27 @@ function ProposalsClient() {
         async () => {
             setisProposalCreatedLoadind(true);
 
-            if (!proposalTitle || !id) {
-                toast.error("Please enter a proposal title");
+            if (!proposalTitle || !id || !proposalDescription) {
+                toast.error("Please enter a proposal title or description");
                 setisProposalCreatedLoadind(false);
                 return;
             }
 
             try {
-                const response = await proposalService.createProposal({
+                const response = await dispatch(createProposalSlice({
                     title: proposalTitle,
-                    creatorId: id,
-                });
+                    description : proposalDescription,
+                    creatorId: id
+                }))
 
-                if (!response.success) {
-                    toast.error(response.message || "Error from server");
-                    return;
+                if (createProposalSlice.fulfilled.match(response)) {
+                    dispatch(fetchProposals())
+                    router.push(`/proposals/builder/${response.payload.id}`);
+                } else if (createProposalSlice.rejected.match(response)) {
+                    toast.error(response.payload as string || "Unable to create a proposal");
                 }
 
-                router.push(`/proposals/builder/${response.data?.proposal.id}`);
             } catch (error) {
-                console.error(error);
                 toast.error("Unable to create a proposal");
             } finally {
                 setisProposalCreatedLoadind(false);
@@ -288,13 +290,16 @@ function ProposalsClient() {
         try {
             setisProposalDeletedLoading(true)
 
-            const response = await proposalService.deleteProposal(proposalId)
-            if (response.success) {
-                toast.success("Proposal Deleted Successfully")
-                dispatch(FetchProposals())
+            const response = await dispatch(deleteProposal(proposalId))
+
+            if (deleteProposal.fulfilled.match(response)) {
+                dispatch(fetchProposals())
+            } else if (deleteProposal.rejected.match(response)) {
+                toast.error(response.payload as string || "Unable to delete a proposal");
             }
+
         } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Unable to deletd the proposal")
+            toast.error(error instanceof Error ? error.message : "Unable to delete the proposal")
         } finally {
             setisProposalDeletedLoading(false)
         }
@@ -580,6 +585,20 @@ function ProposalsClient() {
                                 placeholder="Enter proposal title"
                                 value={proposalTitle}
                                 onChange={(e) => setproposalTitle(e.target.value)}
+                            />
+                        </div>
+                    </div>
+
+                    <div className="space-y-2 mt-2">
+                        <div className="space-y-2">
+                            <Label htmlFor="description">Description</Label>
+                            <Textarea
+                                id="description"
+                                placeholder="Enter proposal description"
+                                value={proposalDescription}
+                                onChange={(e) => setproposalDescription(e.target.value)}
+                                required
+                                className="resize-none"
                             />
                         </div>
                     </div>

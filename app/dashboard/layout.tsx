@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Sidebar, MobileSidebar } from '@/components/ui/sidebar';
-import { CreatorSidebarItems } from '@/config/sidebarConfig';
+import { ClientSidebarItems, CreatorSidebarItems } from '@/config/sidebarConfig';
 import { useAppSelector } from '@/lib/store/hooks';
 import { NavItem } from '@/types/ui';
 import { Header } from '@/components/header';
@@ -19,12 +19,12 @@ export default function DashboardLayout({
     const [sidebarItems, setsidebarItems] = useState<NavItem[]>([]);
 
     useEffect(() => {
-        if (role === "admin") {
+        if (role === "ADMIN") {
             setsidebarItems(CreatorSidebarItems)
-        } else if (role === "creator") {
+        } else if (role === "CREATOR") {
             setsidebarItems(CreatorSidebarItems)
         } else {
-            setsidebarItems(CreatorSidebarItems)
+            setsidebarItems(ClientSidebarItems)
         }
     }, [role])
 

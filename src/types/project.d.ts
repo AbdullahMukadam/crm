@@ -1,13 +1,43 @@
 
-export type ProjectStatus = "planning" | "in-progress" | "completed" | "cancelled";
+export type ProjectStatus = "PLANNING" | "IN_PROGRESS" | "COMPLETED" | "CANCELED"
+export type DeliverableStatus = "pending_review" | "revisions_requested" | "approved"
+export type InvoiceStatus = "draft" | "paid" | "sent" | "overdue"
 
 export interface Project {
+    proposalId: string | null;
+    id: string;
+    title: string;
+    createdAt: Date;
+    updatedAt: Date;
+    creatorId: string;
+    clientId: string;
+    description: string | null;
+    status: ProjectStatus;
+    deliverables?: Deliverable[]
+    invoices?: Invoice[];
+    creator: any;
+    client: any;
+}
+
+export interface Deliverable {
     id: string;
     title: string;
     description: string;
-    status: ProjectStatus;
-    budget: number;
-    deadline: Date;
-    clientId: string;
-    creatorId: string;
+    linkUrl: string;
+    fileUrl: string;
+    status: DeliverableStatus
+    submittedAt: Date;
+    projectId: string;
+}
+
+export interface Invoice {
+    id: string;
+    invoiceNumber: string;
+    amount: number;
+    dueDate: number;
+    paidAt: Date
+    status: InvoiceStatus;
+    createdAt: Date;
+    clientId: string
+    projectId: string
 }

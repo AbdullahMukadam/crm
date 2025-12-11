@@ -24,7 +24,8 @@ import { useLeads } from '@/features/Leads/hooks/useLeads';
 import { LeadsDataForDashboard } from '@/types/branding';
 import { toast } from 'sonner';
 import brandingService from '@/lib/api/brandingService';
-import { useAppSelector } from '@/lib/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { updateLeadStatusSlice } from '@/lib/store/features/leadSlice';
 
 const LeadVisitsChart = dynamic(
     () => import('../ui/leads-visit').then(mod => mod.LeadVisitsChart),
@@ -85,6 +86,7 @@ const KanbanBoard = () => {
     const [selectedLeadId, setselectedLeadId] = useState("")
     const [selectedLeadData, setselectedLeadData] = useState<LeadsDataForDashboard | null>(null)
     const [isLoading, setisLoading] = useState(false)
+    const dispatch = useAppDispatch()
 
     useEffect(() => {
         if (leads && leads.length > 0) {
@@ -159,8 +161,14 @@ const KanbanBoard = () => {
     // Update lead status in backend
     const updateLeadStatus = async (leadId: string, newStatus: string) => {
         try {
-            await brandingService.updateLeadStatus(leadId, newStatus);
-            toast.success("Lead status updated");
+            const response = await dispatch(updateLeadStatusSlice({
+                leadId,
+                status: newStatus
+            }))
+
+            if (updateLeadStatusSlice.fulfilled.match(response)) {
+                toast.success("Leads fetched Successfully")
+            }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to update lead status");
         }

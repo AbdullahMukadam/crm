@@ -2,7 +2,7 @@ import { Invoice } from "./invoice";
 import { Project } from "./project";
 import { Proposal } from "./proposal";
 
-export type UserRole = 'admin' | 'client' | 'creator';
+export type UserRole = 'ADMIN' | 'CLIENT' | 'CREATOR';
 
 export interface APIResponse<T = any> {
     success: boolean;
