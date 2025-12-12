@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { ChangeEvent, useState } from "react"
+import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react"
 import {
   Dialog,
   DialogContent,
@@ -16,34 +16,79 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Project, ProjectStatus } from "@/types/project"
+import { useAppDispatch } from "@/lib/store/hooks"
+import { toast } from "sonner"
+import { updateProject } from "@/lib/store/features/projectSlice"
 
 interface CreateProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  project: Project | null
+  isUpdateLoading: boolean
 }
 
-export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogProps) {
-  const [formData, setFormData] = useState({
+interface FormData {
+  title: string,
+  description: string,
+  status: ProjectStatus,
+  client: string
+}
+
+export function EditProjectDialog({ open, onOpenChange, project, isUpdateLoading }: CreateProjectDialogProps) {
+  const [formData, setFormData] = useState<FormData>({
     title: "",
     description: "",
     status: "PLANNING",
     client: "",
   })
+  const dispatch = useAppDispatch()
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    if (project) {
+      setFormData({
+        title: project.title ?? "",
+        description: project.description ?? "",
+        status: (project.status ?? "PLANNING") as ProjectStatus,
+        client: (project.client && (project.client as any).username) ?? "",
+      })
+    } else {
+      setFormData({
+        title: "",
+        description: "",
+        status: "PLANNING",
+        client: "",
+      })
+    }
+  }, [project, open])
+
+  const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    // Handle form submission
-    console.log("Form submitted:", formData)
-    setFormData({ title: "", description: "", status: "PLANNING", client: "" })
-    onOpenChange(false)
-  }
+
+    try {
+      const data = {
+        title: formData.title,
+        description: formData.description,
+        status: formData.status,
+        id : project?.id
+      }
+      const response = await dispatch(updateProject(data))
+      if (updateProject.fulfilled.match(response)) {
+        toast.success("Project Updated Successfully")
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to Update the Project")
+    } finally {
+      onOpenChange(false)
+    }
+  }, [formData, open, onOpenChange])
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="bg-card border-border">
         <DialogHeader>
-          <DialogTitle className="text-foreground">Create New Project</DialogTitle>
-          <DialogDescription>Start a new project collaboration. Fill in the project details below.</DialogDescription>
+          <DialogTitle className="text-foreground">Update Project</DialogTitle>
+          <DialogDescription>Start editing project collaboration. Fill in the project details below.</DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -69,9 +114,10 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
               id="description"
               placeholder="Describe the project..."
               value={formData.description}
-              onChange={(e : ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => setFormData({ ...formData, description: e.target.value })}
               className="bg-background border-border resize-none"
               rows={4}
+              required
             />
           </div>
 
@@ -80,7 +126,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
               <Label htmlFor="status" className="text-foreground">
                 Status
               </Label>
-              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
+              <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as ProjectStatus })}>
                 <SelectTrigger id="status" className="bg-background border-border">
                   <SelectValue />
                 </SelectTrigger>
@@ -102,6 +148,7 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
                 value={formData.client}
                 onChange={(e) => setFormData({ ...formData, client: e.target.value })}
                 className="bg-background border-border"
+                disabled
               />
             </div>
           </div>
@@ -115,8 +162,8 @@ export function CreateProjectDialog({ open, onOpenChange }: CreateProjectDialogP
             >
               Cancel
             </Button>
-            <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              Create Project
+            <Button disabled={isUpdateLoading} type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
+              {isUpdateLoading ? "Updating" : "Update Project"}
             </Button>
           </DialogFooter>
         </form>

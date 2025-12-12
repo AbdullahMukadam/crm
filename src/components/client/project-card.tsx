@@ -11,11 +11,13 @@ import { SetStateAction } from "react"
 interface ProjectCardProps {
   project: Project,
   setIsCreateDialogOpen: React.Dispatch<SetStateAction<boolean>>
-
+  setselectedProject?: (project: Project) => void;
+  isLoading : boolean
+  handleDeleteProject: (id: string) => Promise<void>
 }
 
 const statusConfig = {
-  IN_PROGRESS: { label: "IN PROGRESS", color: "bg-primary text-primary-foreground", dotColor: "bg-primary" },
+  IN_PROGRESS: { label: "IN PROGRESS", color: "bg-emerald-400 text-primary-foreground", dotColor: "bg-emerald-600" },
   PLANNING: { label: "PLANNING", color: "bg-orange-500 text-white", dotColor: "bg-orange-300" },
   COMPLETED: { label: "COMPLETED", color: "bg-emerald-500 text-white", dotColor: "bg-emerald-500" },
   CANCELED: { label: "CANCELED", color: "bg-red-500 text-white", dotColor: "bg-red-300" },
@@ -30,13 +32,13 @@ const getProgressColor = (progress: ProjectStatus) => {
 }
 
 const getProgress = (progress: ProjectStatus) => {
-  if (progress === "IN_PROGRESS") return 30
-  if (progress === "PLANNING") return 45
+  if (progress === "IN_PROGRESS") return 45
+  if (progress === "PLANNING") return 30
   if (progress === "CANCELED") return 0
   if (progress === "COMPLETED") return 100
 }
 
-export function ProjectCard({ project, setIsCreateDialogOpen }: ProjectCardProps) {
+export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject, isLoading, handleDeleteProject }: ProjectCardProps) {
   const config = statusConfig[project.status]
   const now = getTimeAgo(project.updatedAt)
 
@@ -54,9 +56,12 @@ export function ProjectCard({ project, setIsCreateDialogOpen }: ProjectCardProps
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="bg-card border-border">
-            <DropdownMenuItem className="hover:bg-muted cursor-pointer" onClick={() => setIsCreateDialogOpen(prev => !prev)}>Edit Project</DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-muted cursor-pointer" onClick={() => {
+              setselectedProject?.(project);
+              setIsCreateDialogOpen(true)
+            }}>Edit Project</DropdownMenuItem>
             <DropdownMenuItem className="hover:bg-muted cursor-pointer">View Details</DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-muted cursor-pointer text-destructive">Delete</DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-muted cursor-pointer text-destructive" onClick={() => handleDeleteProject(project.id)} disabled={isLoading}>{isLoading ? "please wait" : "Delete"}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </CardHeader>

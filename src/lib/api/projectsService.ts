@@ -13,6 +13,19 @@ class ProjectsService {
         })
     }
 
+    async updateProject(data: Partial<Project>): Promise<APIResponse<Project>> {
+        return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.UPDATE_PROJECT, {
+            method: "PATCH",
+            body: JSON.stringify(data)
+        })
+    }
+
+    async deleteProject(data: {id : string}): Promise<APIResponse> {
+        return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.DELETE_PROJECT, {
+            method: "POST",
+            body: JSON.stringify(data)
+        })
+    }
 }
 
 const projectService = new ProjectsService()

@@ -1,24 +1,27 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
-import { fetchProjects } from "@/lib/store/features/projectSlice"
+import { deleteProject, fetchProjects } from "@/lib/store/features/projectSlice"
 import { ProjectCard } from "../client/project-card"
-import { CreateProjectDialog } from "../common/create-project"
+import { EditProjectDialog } from "../common/create-project"
+import { Project } from "@/types/project"
+import { toast } from "sonner"
 
 
 type TabValue = "all" | "active" | "planning" | "completed"
 
 export default function ProjectsClient() {
-  const { projects, isLoading, error } = useAppSelector((state) => state.projects)
+  const { projects, isLoading, error, isUpdateLoading } = useAppSelector((state) => state.projects)
   const dispatch = useAppDispatch()
   const [activeTab, setActiveTab] = useState<TabValue>("all")
   const [searchQuery, setSearchQuery] = useState("")
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [selectedProject, setselectedProject] = useState<Project | null>(null)
 
   useEffect(() => {
     if (projects.length === 0) dispatch(fetchProjects());
@@ -36,6 +39,17 @@ export default function ProjectsClient() {
 
     return matchesSearch
   })
+
+  const handleDeleteProject = useCallback(async (id: string) => {
+    try {
+      const response = await dispatch(deleteProject({ id }))
+      if (deleteProject.fulfilled.match(response)) {
+        toast.success("Project deleted succesfully")
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Unable to delete the project")
+    }
+  }, [])
 
   return (
     <div className="min-h-screen bg-background">
@@ -73,7 +87,7 @@ export default function ProjectsClient() {
         </div>
 
         {isLoading ? (
-          <div className="w-full flex justify-center bg-zinc-950 text-zinc-300">
+          <div className="w-full flex justify-center text-zinc-300">
             <Loader2 className="animate-spin mr-2" /> Loading projects...
           </div>
         ) : (
@@ -86,7 +100,14 @@ export default function ProjectsClient() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredProjects.map((project) => (
-                    <ProjectCard key={project.id} project={project} setIsCreateDialogOpen={setIsCreateDialogOpen} />
+                    <ProjectCard
+                      key={project.id}
+                      project={project}
+                      setIsCreateDialogOpen={setIsCreateDialogOpen}
+                      setselectedProject={(p: Project) => setselectedProject(p)}
+                      isLoading={isLoading}
+                      handleDeleteProject={handleDeleteProject}
+                    />
                   ))}
 
                 </div>
@@ -106,7 +127,12 @@ export default function ProjectsClient() {
         )}
       </div>
 
-      <CreateProjectDialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}  />
+      <EditProjectDialog
+        open={isCreateDialogOpen}
+        onOpenChange={setIsCreateDialogOpen}
+        project={selectedProject}
+        isUpdateLoading={isUpdateLoading}
+      />
     </div >
   )
 }
