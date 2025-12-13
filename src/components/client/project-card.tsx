@@ -7,12 +7,13 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Button } from "@/components/ui/button"
 import { Project, ProjectStatus } from "@/types/project"
 import { SetStateAction } from "react"
+import { useRouter } from "next/navigation"
 
 interface ProjectCardProps {
   project: Project,
   setIsCreateDialogOpen: React.Dispatch<SetStateAction<boolean>>
   setselectedProject?: (project: Project) => void;
-  isLoading : boolean
+  isLoading: boolean
   handleDeleteProject: (id: string) => Promise<void>
 }
 
@@ -41,6 +42,7 @@ const getProgress = (progress: ProjectStatus) => {
 export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject, isLoading, handleDeleteProject }: ProjectCardProps) {
   const config = statusConfig[project.status]
   const now = getTimeAgo(project.updatedAt)
+  const router = useRouter()
 
   return (
     <Card className="hover:shadow-lg transition-shadow border-border font-brcolage-grotesque">
@@ -60,7 +62,7 @@ export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject
               setselectedProject?.(project);
               setIsCreateDialogOpen(true)
             }}>Edit Project</DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-muted cursor-pointer">View Details</DropdownMenuItem>
+            <DropdownMenuItem className="hover:bg-muted cursor-pointer" onClick={() => router.push(`/review-project/${project.id}`)}>View Details</DropdownMenuItem>
             <DropdownMenuItem className="hover:bg-muted cursor-pointer text-destructive" onClick={() => handleDeleteProject(project.id)} disabled={isLoading}>{isLoading ? "please wait" : "Delete"}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -102,7 +104,7 @@ export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject
   )
 }
 
-function getTimeAgo(dateInput: Date | string): string {
+export function getTimeAgo(dateInput: Date | string): string {
   // 1. Ensure we have a valid Date object
   const date = new Date(dateInput);
   const now = new Date();

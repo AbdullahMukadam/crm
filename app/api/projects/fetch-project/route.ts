@@ -1,29 +1,21 @@
-import { verifyUser } from "@/lib/middleware/verify-user";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient()
-export async function GET(request: NextRequest) {
-    const { user, error } = await verifyUser(request)
+export async function POST(request: NextRequest) {
+    const { id } = await request.json()
 
-    if (!user || error) {
+    if (!id) {
         return NextResponse.json({
             success: false,
-            message: "Unauthorized"
+            message: "Data not received"
         })
     }
     try {
 
-        const response = await prisma.project.findMany({
+        const response = await prisma.project.findFirst({
             where: {
-                OR: [
-                    {
-                        clientId: user.id as string
-                    },
-                    {
-                        creatorId: user.id as string
-                    }
-                ]
+                id: id
             },
             select: {
                 id: true,
@@ -40,20 +32,18 @@ export async function GET(request: NextRequest) {
                 embedLink : true,
                 Feedback : true
             }
-
         })
 
-        if (response.length === 0) {
+        if (!response) {
             return NextResponse.json({
-                success: true,
-                message: "No Projects Found",
-                data: []
+                success: false,
+                message: "Unable to fetch the Project"
             })
         }
 
         return NextResponse.json({
             success: true,
-            message: "Projects retrieved successfully",
+            message: "Project Fetched Successfully",
             data: response
         })
 

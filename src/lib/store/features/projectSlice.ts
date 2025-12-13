@@ -48,7 +48,7 @@ export const updateProject = createAsyncThunk(
 );
 
 export const deleteProject = createAsyncThunk(
-  'projects/updateProject',
+  'projects/deleteProject',
   async (data: { id: string }, { rejectWithValue }) => {
     try {
       const response = await projectService.deleteProject(data);
@@ -61,6 +61,22 @@ export const deleteProject = createAsyncThunk(
     }
   }
 );
+
+export const fetchProject = createAsyncThunk(
+  'projects/fetchProject',
+  async (data: { id: string }, { rejectWithValue }) => {
+    try {
+      const response = await projectService.deleteProject(data);
+      if (response.success) {
+        return data;
+      }
+      throw new Error('Failed to update project');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'An error occurred');
+    }
+  }
+);
+
 
 const projectsSlice = createSlice({
   name: 'projects',
@@ -98,7 +114,6 @@ const projectsSlice = createSlice({
         state.error = action.payload as string;
       })
 
-
       .addCase(deleteProject.pending, (state) => {
         state.isLoading = true;
         state.error = null;
@@ -111,6 +126,20 @@ const projectsSlice = createSlice({
         state.isLoading = false;
         state.error = action.payload as string;
       })
+
+      .addCase(fetchProject.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(fetchProject.fulfilled, (state, action) => {
+        state.isLoading = false;
+      })
+      .addCase(fetchProject.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload as string;
+      })
+
+
   },
 });
 

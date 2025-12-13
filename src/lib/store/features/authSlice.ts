@@ -8,7 +8,7 @@ const initialState: AuthState = {
     username: null,
     email: null,
     avatarUrl: null,
-    role: 'client',
+    role: 'CLIENT',
     onboarded: false,
     isLoading: false,
     error: null,

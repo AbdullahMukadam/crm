@@ -17,6 +17,20 @@ export interface Project {
     invoices?: Invoice[];
     creator: any;
     client: any;
+    embedLink?: string
+    Feedback?: Feedback[]
+}
+
+export interface Feedback {
+    id: string
+    projectId: string
+    authorId: string
+    createdAt: Data
+    updatedAt: Date
+    message: string
+    replies: Feedback[]
+    author: any
+    project: Project
 }
 
 export interface Deliverable {

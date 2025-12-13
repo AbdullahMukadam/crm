@@ -34,7 +34,9 @@ export async function PATCH(request: NextRequest) {
                 clientId: true,
                 proposalId: true,
                 client: true,
-                creator: true
+                creator: true,
+                embedLink: true,
+                Feedback : true
             }
         })
 

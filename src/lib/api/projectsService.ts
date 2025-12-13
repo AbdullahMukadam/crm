@@ -26,6 +26,13 @@ class ProjectsService {
             body: JSON.stringify(data)
         })
     }
+
+    async fetchProject(data: {id : string}): Promise<APIResponse<Project>> {
+        return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.FETCH_PROJECT, {
+            method: "POST",
+            body: JSON.stringify(data)
+        })
+    }
 }
 
 const projectService = new ProjectsService()
