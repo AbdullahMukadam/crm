@@ -1,29 +1,38 @@
+import { createNotification } from "@/lib/createNotifications";
 import { verifyUser } from "@/lib/middleware/verify-user";
 import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
 
 const prisma = new PrismaClient()
-export async function GET(request: NextRequest) {
-    const { user, error } = await verifyUser(request)
 
-    if (!user || error) {
+export async function PATCH(request: NextRequest) {
+    const { user, error } = await verifyUser(request)
+    const data = await request.json()
+
+    if (!data || !user || error) {
         return NextResponse.json({
             success: false,
-            message: "Unauthorized"
+            message: "Unable to get the data"
         })
     }
-    try {
 
-        const response = await prisma.project.findMany({
+    try {
+        const { id, ...updateData } = data;
+
+        // Remove the duplicate feedback creation - this is creating duplicates!
+        // Just use the update below
+
+        const response = await prisma.project.update({
             where: {
-                OR: [
-                    {
-                        clientId: user.id as string
-                    },
-                    {
-                        creatorId: user.id as string
+                id: id
+            },
+            data: {
+                Feedback: {
+                    create: {
+                        authorId: user.id as string,
+                        message: updateData.message
                     }
-                ]
+                }
             },
             select: {
                 id: true,
@@ -59,24 +68,33 @@ export async function GET(request: NextRequest) {
                     }
                 }
             }
-
         })
 
-        if (response.length === 0) {
+        if (!response) {
             return NextResponse.json({
-                success: true,
-                message: "No Projects Found",
-                data: []
+                success: false,
+                message: "Unable to update the project"
             })
         }
 
+        // Notify the project creator or client (not the person who left feedback)
+        const notifyUserId = user.id === response.creatorId ? response.clientId : response.creatorId;
+
+        await createNotification({
+            userId: notifyUserId,
+            title: `New Feedback on Project`,
+            message: `${user.username} provided feedback on ${response.title}`,
+            type: "SYSTEM",
+        });
+
         return NextResponse.json({
             success: true,
-            message: "Projects retrieved successfully",
+            message: "Feedback Created Successfully",
             data: response
         })
 
     } catch (error) {
+        console.error("Feedback creation error:", error);
         return NextResponse.json({
             success: false,
             message: "Internal Server Error"

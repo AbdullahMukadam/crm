@@ -3,7 +3,7 @@ import { FetchClient } from "./fetchClient"
 import { APIResponse } from "@/types/auth"
 import { NotificationsData } from "@/types/notifications"
 import { PROJECTS_API_ENDPOINTS } from "@/constants/projects"
-import { Project } from "@/types/project"
+import { CreateFeedbackRequest, Project } from "@/types/project"
 
 class ProjectsService {
 
@@ -20,16 +20,23 @@ class ProjectsService {
         })
     }
 
-    async deleteProject(data: {id : string}): Promise<APIResponse> {
+    async deleteProject(data: { id: string }): Promise<APIResponse> {
         return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.DELETE_PROJECT, {
             method: "POST",
             body: JSON.stringify(data)
         })
     }
 
-    async fetchProject(data: {id : string}): Promise<APIResponse<Project>> {
+    async fetchProject(data: { id: string }): Promise<APIResponse<Project>> {
         return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.FETCH_PROJECT, {
             method: "POST",
+            body: JSON.stringify(data)
+        })
+    }
+
+    async createFeedback(data: Partial<CreateFeedbackRequest>): Promise<APIResponse<Project>> {
+        return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.CREATE_FEEDBACK, {
+            method: "PATCH",
             body: JSON.stringify(data)
         })
     }

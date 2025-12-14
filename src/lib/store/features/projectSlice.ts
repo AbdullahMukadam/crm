@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { Project } from '@/types/project';
+import { CreateFeedbackRequest, Project } from '@/types/project';
 import projectService from '@/lib/api/projectsService';
 
 interface ProjectsState {
@@ -77,6 +77,21 @@ export const fetchProject = createAsyncThunk(
   }
 );
 
+export const createFeedback = createAsyncThunk(
+  'projects/createFeedback',
+  async (data: Partial<CreateFeedbackRequest>, { rejectWithValue }) => {
+    try {
+      const response = await projectService.createFeedback(data);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error('Failed to update project');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'An error occurred');
+    }
+  }
+);
+
 
 const projectsSlice = createSlice({
   name: 'projects',
@@ -139,6 +154,18 @@ const projectsSlice = createSlice({
         state.error = action.payload as string;
       })
 
+      .addCase(createFeedback.pending, (state) => {
+        state.isUpdateLoading = true;
+        state.error = null;
+      })
+      .addCase(createFeedback.fulfilled, (state, action: PayloadAction<Project>) => {
+        state.isUpdateLoading = false;
+        state.projects = state.projects.map((p) => p.id === action.payload.id ? action.payload : p)
+      })
+      .addCase(createFeedback.rejected, (state, action) => {
+        state.isUpdateLoading = false;
+        state.error = action.payload as string;
+      })
 
   },
 });

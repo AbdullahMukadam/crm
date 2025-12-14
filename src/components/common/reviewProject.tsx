@@ -1,6 +1,6 @@
 "use client"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
-import type { Project } from "@/types/project"
+import type { CreateFeedbackRequest, Feedback, Project } from "@/types/project"
 import { ArrowLeft, Bell, ChevronRight, Loader2, MessageSquare, Paperclip, Send } from "lucide-react"
 import { FormEvent, useCallback, useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
@@ -11,21 +11,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import Link from "next/link"
 import { getTimeAgo } from "../client/project-card"
 import { toast } from "sonner"
-import { fetchProject, updateProject } from "@/lib/store/features/projectSlice"
+import { createFeedback, fetchProject, updateProject } from "@/lib/store/features/projectSlice"
 import { FigmaEmbed } from "./figmaEmbed"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
 
-interface Feedback {
-    id: string
-    author: string
-    avatar: string
-    timestamp: string
-    message: string
-    frame?: string
-    replies?: Feedback[]
-}
 
 interface ReviewProjectComponentProps {
     projectId: string
@@ -38,34 +29,6 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
     const disptach = useAppDispatch()
     const [isOpen, setIsOpen] = useState(false)
     const [embedUrl, setEmbedUrl] = useState("")
-
-    const [feedbackList] = useState<Feedback[]>([
-        {
-            id: "1",
-            author: "Mark Davis",
-            avatar: "/diverse-group.png",
-            timestamp: "2h ago",
-            message:
-                "The contrast on these secondary buttons feels a bit low. Can we bump up the opacity or try a darker shade?",
-            frame: "Frame 142 • Button",
-            replies: [
-                {
-                    id: "2",
-                    author: "Sarah Chen",
-                    avatar: "/diverse-woman-portrait.png",
-                    timestamp: "1h ago",
-                    message: "Good catch. I've updated the slate-200 to slate-300 in the latest push. Does that work better?",
-                },
-                {
-                    id: "3",
-                    author: "Mark Davis",
-                    avatar: "/diverse-group.png",
-                    timestamp: "35m ago",
-                    message: "Yes, much better. Let's lock that in. Also, the spacing on the header looks perfect now.",
-                },
-            ],
-        },
-    ])
 
     const handlefetchProject = useCallback(async (projectId: string) => {
         try {
@@ -111,6 +74,31 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
             toast.error(error instanceof Error ? error.message : "Unable to Add the embed url")
         }
     }, [projectId, embedUrl],)
+
+    const handdleCreateFeedback = useCallback(async () => {
+
+        if (!comment || typeof comment !== "string") {
+            return;
+        }
+        try {
+
+            const data: Partial<CreateFeedbackRequest> = {
+                message: comment,
+                id: projectId,
+
+            }
+            const response = await disptach(createFeedback(data))
+            if (createFeedback.fulfilled.match(response)) {
+                toast.success("Feedback Created Successfully")
+            }
+        } catch (error) {
+            toast.error(error instanceof Error ? error.message : "Unable to Create the feedback")
+        } finally {
+            setComment("")
+        }
+    }, [comment, projectId])
+
+    console.log(projectData)
 
 
     if (isLoading) {
@@ -209,13 +197,13 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                 </div>
 
                 {/* Right panel - Feedback */}
-                <div className="w-96 h-full border-l border-border bg-card flex flex-col">
+                <div className="w-96 min-h-full border-l border-border bg-card flex flex-col">
                     <div className="p-4 border-b border-border flex items-center justify-between">
                         <div className="flex items-center gap-2">
                             <MessageSquare className="w-5 h-5 text-muted-foreground" />
                             <h2 className="font-semibold text-foreground">Feedback</h2>
                             <Badge variant="secondary" className="ml-1">
-                                3
+                                {projectData?.Feedback?.length || 0}
                             </Badge>
                         </div>
                         <Button variant="ghost" size="icon">
@@ -229,62 +217,68 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
 
                     <ScrollArea className="flex-1">
                         <div className="p-4 space-y-4">
-                            {feedbackList.map((feedback) => (
-                                <div key={feedback.id} className="space-y-4">
-                                    <div className="flex gap-3">
-                                        <Avatar className="w-8 h-8">
-                                            <AvatarImage src={feedback.avatar || "/placeholder.svg"} />
-                                            <AvatarFallback>
-                                                {feedback.author
-                                                    .split(" ")
-                                                    .map((n) => n[0])
-                                                    .join("")}
-                                            </AvatarFallback>
-                                        </Avatar>
-                                        <div className="flex-1 space-y-2">
-                                            <div className="flex items-center justify-between">
-                                                <span className="text-sm font-medium text-foreground">{feedback.author}</span>
-                                                <span className="text-xs text-muted-foreground">{feedback.timestamp}</span>
-                                            </div>
-                                            <p className="text-sm text-foreground leading-relaxed">{feedback.message}</p>
-                                            {feedback.frame && (
-                                                <Badge variant="secondary" className="text-xs">
-                                                    <span className="w-1.5 h-1.5 rounded-full bg-primary mr-1.5" />
-                                                    {feedback.frame}
-                                                </Badge>
-                                            )}
-                                        </div>
-                                    </div>
-
-                                    {/* Replies */}
-                                    {feedback.replies?.map((reply) => (
-                                        <div key={reply.id} className="flex gap-3 ml-11">
+                            {projectData?.Feedback && projectData?.Feedback?.length > 0 ? (
+                                projectData?.Feedback.map((feedback) => (
+                                    <div key={feedback.id} className="space-y-4">
+                                        <div className="flex gap-3">
                                             <Avatar className="w-8 h-8">
-                                                <AvatarImage src={reply.avatar || "/placeholder.svg"} />
+                                                <AvatarImage src={feedback.author.avatarUrl || "/placeholder.svg"} />
                                                 <AvatarFallback>
-                                                    {reply.author
+                                                    {feedback.author.username
                                                         .split(" ")
-                                                        .map((n) => n[0])
+                                                        .map((n: any) => n[0])
                                                         .join("")}
                                                 </AvatarFallback>
                                             </Avatar>
                                             <div className="flex-1 space-y-2">
                                                 <div className="flex items-center justify-between">
-                                                    <span className="text-sm font-medium text-foreground">{reply.author}</span>
-                                                    <span className="text-xs text-muted-foreground">{reply.timestamp}</span>
+                                                    <span className="text-sm font-medium text-foreground">{feedback.author.username}</span>
+                                                    <span className="text-xs text-muted-foreground">{getTimeAgo(feedback.createdAt)}</span>
                                                 </div>
-                                                <p className="text-sm text-foreground leading-relaxed">{reply.message}</p>
-                                                {reply.id === "3" && (
-                                                    <div className="flex gap-2 text-xs text-muted-foreground">
-                                                        <button className="hover:text-foreground transition-colors">Reply</button>
-                                                        <button className="hover:text-foreground transition-colors">Resolve</button>
-                                                    </div>
-                                                )}
+                                                <p className="text-sm text-foreground leading-relaxed">{feedback.message}</p>
                                             </div>
+
                                         </div>
-                                    ))}
+
+                                        <div className="flex ml-11 -mt-3 gap-2 text-xs text-muted-foreground">
+                                            <button className="hover:text-foreground transition-colors">Reply</button>
+                                            <button className="hover:text-foreground transition-colors">Resolve</button>
+                                        </div>
+
+                                        {/* Replies */}
+                                        {feedback.replies?.map((reply) => (
+                                            <div key={reply.id} className="flex gap-3 ml-11">
+                                                <Avatar className="w-8 h-8">
+                                                    <AvatarImage src={reply.author.avatarUrl || "/placeholder.svg"} />
+                                                    <AvatarFallback>
+                                                        {reply.author
+                                                            .split(" ")
+                                                            .map((n: any) => n[0])
+                                                            .join("")}
+                                                    </AvatarFallback>
+                                                </Avatar>
+                                                <div className="flex-1 space-y-2">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="text-sm font-medium text-foreground">{reply.author.username}</span>
+                                                        <span className="text-xs text-muted-foreground">{reply.createdAt}</span>
+                                                    </div>
+                                                    <p className="text-sm text-foreground leading-relaxed">{reply.message}</p>
+                                                    {reply.id === "3" && (
+                                                        <div className="flex gap-2 text-xs text-muted-foreground">
+                                                            <button className="hover:text-foreground transition-colors">Reply</button>
+                                                            <button className="hover:text-foreground transition-colors">Resolve</button>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ))
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-center">
+                                    <p className="text-muted-foreground">No feedbacks Provided</p>
                                 </div>
-                            ))}
+                            )}
                         </div>
                     </ScrollArea>
 
@@ -301,8 +295,8 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                                 <Button variant="ghost" size="icon" className="h-8 w-8">
                                     <Paperclip className="w-4 h-4" />
                                 </Button>
-                                <Button size="sm" className="h-8">
-                                    Send
+                                <Button disabled={isUpdateLoading} size="sm" className="h-8" onClick={handdleCreateFeedback}>
+                                    {isUpdateLoading ? "Please wait" : "Send"}
                                     <Send className="w-3 h-3 ml-1" />
                                 </Button>
                             </div>
