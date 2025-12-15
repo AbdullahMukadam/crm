@@ -49,7 +49,20 @@ export async function GET(request: NextRequest) {
                                 role: true
                             }
                         },
-                        replies: true,
+                        id : true,
+                        replies: {
+                            include: {
+                                author: {
+                                    select: {
+                                        id: true,
+                                        username: true,
+                                        email: true,
+                                        avatarUrl: true,
+                                        role: true
+                                    }
+                                }
+                            }
+                        },
                         message: true,
                         authorId: true,
                         projectId: true,

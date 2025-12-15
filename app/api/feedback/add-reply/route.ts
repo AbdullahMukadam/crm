@@ -17,23 +17,33 @@ export async function PATCH(request: NextRequest) {
     }
 
     try {
-        const { id, ...updateData } = data;
+        const { id, feedbackId, message } = data;
 
-        // Remove the duplicate feedback creation - this is creating duplicates!
-        // Just use the update below
-
-        const response = await prisma.project.update({
-            where: {
-                id: id
-            },
+        const reply = await prisma.feedback.create({
             data: {
+                projectId: id,
+                authorId: user.id as string,
+                message: message,
                 Feedback: {
-                    create: {
-                        authorId: user.id as string,
-                        message: updateData.message
-                    }
+                    connect: { id: feedbackId } // Connect to parent feedback
                 }
             },
+            include: {
+                author: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatarUrl: true,
+                        role: true
+                    }
+                }
+            }
+        });
+
+        // Get project details for notification
+        const project = await prisma.project.findUnique({
+            where: { id },
             select: {
                 id: true,
                 title: true,
@@ -49,6 +59,7 @@ export async function PATCH(request: NextRequest) {
                 embedLink: true,
                 Feedback: {
                     select: {
+                        id: true,
                         author: {
                             select: {
                                 id: true,
@@ -58,41 +69,47 @@ export async function PATCH(request: NextRequest) {
                                 role: true
                             }
                         },
-                        id: true,
-                        replies: true,
+                        replies: {
+                            include: {
+                                author: {
+                                    select: {
+                                        id: true,
+                                        username: true,
+                                        email: true,
+                                        avatarUrl: true,
+                                        role: true
+                                    }
+                                }
+                            }
+                        },
                         message: true,
                         authorId: true,
                         projectId: true,
                         createdAt: true,
                         updatedAt: true
-
                     }
                 }
             }
-        })
-
-        if (!response) {
-            return NextResponse.json({
-                success: false,
-                message: "Unable to update the project"
-            })
-        }
-
-        // Notify the project creator or client (not the person who left feedback)
-        const notifyUserId = user.id === response.creatorId ? response.clientId : response.creatorId;
-
-        await createNotification({
-            userId: notifyUserId,
-            title: `New Feedback on Project`,
-            message: `${user.username} provided feedback on ${response.title}`,
-            type: "SYSTEM",
         });
+
+        // Notify the project creator or client
+        if (project) {
+            const notifyUserId = user.id === project.creatorId ? project.clientId : project.creatorId;
+
+            await createNotification({
+                userId: notifyUserId,
+                title: `New Reply on Project Feedback`,
+                message: `${user.username} replied to feedback on ${project.title}`,
+                type: "SYSTEM",
+            });
+        }
 
         return NextResponse.json({
             success: true,
-            message: "Feedback Created Successfully",
-            data: response
-        })
+            message: "Reply Created Successfully",
+            data: project
+        });
+
 
     } catch (error) {
         console.error("Feedback creation error:", error);

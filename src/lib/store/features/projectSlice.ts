@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { CreateFeedbackRequest, Project } from '@/types/project';
+import { CreateFeedbackRequest, Project, replyFeedbackRequest } from '@/types/project';
 import projectService from '@/lib/api/projectsService';
 
 interface ProjectsState {
@@ -85,7 +85,22 @@ export const createFeedback = createAsyncThunk(
       if (response.success && response.data) {
         return response.data;
       }
-      throw new Error('Failed to update project');
+      throw new Error('Failed to create feedback');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'An error occurred');
+    }
+  }
+);
+
+export const replyFeedback = createAsyncThunk(
+  'projects/replyFeedback',
+  async (data: Partial<replyFeedbackRequest>, { rejectWithValue }) => {
+    try {
+      const response = await projectService.replyFeedback(data);
+      if (response.success && response.data) {
+        return response.data;
+      }
+      throw new Error('Failed to reply');
     } catch (error) {
       return rejectWithValue(error instanceof Error ? error.message : 'An error occurred');
     }
@@ -163,6 +178,19 @@ const projectsSlice = createSlice({
         state.projects = state.projects.map((p) => p.id === action.payload.id ? action.payload : p)
       })
       .addCase(createFeedback.rejected, (state, action) => {
+        state.isUpdateLoading = false;
+        state.error = action.payload as string;
+      })
+
+      .addCase(replyFeedback.pending, (state) => {
+        state.isUpdateLoading = true;
+        state.error = null;
+      })
+      .addCase(replyFeedback.fulfilled, (state, action: PayloadAction<Project>) => {
+        state.isUpdateLoading = false;
+        state.projects = state.projects.map((p) => p.id === action.payload.id ? action.payload : p)
+      })
+      .addCase(replyFeedback.rejected, (state, action) => {
         state.isUpdateLoading = false;
         state.error = action.payload as string;
       })

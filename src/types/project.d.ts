@@ -25,6 +25,12 @@ export interface CreateFeedbackRequest extends Project {
     message: string
 }
 
+export interface replyFeedbackRequest extends Project {
+    message: string,
+    feedbackId : string
+}
+
+
 export interface Feedback {
     id: string
     projectId: string
