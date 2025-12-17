@@ -1,11 +1,9 @@
-"use client"
+import React from 'react'
 
-import ProjectsClient from "../creator/Projects.Client"
-
-export default function ClientDashboard() {
+function ClientDashboard() {
   return (
-    <div className="w-full">
-        <ProjectsClient />
-    </div>
+    <div>ClientDashboard</div>
   )
 }
+
+export default ClientDashboard

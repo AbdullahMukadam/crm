@@ -42,7 +42,6 @@ class ProjectsService {
     }
 
     async replyFeedback(data: Partial<replyFeedbackRequest>): Promise<APIResponse<Project>> {
-        console.log("reply feedback", data)
         return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.REPLY_FEEDBACK, {
             method: "PATCH",
             body: JSON.stringify(data)

@@ -11,11 +11,12 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import Link from "next/link"
 import { getTimeAgo } from "../client/project-card"
 import { toast } from "sonner"
-import { createFeedback, fetchProject, replyFeedback as replyFeedbackApi, updateProject } from "@/lib/store/features/projectSlice"
+import { createFeedback, fetchProject, findReviewProject, replyFeedback as replyFeedbackApi, updateProject } from "@/lib/store/features/projectSlice"
 import { FigmaEmbed } from "./figmaEmbed"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
+import { useFeedbackStream } from "@/hooks/useFeedbackStream"
 
 
 interface ReviewProjectComponentProps {
@@ -23,8 +24,8 @@ interface ReviewProjectComponentProps {
 }
 
 function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
-    const { projects, isLoading, isUpdateLoading } = useAppSelector((state) => state.projects)
-    const [projectData, setprojectData] = useState<Project | null>(null)
+    const { projects, reviewProject, isLoading, isUpdateLoading } = useAppSelector((state) => state.projects)
+    // const { feedback } = useFeedbackStream(projectId)
     const [comment, setComment] = useState("")
     const disptach = useAppDispatch()
     const [isOpen, setIsOpen] = useState(false)
@@ -44,21 +45,21 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
     }, [disptach])
 
     useEffect(() => {
-        const handlefetch = async () => {
-            if (!projectId) return
-
-            const project = projects.filter((p) => p.id === projectId)
-            if (project && project.length > 0) {
-                setprojectData(project[0])
-            } else {
-                await handlefetchProject(projectId)
-            }
+        if (!projectId) return;
+        const projectInState = projects.find(p => p.id === projectId)
+        
+        if (projectInState) {
+            disptach(findReviewProject({ id: projectId }))
+        } else {
+            disptach(fetchProject({ id: projectId }))
+                .unwrap()
+                .catch((error) => {
+                    toast.error(error || "Unable to load project")
+                })
         }
+    }, [projectId, disptach])
 
-        handlefetch()
-    }, [projectId, projects, handlefetchProject])
-
-    const now = getTimeAgo(projectData?.updatedAt || "")
+    const now = getTimeAgo(reviewProject?.updatedAt || "")
 
     const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault()
@@ -146,19 +147,19 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                             </div>
 
                             <h1 className="text-2xl lg:text-3xl font-semibold text-foreground mb-3">
-                                {projectData?.title || "FinTech Dashboard / Phase 2 - High Fidelity"}
+                                {reviewProject?.title || "FinTech Dashboard / Phase 2 - High Fidelity"}
                             </h1>
 
                             <div className="flex items-center gap-3 mb-4">
                                 <Badge variant="outline" className="bg-green-500/10 text-green-600 border-green-500/20">
                                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 mr-2" />
-                                    {projectData?.status || "Ready for Review"}
+                                    {reviewProject?.status || "Ready for Review"}
                                 </Badge>
                                 <span className="text-sm text-muted-foreground">Updated {now}</span>
                             </div>
 
                             <p className="text-muted-foreground leading-relaxed text-sm lg:text-base">
-                                {projectData?.description ||
+                                {reviewProject?.description ||
                                     "This version includes the updated color palette for the dark mode toggle and the revised transaction history table. Please review the interaction states."}
                             </p>
                         </div>
@@ -166,7 +167,7 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                         {/* Figma embed area */}
                         <div className="w-full mb-8">
                             <div className="w-full aspect-video bg-muted/30 rounded-lg flex flex-col items-center justify-center gap-6 border border-border">
-                                {!projectData?.embedLink ? (
+                                {!reviewProject?.embedLink ? (
                                     <>
                                         <div className="w-16 h-16 text-muted-foreground">
                                             <svg viewBox="0 0 38 57" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -210,7 +211,7 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                                     </>
                                 ) : (
                                     <FigmaEmbed
-                                        src={projectData.embedLink || embedUrl}
+                                        src={reviewProject.embedLink || embedUrl}
                                     />
                                 )}
                             </div>
@@ -226,7 +227,7 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                             <MessageSquare className="w-5 h-5 text-muted-foreground" />
                             <h2 className="font-semibold text-foreground">Feedback</h2>
                             <Badge variant="secondary" className="ml-1">
-                                {projectData?.Feedback?.length || 0}
+                                {reviewProject?.Feedback?.length || 0}
                             </Badge>
                         </div>
                         <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -241,8 +242,8 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                     {/* Feedback list - Scrollable */}
                     <ScrollArea className="flex-1 overflow-y-auto">
                         <div className="p-4 space-y-6">
-                            {projectData?.Feedback && projectData?.Feedback?.length > 0 ? (
-                                projectData?.Feedback.map((feedback) => (
+                            {reviewProject?.Feedback && reviewProject?.Feedback?.length > 0 ? (
+                                reviewProject?.Feedback.map((feedback) => (
                                     <div key={feedback.id} className="space-y-3">
                                         {/* Main feedback */}
                                         <div className="flex gap-3">

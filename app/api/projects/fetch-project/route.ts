@@ -29,8 +29,40 @@ export async function POST(request: NextRequest) {
                 proposalId: true,
                 client: true,
                 creator: true,
-                embedLink : true,
-                Feedback : true
+                embedLink: true,
+                Feedback: {
+                    select: {
+                        author: {
+                            select: {
+                                id: true,
+                                username: true,
+                                email: true,
+                                avatarUrl: true,
+                                role: true
+                            }
+                        },
+                        id : true,
+                        replies: {
+                            include: {
+                                author: {
+                                    select: {
+                                        id: true,
+                                        username: true,
+                                        email: true,
+                                        avatarUrl: true,
+                                        role: true
+                                    }
+                                }
+                            }
+                        },
+                        message: true,
+                        authorId: true,
+                        projectId: true,
+                        createdAt: true,
+                        updatedAt: true
+
+                    }
+                }
             }
         })
 

@@ -19,8 +19,7 @@ export async function PATCH(request: NextRequest) {
     try {
         const { id, ...updateData } = data;
 
-        // Remove the duplicate feedback creation - this is creating duplicates!
-        // Just use the update below
+        //add feedback
 
         const response = await prisma.project.update({
             where: {

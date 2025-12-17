@@ -1,8 +1,11 @@
+import InVoices from '@/components/client/inVoices'
 import React from 'react'
 
 function InvoicesPage() {
   return (
-    <div>InvoicesPage</div>
+    <div className='w-full'>
+      <InVoices />
+    </div>
   )
 }
 

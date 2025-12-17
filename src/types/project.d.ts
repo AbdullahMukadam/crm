@@ -40,7 +40,7 @@ export interface Feedback {
     message: string
     replies: Feedback[]
     author: any
-    project: Project
+    project?: Project
 }
 
 export interface Deliverable {

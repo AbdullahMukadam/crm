@@ -19,31 +19,29 @@ export async function PATCH(request: NextRequest) {
     try {
         const { id, feedbackId, message } = data;
 
-        const reply = await prisma.feedback.create({
-            data: {
-                projectId: id,
-                authorId: user.id as string,
-                message: message,
-                Feedback: {
-                    connect: { id: feedbackId } // Connect to parent feedback
-                }
+       //add reply
+        const project = await prisma.project.update({
+            where: {
+                id: id
             },
-            include: {
-                author: {
-                    select: {
-                        id: true,
-                        username: true,
-                        email: true,
-                        avatarUrl: true,
-                        role: true
+            data: {
+                Feedback: {
+                    update: {
+                        where: {
+                            id: feedbackId
+                        },
+                        data: {
+                            replies: {
+                                create: {
+                                    projectId: id,
+                                    authorId: user.id as string,
+                                    message: message
+                                }
+                            }
+                        }
                     }
                 }
-            }
-        });
-
-        // Get project details for notification
-        const project = await prisma.project.findUnique({
-            where: { id },
+            },
             select: {
                 id: true,
                 title: true,
@@ -58,6 +56,9 @@ export async function PATCH(request: NextRequest) {
                 creator: true,
                 embedLink: true,
                 Feedback: {
+                    where: {
+                        parentId: null  // Only get top-level feedback
+                    },
                     select: {
                         id: true,
                         author: {
@@ -109,7 +110,6 @@ export async function PATCH(request: NextRequest) {
             message: "Reply Created Successfully",
             data: project
         });
-
 
     } catch (error) {
         console.error("Feedback creation error:", error);

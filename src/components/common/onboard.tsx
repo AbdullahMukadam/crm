@@ -21,7 +21,7 @@ import { addUserDetails } from '@/lib/store/features/authSlice'
 function Onboardpage() {
     const { onboarded, id } = useAppSelector((state) => state.auth)
     const dispatch = useAppDispatch()
-    const [role, setRole] = useState<UserRole>("client")
+    const [role, setRole] = useState<UserRole>("CLIENT")
     const [loading, setloading] = useState(false)
     const router = useRouter()
 

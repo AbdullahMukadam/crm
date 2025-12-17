@@ -152,17 +152,19 @@ model Notification {
 }
 
 model Feedback {
-  id        String     @id @default(cuid())
+  id        String   @id @default(cuid())
   projectId String
   authorId  String
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
   message   String
-  replies   Feedback[] @relation("FeedbackReplies")
-  author    User       @relation(fields: [authorId], references: [id])
-  project   Project    @relation(fields: [projectId], references: [id])
+  parentId  String?
 
-  Feedback Feedback[] @relation("FeedbackReplies")
+  replies Feedback[] @relation("FeedbackReplies")
+  parent  Feedback?  @relation("FeedbackReplies", fields: [parentId], references: [id])
+  author  User       @relation(fields: [authorId], references: [id])
+  project Project    @relation(fields: [projectId], references: [id])
+
 }
 
 enum NotificationType {
