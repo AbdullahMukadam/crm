@@ -1,9 +1,7 @@
 
 import { NextRequest } from 'next/server';
-import { PrismaClient } from '@prisma/client';
 import { Feedback } from '@/types/project';
-
-const prisma = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
   const projectId = request.nextUrl.searchParams.get('projectId');

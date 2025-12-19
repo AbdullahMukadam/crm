@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { verifyToken } from "@/utils/verify-token";
-import { PrismaClient } from "@prisma/client";
-
-const prismaClient = new PrismaClient();
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
     try {
@@ -24,7 +22,7 @@ export async function GET(request: NextRequest) {
             }, { status: 401 });
         }
 
-        const user = await prismaClient.user.findUnique({
+        const user = await prisma.user.findUnique({
             where: { id: decoded.id },
             select: {
                 id: true,

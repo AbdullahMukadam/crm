@@ -1,8 +1,7 @@
 import { createToken } from "@/utils/create-token";
-import { PrismaClient, Role } from "@prisma/client";
+import { Role } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-const prismaClient = new PrismaClient()
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
     try {
@@ -17,7 +16,7 @@ export async function POST(request: NextRequest) {
             })
         }
 
-        const isUserPressent = await prismaClient.user.findUnique({
+        const isUserPressent = await prisma.user.findUnique({
             where: {
                 id: userId
             }
@@ -31,7 +30,7 @@ export async function POST(request: NextRequest) {
 
         const upperCaseRole = role.toUpperCase() as Role;
 
-        const updatedUser = await prismaClient.user.update({
+        const updatedUser = await prisma.user.update({
             where: {
                 id: userId
             },

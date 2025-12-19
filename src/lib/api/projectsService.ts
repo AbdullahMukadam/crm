@@ -3,7 +3,7 @@ import { FetchClient } from "./fetchClient"
 import { APIResponse } from "@/types/auth"
 import { NotificationsData } from "@/types/notifications"
 import { PROJECTS_API_ENDPOINTS } from "@/constants/projects"
-import { CreateFeedbackRequest, Project, replyFeedbackRequest } from "@/types/project"
+import { CreateFeedbackRequest, Feedback, Project, replyFeedbackRequest } from "@/types/project"
 
 class ProjectsService {
 
@@ -34,16 +34,16 @@ class ProjectsService {
         })
     }
 
-    async createFeedback(data: Partial<CreateFeedbackRequest>): Promise<APIResponse<Project>> {
-        return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.CREATE_FEEDBACK, {
-            method: "PATCH",
+    async createFeedback(data: CreateFeedbackRequest): Promise<APIResponse<Feedback>> {
+        return FetchClient.makeRequest(`${PROJECTS_API_ENDPOINTS.CREATE_FEEDBACK}/${data.id}/feedback`, {
+            method: "POST",
             body: JSON.stringify(data)
         })
     }
 
-    async replyFeedback(data: Partial<replyFeedbackRequest>): Promise<APIResponse<Project>> {
-        return FetchClient.makeRequest(PROJECTS_API_ENDPOINTS.REPLY_FEEDBACK, {
-            method: "PATCH",
+    async replyFeedback(data: replyFeedbackRequest): Promise<APIResponse<Feedback>> {
+        return FetchClient.makeRequest(`${PROJECTS_API_ENDPOINTS.REPLY_FEEDBACK}/${data.feedbackId}/reply`, {
+            method: "POST",
             body: JSON.stringify(data)
         })
     }

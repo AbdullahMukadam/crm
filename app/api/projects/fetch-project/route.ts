@@ -1,7 +1,6 @@
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient()
 export async function POST(request: NextRequest) {
     const { id } = await request.json()
 
@@ -9,11 +8,11 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({
             success: false,
             message: "Data not received"
-        })
+        }, { status: 400 })
     }
-    try {
 
-        const response = await prisma.project.findFirst({
+    try {
+        const response = await prisma.project.findUnique({
             where: {
                 id: id
             },
@@ -27,11 +26,43 @@ export async function POST(request: NextRequest) {
                 creatorId: true,
                 clientId: true,
                 proposalId: true,
-                client: true,
-                creator: true,
+                deliverables : true,
+                client: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatarUrl: true,
+                        role: true,
+                        createdAt: true,
+                        onboarded: true,
+                        updatedAt: true
+                    }
+                },
+                creator: {
+                    select: {
+                        id: true,
+                        username: true,
+                        email: true,
+                        avatarUrl: true,
+                        role: true,
+                        createdAt: true,
+                        onboarded: true,
+                        updatedAt: true
+                    }
+                },
                 embedLink: true,
                 Feedback: {
+                    where: {
+                        parentId: null  // ✅ CRITICAL: Only get top-level feedback
+                    },
                     select: {
+                        id: true,
+                        message: true,
+                        authorId: true,
+                        projectId: true,
+                        createdAt: true,
+                        updatedAt: true,
                         author: {
                             select: {
                                 id: true,
@@ -41,7 +72,6 @@ export async function POST(request: NextRequest) {
                                 role: true
                             }
                         },
-                        id : true,
                         replies: {
                             include: {
                                 author: {
@@ -52,15 +82,28 @@ export async function POST(request: NextRequest) {
                                         avatarUrl: true,
                                         role: true
                                     }
+                                },
+                                replies: {  // Optional: if you want nested replies
+                                    include: {
+                                        author: {
+                                            select: {
+                                                id: true,
+                                                username: true,
+                                                email: true,
+                                                avatarUrl: true,
+                                                role: true
+                                            }
+                                        }
+                                    }
                                 }
+                            },
+                            orderBy: {
+                                createdAt: 'asc'  // Chronological order for replies
                             }
-                        },
-                        message: true,
-                        authorId: true,
-                        projectId: true,
-                        createdAt: true,
-                        updatedAt: true
-
+                        }
+                    },
+                    orderBy: {
+                        createdAt: 'desc'  // Newest feedback first
                     }
                 }
             }
@@ -69,8 +112,8 @@ export async function POST(request: NextRequest) {
         if (!response) {
             return NextResponse.json({
                 success: false,
-                message: "Unable to fetch the Project"
-            })
+                message: "Project not found"
+            }, { status: 404 })
         }
 
         return NextResponse.json({
@@ -80,9 +123,10 @@ export async function POST(request: NextRequest) {
         })
 
     } catch (error) {
+        console.error("Fetch project error:", error);
         return NextResponse.json({
             success: false,
             message: "Internal Server Error"
-        })
+        }, { status: 500 })
     }
 }

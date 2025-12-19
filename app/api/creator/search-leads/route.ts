@@ -1,8 +1,7 @@
 import { verifyUser } from "@/lib/middleware/verify-user";
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const prismaClient = new PrismaClient()
 export async function POST(request: NextRequest) {
     const { user, error } = await verifyUser(request)
     const { query } = await request.json()
@@ -18,7 +17,7 @@ export async function POST(request: NextRequest) {
 
     try {
 
-        const response = await prismaClient.lead.findMany({
+        const response = await prisma.lead.findMany({
             where: {
                 OR: [
                     {

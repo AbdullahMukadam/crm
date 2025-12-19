@@ -1,8 +1,6 @@
 import { jwtVerify } from "jose";
 import { NextRequest, NextResponse } from "next/server";
-import { PrismaClient } from "@prisma/client";
-
-const prismaClient = new PrismaClient()
+import { prisma } from "@/lib/prisma";
 
 export async function GET(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
@@ -22,7 +20,7 @@ export async function GET(request: NextRequest) {
         const { payload } = await jwtVerify(token, secret);
         const userId = payload.id as string;
 
-        const userProposals = await prismaClient.proposal.findMany({
+        const userProposals = await prisma.proposal.findMany({
             where: {
                 creatorId: userId
             },

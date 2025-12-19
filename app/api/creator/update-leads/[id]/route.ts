@@ -1,7 +1,6 @@
-import { PrismaClient } from '@prisma/client';
-import { NextRequest, NextResponse } from 'next/server';
 
-const prismaClient = new PrismaClient()
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from "@/lib/prisma";
 
 export async function PATCH(
     request: NextRequest,
@@ -11,7 +10,7 @@ export async function PATCH(
         const { status } = await request.json();
         const {id} = await params
 
-        const updatedLead = await prismaClient.lead.update({
+        const updatedLead = await prisma.lead.update({
             where: { id: id },
             data: { status },
         });

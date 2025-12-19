@@ -1,8 +1,6 @@
+import { prisma } from "@/lib/prisma";
 import { verifyToken } from "@/utils/verify-token";
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
-
-const prismaClient = new PrismaClient();
 
 export async function GET(request: NextRequest) {
     const token = request.cookies.get('token')?.value;
@@ -24,7 +22,7 @@ export async function GET(request: NextRequest) {
             }), { status: 401 });
         }
 
-        const userDetails = await prismaClient.user.findUnique({
+        const userDetails = await prisma.user.findUnique({
             where: {
                 id: isverifiedToken.id
             },

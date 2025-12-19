@@ -1,9 +1,8 @@
 import { createNotification } from "@/lib/createNotifications";
 import { verifyUser } from "@/lib/middleware/verify-user";
-import { PrismaClient } from "@prisma/client";
 import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
 
-const prisma = new PrismaClient()
 export async function PATCH(request: NextRequest) {
     const { user, error } = await verifyUser(request)
     const data = await request.json()
@@ -36,7 +35,8 @@ export async function PATCH(request: NextRequest) {
                 client: true,
                 creator: true,
                 embedLink: true,
-                Feedback : true
+                Feedback : true,
+                deliverables : true
             }
         })
 

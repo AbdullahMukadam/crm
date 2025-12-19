@@ -1,8 +1,6 @@
 
-import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
-
-const primsaClient = new PrismaClient()
+import { prisma } from "@/lib/prisma";
 
 export async function GET(
     request: NextRequest,
@@ -19,7 +17,7 @@ export async function GET(
 
         // Fetch visits from database
         const usernameTofind = username.toLowerCase()
-        const visits = await primsaClient.formVisit.findMany({
+        const visits = await prisma.formVisit.findMany({
             where: {
                 username: usernameTofind,
                 visitDate: {

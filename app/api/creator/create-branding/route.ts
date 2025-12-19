@@ -1,8 +1,7 @@
 import { verifyUser } from "@/lib/middleware/verify-user";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const prismaClient = new PrismaClient()
 export async function POST(request: NextRequest) {
     const { user, error } = await verifyUser(request)
     const data = await request.json()
@@ -17,7 +16,7 @@ export async function POST(request: NextRequest) {
     const { feilds } = data
 
     try {
-        const updateBranding = await prismaClient.branding.create({
+        const updateBranding = await prisma.branding.create({
             data: {
                 creatorId: user.id as string,
                 username : user.username as string,

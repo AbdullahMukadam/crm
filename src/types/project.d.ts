@@ -21,27 +21,35 @@ export interface Project {
     Feedback?: Feedback[]
 }
 
-export interface CreateFeedbackRequest extends Project {
-    message: string
-}
+export interface CreateFeedbackRequest {
+    id: string; // project id
+    message: string;
+  }
 
-export interface replyFeedbackRequest extends Project {
-    message: string,
-    feedbackId : string
-}
+  export interface replyFeedbackRequest {
+    id: string; // project id
+    feedbackId: string;
+    message: string;
+  }
 
 
 export interface Feedback {
-    id: string
-    projectId: string
-    authorId: string
-    createdAt: Data
-    updatedAt: Date
-    message: string
-    replies: Feedback[]
-    author: any
-    project?: Project
-}
+    id: string;
+    message: string;
+    authorId: string;
+    projectId: string;
+    parentId: string | null;
+    createdAt: string;
+    updatedAt: string;
+    author: {
+      id: string;
+      username: string;
+      email: string;
+      avatarUrl: string | null;
+      role: string;
+    };
+    replies?: Feedback[]; // Recursive type for nested replies
+  }
 
 export interface Deliverable {
     id: string;

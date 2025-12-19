@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
-import { NextRequest, NextResponse } from "next/server";
 
-const prismaClient = new PrismaClient()
+import { NextRequest, NextResponse } from "next/server";
+import { prisma } from "@/lib/prisma";
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ proposalId: string }> }) {
     const { proposalId } = await params
 
@@ -14,7 +14,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     try {
 
-        const proposal = await prismaClient.proposal.findFirst({
+        const proposal = await prisma.proposal.findFirst({
             where: {
                 id: proposalId
             },

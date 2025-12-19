@@ -1,8 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 
-const prismaClient = new PrismaClient()
 export async function POST(request: NextRequest) {
     const data = await request.json()
     if (!data) {
@@ -12,7 +11,7 @@ export async function POST(request: NextRequest) {
         })
     }   
     try {
-        const deletedlead = await prismaClient.lead.delete({
+        const deletedlead = await prisma.lead.delete({
             where: {
                 id: data
             },

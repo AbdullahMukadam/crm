@@ -1,8 +1,7 @@
 import { verifyUser } from "@/lib/middleware/verify-user";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const prismaClient = new PrismaClient()
 export async function GET(request: NextRequest) {
     try {
         const { user, error } = await verifyUser(request)
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
             })
         }
 
-        const response = await prismaClient.branding.findMany({
+        const response = await prisma.branding.findMany({
             select: {
                 id: true,
                 formFeilds: true,

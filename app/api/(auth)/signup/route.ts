@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
+
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt"
 import { createToken } from "@/utils/create-token";
 import 'dotenv/config'
-
-const prismaClient = new PrismaClient()
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
     try {
@@ -19,7 +18,7 @@ export async function POST(request: NextRequest) {
 
         const { userCredentials } = data;
 
-        const isUserPresent = await prismaClient.user.findUnique({
+        const isUserPresent = await prisma.user.findUnique({
             where: {
                 email: userCredentials.email
             }
@@ -35,7 +34,7 @@ export async function POST(request: NextRequest) {
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(userCredentials.password, salt)
 
-        const newUser = await prismaClient.user.create({
+        const newUser = await prisma.user.create({
             data: {
                 username: userCredentials.username,
                 email: userCredentials.email,

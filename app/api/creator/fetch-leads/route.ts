@@ -1,8 +1,7 @@
 import { verifyUser } from "@/lib/middleware/verify-user";
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const prismaClient = new PrismaClient()
 export async function GET(request: NextRequest) {
     const { user, error } = await verifyUser(request)
     if (!user || error) {
@@ -13,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        const leads = await prismaClient.lead.findMany({
+        const leads = await prisma.lead.findMany({
             where: {
                 userId : user.id as string
             }

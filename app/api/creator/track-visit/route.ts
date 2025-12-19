@@ -1,8 +1,6 @@
 
-import { PrismaClient } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
-
-const primsaClient = new PrismaClient()
+import { prisma } from "@/lib/prisma";
 
 export async function POST(request: NextRequest) {
   try {
@@ -26,7 +24,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Create visit record
-    await primsaClient.formVisit.create({
+    await prisma.formVisit.create({
       data: {
         username,
         deviceType,

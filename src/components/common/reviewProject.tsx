@@ -11,7 +11,7 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import Link from "next/link"
 import { getTimeAgo } from "../client/project-card"
 import { toast } from "sonner"
-import { createFeedback, fetchProject, findReviewProject, replyFeedback as replyFeedbackApi, updateProject } from "@/lib/store/features/projectSlice"
+import { addFeedbackRealtime, addReplyRealtime, createFeedback, fetchProject, findReviewProject, replyFeedback as replyFeedbackApi, updateProject } from "@/lib/store/features/projectSlice"
 import { FigmaEmbed } from "./figmaEmbed"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Label } from "../ui/label"
@@ -24,14 +24,42 @@ interface ReviewProjectComponentProps {
 }
 
 function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
-    const { projects, reviewProject, isLoading, isUpdateLoading } = useAppSelector((state) => state.projects)
-    // const { feedback } = useFeedbackStream(projectId)
+    const { projects, reviewProject, isLoading, isUpdateLoading, isFeedbackLoading } = useAppSelector((state) => state.projects)
     const [comment, setComment] = useState("")
     const disptach = useAppDispatch()
     const [isOpen, setIsOpen] = useState(false)
     const [embedUrl, setEmbedUrl] = useState("")
     const [showReplyInput, setshowReplyInput] = useState(false)
     const [replyingFeedbackState, setreplyingFeedback] = useState<Feedback | null>(null)
+
+    const handleFeedbackCreated = useCallback(
+        (feedback: Feedback) => {
+            disptach(addFeedbackRealtime({ projectId, feedback }));
+        },
+        [disptach, projectId]
+    );
+
+    const handleReplyCreated = useCallback(
+        (reply: Feedback & { parentId: string }) => {
+            if (reply.parentId) {
+                disptach(
+                    addReplyRealtime({
+                        projectId,
+                        feedbackId: reply.parentId,
+                        reply,
+                    })
+                );
+            }
+        },
+        [disptach, projectId]
+    );
+
+
+    const { isConnected } = useFeedbackStream({
+        projectId,
+        onFeedbackCreated: handleFeedbackCreated,
+        onReplyCreated: handleReplyCreated,
+    })
 
     const handlefetchProject = useCallback(async (projectId: string) => {
         try {
@@ -47,7 +75,7 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
     useEffect(() => {
         if (!projectId) return;
         const projectInState = projects.find(p => p.id === projectId)
-        
+
         if (projectInState) {
             disptach(findReviewProject({ id: projectId }))
         } else {
@@ -86,7 +114,7 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
         try {
             console.log(replyingFeedbackState)
             if (replyingFeedbackState && showReplyInput) {
-                const data: Partial<replyFeedbackRequest> = {
+                const data: replyFeedbackRequest = {
                     message: comment,
                     id: projectId,
                     feedbackId: replyingFeedbackState.id
@@ -98,7 +126,7 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                     toast.success("Reply Added Successfully")
                 }
             } else {
-                const data: Partial<CreateFeedbackRequest> = {
+                const data: CreateFeedbackRequest = {
                     message: comment,
                     id: projectId,
                 }
@@ -344,12 +372,12 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                                     <Paperclip className="w-4 h-4" />
                                 </Button>
                                 <Button
-                                    disabled={isUpdateLoading || !comment.trim()}
+                                    disabled={isFeedbackLoading || !comment.trim()}
                                     size="sm"
                                     className="h-8"
                                     onClick={handdleCreateFeedback}
                                 >
-                                    {isUpdateLoading ? "Sending..." : "Send"}
+                                    {isFeedbackLoading ? "Sending..." : "Send"}
                                     <Send className="w-3 h-3 ml-1" />
                                 </Button>
                             </div>

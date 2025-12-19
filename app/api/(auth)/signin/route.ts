@@ -1,11 +1,9 @@
 
 
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcrypt"
 import { createToken } from "@/utils/create-token";
-
-const prismaClient = new PrismaClient()
 
 export async function POST(request: NextRequest) {
     try {
@@ -19,7 +17,7 @@ export async function POST(request: NextRequest) {
         }
 
         const { userCredentials } = data;
-        const isUserPresent = await prismaClient.user.findUnique({
+        const isUserPresent = await prisma.user.findUnique({
             where: {
                 email: userCredentials.email
             }

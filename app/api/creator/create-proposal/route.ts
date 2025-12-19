@@ -1,7 +1,7 @@
-import { PrismaClient } from "@prisma/client";
+import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
-const Prisma = new PrismaClient()
+
 export async function POST(request: NextRequest) {
 
     const data = await request.json()
@@ -15,7 +15,7 @@ export async function POST(request: NextRequest) {
     try {
 
         const { title, creatorId } = data
-        const proposal = await Prisma.proposal.create({
+        const proposal = await prisma.proposal.create({
             data: {
                 title: title,
                 creatorId: creatorId,
