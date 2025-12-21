@@ -27,6 +27,7 @@ export async function POST(request: NextRequest) {
                 clientId: true,
                 proposalId: true,
                 deliverables : true,
+                invoices : true,
                 client: {
                     select: {
                         id: true,

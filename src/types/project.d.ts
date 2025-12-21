@@ -1,7 +1,7 @@
 
 export type ProjectStatus = "PLANNING" | "IN_PROGRESS" | "COMPLETED" | "CANCELED"
 export type DeliverableStatus = "pending_review" | "revisions_requested" | "approved"
-export type InvoiceStatus = "draft" | "paid" | "sent" | "overdue"
+export type InvoiceStatus = "DRAFT" | "PAID" | "SENT" | "OVERDUE"
 
 export interface Project {
     proposalId: string | null;

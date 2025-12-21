@@ -17,14 +17,14 @@ interface ProjectCardProps {
   handleDeleteProject: (id: string) => Promise<void>
 }
 
-const statusConfig = {
+export const statusConfig = {
   IN_PROGRESS: { label: "IN PROGRESS", color: "bg-emerald-400 text-primary-foreground", dotColor: "bg-emerald-600" },
   PLANNING: { label: "PLANNING", color: "bg-orange-500 text-white", dotColor: "bg-orange-300" },
   COMPLETED: { label: "COMPLETED", color: "bg-emerald-500 text-white", dotColor: "bg-emerald-500" },
   CANCELED: { label: "CANCELED", color: "bg-red-500 text-white", dotColor: "bg-red-300" },
 }
 
-const getProgressColor = (progress: ProjectStatus) => {
+export const getProgressColor = (progress: ProjectStatus) => {
   if (progress === "IN_PROGRESS") return "bg-emerald-500"
   if (progress === "PLANNING") return "bg-orange-500"
   if (progress === "CANCELED") return "bg-red-500"
@@ -32,7 +32,7 @@ const getProgressColor = (progress: ProjectStatus) => {
   return "bg-yellow-500"
 }
 
-const getProgress = (progress: ProjectStatus) => {
+export const getProgress = (progress: ProjectStatus) => {
   if (progress === "IN_PROGRESS") return 45
   if (progress === "PLANNING") return 30
   if (progress === "CANCELED") return 0

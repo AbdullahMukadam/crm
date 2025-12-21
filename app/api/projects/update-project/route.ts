@@ -36,7 +36,8 @@ export async function PATCH(request: NextRequest) {
                 creator: true,
                 embedLink: true,
                 Feedback : true,
-                deliverables : true
+                deliverables : true,
+                invoices : true,
             }
         })
 
