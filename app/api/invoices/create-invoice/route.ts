@@ -24,10 +24,14 @@ export async function PATCH(request: NextRequest) {
                 id: id
             },
             data: {
-                Feedback: {
+                invoices: {
                     create: {
-                        authorId: user.id as string,
-                        message: updateData.message
+                        invoiceNumber : data.invoiceNumber,
+                        amount : data.amount,
+                        dueDate : data.dueDate,
+                        status : data.status,
+                        clientId : data.client.id,
+                        projectId : data.projectId
                     }
                 }
             },
@@ -64,7 +68,8 @@ export async function PATCH(request: NextRequest) {
                         updatedAt: true
 
                     }
-                }
+                },
+                invoices : true
             }
         })
 
@@ -80,19 +85,18 @@ export async function PATCH(request: NextRequest) {
 
         await createNotification({
             userId: notifyUserId,
-            title: `New Feedback on Project`,
-            message: `${user.username} provided feedback on ${response.title}`,
+            title: `New Invoices Created.`,
+            message: `${user.username} created new invoice`,
             type: "SYSTEM",
         });
 
         return NextResponse.json({
             success: true,
-            message: "Feedback Created Successfully",
+            message: "New Invoices Created.",
             data: response
         })
 
     } catch (error) {
-        console.error("Feedback creation error:", error);
         return NextResponse.json({
             success: false,
             message: "Internal Server Error"

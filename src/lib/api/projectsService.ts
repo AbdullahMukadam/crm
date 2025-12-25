@@ -47,6 +47,13 @@ class ProjectsService {
             body: JSON.stringify(data)
         })
     }
+
+    async createInvoice(data) {
+        return FetchClient.makeRequest(`${PROJECTS_API_ENDPOINTS.CREATE_INVOICE}`, {
+            method: "POST",
+            body: JSON.stringify(data)
+        })
+    }
 }
 
 const projectService = new ProjectsService()

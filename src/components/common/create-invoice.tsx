@@ -20,12 +20,13 @@ import { InvoiceStatus, Project, ProjectStatus } from "@/types/project"
 import { useAppDispatch } from "@/lib/store/hooks"
 import { toast } from "sonner"
 import { updateProject } from "@/lib/store/features/projectSlice"
+import { CalendarComp } from "../ui/date-pcker"
 
-interface CreateProjectDialogProps {
+interface CreateInvoiceProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     isUpdateLoading: boolean
-    projects : Project[]
+    projects: Project[]
 }
 
 interface FormData {
@@ -36,14 +37,15 @@ interface FormData {
     client: string
 }
 
-export function CreateInvoice({ open, onOpenChange, isUpdateLoading, projects }: CreateProjectDialogProps) {
+export function CreateInvoice({ open, onOpenChange, isUpdateLoading, projects }: CreateInvoiceProps) {
     const [formData, setFormData] = useState<FormData>({
         amount: "",
         invoiceNumber: "",
-        projectId : "NA",
+        projectId: "NA",
         status: "DRAFT",
         client: "",
     })
+    const [date, setDate] = useState<Date | undefined>(undefined)
     const dispatch = useAppDispatch()
 
 
@@ -51,7 +53,7 @@ export function CreateInvoice({ open, onOpenChange, isUpdateLoading, projects }:
         e.preventDefault()
 
         try {
-           
+
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Unable to Update the Project")
         } finally {
@@ -100,7 +102,7 @@ export function CreateInvoice({ open, onOpenChange, isUpdateLoading, projects }:
                         <Label htmlFor="projectId" className="text-foreground w-full">
                             Project
                         </Label>
-                        <Select value={formData.projectId} onValueChange={(value) => setFormData({ ...formData, projectId: value })}>
+                        <Select required value={formData.projectId} onValueChange={(value) => setFormData({ ...formData, projectId: value })}>
                             <SelectTrigger id="projectId" className="bg-background border-border w-full">
                                 <SelectValue />
                             </SelectTrigger>
@@ -117,7 +119,7 @@ export function CreateInvoice({ open, onOpenChange, isUpdateLoading, projects }:
                             <Label htmlFor="status" className="text-foreground">
                                 Status
                             </Label>
-                            <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as InvoiceStatus })}>
+                            <Select required value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as InvoiceStatus })}>
                                 <SelectTrigger id="status" className="bg-background border-border">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -140,7 +142,14 @@ export function CreateInvoice({ open, onOpenChange, isUpdateLoading, projects }:
                                 value={formData.client}
                                 onChange={(e) => setFormData({ ...formData, client: e.target.value })}
                                 className="bg-background border-border"
-                                
+                                required
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <CalendarComp
+                                date={date}
+                                setDate={setDate}
                             />
                         </div>
                     </div>
