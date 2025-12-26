@@ -35,7 +35,21 @@ export async function GET(request: NextRequest) {
                 clientId: true,
                 proposalId: true,
                 deliverables : true,
-                invoices : true,
+                invoices : {
+                    select : {
+                        id: true,
+                        invoiceNumber: true,
+                        amount: true,
+                        dueDate: true,
+                        paidAt: true,
+                        status: true,
+                        createdAt: true,
+                        clientId: true,
+                        projectId: true,
+                        client: true,
+                        project: true,
+                    }
+                },
                 client: {
                     select: {
                         id: true,

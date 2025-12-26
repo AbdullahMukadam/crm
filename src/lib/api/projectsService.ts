@@ -3,7 +3,7 @@ import { FetchClient } from "./fetchClient"
 import { APIResponse } from "@/types/auth"
 import { NotificationsData } from "@/types/notifications"
 import { PROJECTS_API_ENDPOINTS } from "@/constants/projects"
-import { CreateFeedbackRequest, Feedback, Project, replyFeedbackRequest } from "@/types/project"
+import { CreateFeedbackRequest, CreateInvoiceRequest, CreateInvoiceRespobse, EditInvoiceRequest, Feedback, Invoice, Project, replyFeedbackRequest } from "@/types/project"
 
 class ProjectsService {
 
@@ -48,12 +48,29 @@ class ProjectsService {
         })
     }
 
-    async createInvoice(data) {
-        return FetchClient.makeRequest(`${PROJECTS_API_ENDPOINTS.CREATE_INVOICE}`, {
+    async createInvoice(data: CreateInvoiceRequest) {
+        return FetchClient.makeRequest<CreateInvoiceRespobse>(`${PROJECTS_API_ENDPOINTS.CREATE_INVOICE}`, {
+            method: "PATCH",
+            body: JSON.stringify(data)
+        })
+    }
+
+    async deleteInvoice(data: { id: string }) {
+        return FetchClient.makeRequest<Invoice>(`${PROJECTS_API_ENDPOINTS.DELETE_INVOICE}`, {
             method: "POST",
             body: JSON.stringify(data)
         })
     }
+
+    async editInvoice(data: Partial<EditInvoiceRequest>) {
+        return FetchClient.makeRequest<CreateInvoiceRespobse>(`${PROJECTS_API_ENDPOINTS.EDIT_INVOICE}`, {
+            method: "PATCH",
+            body: JSON.stringify(data)
+        })
+    }
+
+
+
 }
 
 const projectService = new ProjectsService()

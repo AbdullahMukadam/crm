@@ -1,17 +1,33 @@
 "use client"
-import { Download, Search, CheckCircle2, Clock, Calendar, Loader2, Plus } from "lucide-react"
+
+import { Download, Search, CheckCircle2, Clock, Calendar, Loader2, Plus, MoreHorizontal, Mail, Pencil, Trash, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
 import { useCallback, useEffect, useState } from "react"
-import { fetchProjects } from "@/lib/store/features/projectSlice"
+import { deleteInvoiceSlice, editInvoiceSlice, fetchProjects } from "@/lib/store/features/projectSlice"
 import { useInvoices } from "@/hooks/useInvoices"
 import { format } from "date-fns"
-import { InvoiceStatus } from "@/types/project"
+import { CreateInvoice } from "../common/create-invoice"
+import { EditInvoiceRequest, InvoiceStatus } from "@/types/project"
 import DownloadInvoiceBtn from "../ui/downloadInvoiceBtn"
+import { toast } from "sonner"
+import { EditInvoice } from "@/components/common/edit-invoice"
+import emailjs from '@emailjs/browser';
+
+// Initialize EmailJS (do this once in your app)
+emailjs.init(process.env.NEXT_PUBLIC_EMAIL_PUBLIC_KEY!);
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   PAID: {
@@ -33,52 +49,126 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 }
 
 const InvoicesStatus = [
-  {
-    id: "PAID",
-    label: "Paid"
-  },
-  {
-    id: "SENT",
-    label: "Sent"
-  },
-  {
-    id: "DRAFT",
-    label: "Draft"
-  },
-  {
-    id: "OVERDUE",
-    label: "Overdue"
-  },
+  { id: "PAID", label: "Paid" },
+  { id: "SENT", label: "Sent" },
+  { id: "DRAFT", label: "Draft" },
+  { id: "OVERDUE", label: "Overdue" },
 ]
 
 export default function Invoices() {
-  const { projects, isLoading, isInvoiceLoading } = useAppSelector((state) => state.projects)
+  const { projects, isLoading, isInvoiceLoading, isDeletingInvoice, isEditingInvoice } = useAppSelector((state) => state.projects)
   const dispatch = useAppDispatch()
   const [searchQuery, setsearchQuery] = useState("")
   const [isOpen, setisOpen] = useState(false)
+  const [isEditInvoiceOpen, setisEditInvoiceOpen] = useState(false)
+  const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
 
-  // Use the hook to get real processed data
   const { invoices, stats, handleSearchInvoices, handleFilterInvoices } = useInvoices({ projects })
 
   useEffect(() => {
-    // Only fetch if we don't have projects loaded (or you might want to refetch on mount)
     if (projects.length === 0) {
       dispatch(fetchProjects());
     }
   }, [dispatch, projects.length]);
 
-
-
   useEffect(() => {
     let timerId = setTimeout(() => {
       handleSearchInvoices(searchQuery)
-    }, 2000);
-
+    }, 500);
     return () => clearTimeout(timerId)
   }, [searchQuery])
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(amount);
+  }
+
+  const handleMarkAsPaid = async (invoiceId: string) => {
+    try {
+      const data: Partial<EditInvoiceRequest> = {
+        id: invoiceId,
+        status: "PAID"
+      }
+      const response = await dispatch(editInvoiceSlice(data))
+
+      if (editInvoiceSlice.fulfilled.match(response)) {
+        toast.success("Invoice Updated Successfully")
+      } else {
+        toast.error("Failed to update invoice")
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "An error occured")
+    }
+  }
+
+  const handleSendInvoice = async (invoiceId: string) => {
+    try {
+      const invoice = invoices.find(inv => inv.id === invoiceId);
+      if (!invoice) {
+        toast.error("Invoice not found");
+        return;
+      }
+
+      if (!invoice.client?.email) {
+        toast.error("Client email not found");
+        return;
+      }
+
+      toast.loading("Sending invoice...");
+
+      // Prepare email template parameters
+      const templateParams = {
+        to_email: invoice.client.email,
+        to_name: invoice.client.username,
+        invoice_number: invoice.invoiceNumber,
+        invoice_amount: `$${Number(invoice.amount).toFixed(2)}`,
+        issue_date: format(new Date(invoice.createdAt), 'MMM dd, yyyy'),
+        due_date: format(new Date(invoice.dueDate), 'MMM dd, yyyy'),
+        project_name: invoice.project?.title || 'General',
+        invoice_link: `${window.location.origin}/invoice/${invoice.id}`,
+        company_name: 'Your Company Name',
+      };
+
+      // Send email using EmailJS
+      const response = await emailjs.send(
+        process.env.NEXT_PUBLIC_EMAIL_PUBLIC_KEY!,
+        'template_ohw0d1s', 
+        templateParams
+      );
+
+      console.log('Email sent successfully:', response);
+
+      // Update invoice status to SENT if it was DRAFT
+      if (invoice.status === 'DRAFT') {
+        await dispatch(editInvoiceSlice({
+          id: invoiceId,
+          status: 'SENT'
+        }));
+      }
+
+      toast.dismiss();
+      toast.success(`Invoice sent successfully to ${invoice.client.email}`);
+
+    } catch (error) {
+      console.error('Failed to send email:', error);
+      toast.dismiss();
+      toast.error(error instanceof Error ? error.message : "Failed to send invoice");
+    }
+  };
+
+  const handleEditInvoice = (invoice: any) => {
+    setSelectedInvoice(invoice);
+    setisEditInvoiceOpen(true);
+  }
+
+  const handleDeleteInvoice = async (id: string) => {
+    try {
+      const response = await dispatch(deleteInvoiceSlice({ id }))
+      if (deleteInvoiceSlice.fulfilled.match(response)) {
+        toast.success("Invoice deleted successfully")
+      }
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "An error Occured")
+    }
   }
 
   if (isLoading) {
@@ -104,11 +194,13 @@ export default function Invoices() {
               Manage your billing history and track revenue.
             </p>
           </div>
+          <Button className="gap-2" onClick={() => setisOpen(true)}>
+            <Plus className="h-4 w-4" /> Create Invoice
+          </Button>
         </div>
 
-        {/* Stats Cards - Now using Real Data */}
+        {/* Stats Cards */}
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-
           {/* Total Paid Card */}
           <Card className="border-border bg-card shadow-sm">
             <CardContent className="p-6">
@@ -169,10 +261,9 @@ export default function Invoices() {
             <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="relative flex-1 sm:max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setsearchQuery(e.target.value)} placeholder="Search by invoice ID..." className="pl-9" />
+                <Input value={searchQuery} onChange={(e) => setsearchQuery(e.target.value)} placeholder="Search by invoice ID or client..." className="pl-9" />
               </div>
               <div className="flex gap-2">
-
                 {InvoicesStatus.map((inv) => (
                   <Button key={inv.id} size="sm" variant="secondary" onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}>{inv.label}</Button>
                 ))}
@@ -185,8 +276,8 @@ export default function Invoices() {
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
                     <TableHead className="font-semibold text-muted-foreground">INVOICE ID</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">ISSUED</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">DUE</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground">CLIENT / PROJECT</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground">DUE DATE</TableHead>
                     <TableHead className="font-semibold text-muted-foreground">AMOUNT</TableHead>
                     <TableHead className="font-semibold text-muted-foreground">STATUS</TableHead>
                     <TableHead className="text-right font-semibold text-muted-foreground">ACTIONS</TableHead>
@@ -196,14 +287,23 @@ export default function Invoices() {
                   {invoices.length > 0 ? (
                     invoices.map((invoice) => {
                       const status = statusConfig[invoice.status] || statusConfig.DRAFT;
+                      // Safe check in case relations aren't populated
+                      const clientName = invoice.client?.username || "Unknown Client";
+                      const projectTitle = invoice.project?.title || "General";
+
                       return (
                         <TableRow key={invoice.id}>
                           <TableCell className="font-mono font-medium text-indigo-600">
                             {invoice.invoiceNumber}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
-                            {format(new Date(invoice.createdAt), 'MMM dd, yyyy')}
+
+                          <TableCell>
+                            <div className="flex flex-col">
+                              <span className="font-medium">{clientName}</span>
+                              <span className="text-xs text-muted-foreground">{projectTitle}</span>
+                            </div>
                           </TableCell>
+
                           <TableCell className="text-muted-foreground">
                             {format(new Date(invoice.dueDate), 'MMM dd, yyyy')}
                           </TableCell>
@@ -215,17 +315,66 @@ export default function Invoices() {
                               {status.label}
                             </Badge>
                           </TableCell>
+
                           <TableCell className="text-right">
-                            <DownloadInvoiceBtn invoice={invoice} onDownload={() => {
-                              console.log(`Invoice ${invoice.invoiceNumber} downloaded`);
-                            }} />
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="icon" className="h-8 w-8">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+                                <DropdownMenuItem className="cursor-pointer" asChild>
+                                  <div className="flex items-center w-full">
+                                    <DownloadInvoiceBtn
+                                      invoice={invoice}
+                                      onDownload={() => console.log('downloaded')}
+                                    />
+                                  </div>
+                                </DropdownMenuItem>
+
+                                {(invoice.status === 'SENT' || invoice.status === 'OVERDUE') && (
+                                  <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)} className="cursor-pointer text-emerald-600 focus:text-emerald-700">
+                                    <Check className="mr-2 h-4 w-4" /> Mark as Paid
+                                  </DropdownMenuItem>
+                                )}
+
+                                {invoice.status !== 'PAID' && (
+                                  <DropdownMenuItem onClick={() => handleSendInvoice(invoice.id)} className="cursor-pointer">
+                                    <Mail className="mr-2 h-4 w-4" />
+                                    {invoice.status === 'DRAFT' ? 'Send to Client' : 'Resend Reminder'}
+                                  </DropdownMenuItem>
+                                )}
+
+                                {/* Action 4: Edit (Only if Draft) */}
+                                {invoice.status === 'DRAFT' && (
+                                  <DropdownMenuItem
+                                    onClick={() => handleEditInvoice(invoice)}
+                                    className="cursor-pointer"
+                                  >
+                                    <Pencil className="mr-2 h-4 w-4" /> Edit Invoice
+                                  </DropdownMenuItem>
+                                )}
+
+                                <DropdownMenuSeparator />
+
+                                <DropdownMenuItem className="cursor-pointer text-red-600 focus:text-red-700"
+                                  onClick={() => handleDeleteInvoice(invoice.id)}
+                                  disabled={isDeletingInvoice}
+                                >
+                                  {isDeletingInvoice ? "deleting.." : "Delete"}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                         </TableRow>
                       );
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
                         No invoices found. Create one to get started!
                       </TableCell>
                     </TableRow>
@@ -236,6 +385,21 @@ export default function Invoices() {
           </CardContent>
         </Card>
       </div>
+
+      <CreateInvoice
+        onOpenChange={setisOpen}
+        open={isOpen}
+        isInvoiceLoading={isInvoiceLoading}
+        projects={projects}
+      />
+
+      <EditInvoice
+        open={isEditInvoiceOpen}
+        onOpenChange={setisEditInvoiceOpen}
+        isInvoiceLoading={isEditingInvoice}
+        projects={projects}
+        invoice={selectedInvoice}
+      />
     </div>
   )
 }

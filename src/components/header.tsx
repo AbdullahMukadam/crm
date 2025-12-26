@@ -18,6 +18,7 @@ import notificationService from '@/lib/api/notificarionService';
 import Link from 'next/link';
 import { Button } from './ui/button';
 import { toast } from 'sonner';
+import { useAppSelector } from '@/lib/store/hooks';
 
 function ListItem({
     title,
@@ -62,6 +63,7 @@ function ListItem({
 export const Header: React.FC = () => {
     const { isLoading, searchResults, handleSearch } = useSearch()
     const [notificationsData, setnotificationsData] = useState<NotificationsData | null>(null)
+    const { role } = useAppSelector((state) => state.auth)
 
     const handleFetchNotifications = useCallback(async () => {
         try {
@@ -167,11 +169,13 @@ export const Header: React.FC = () => {
                     </NavigationMenuList>
                 </NavigationMenu>
 
-                <SearchComponent
-                    isLoading={isLoading}
-                    searchResults={searchResults}
-                    onSearch={handleSearch}
-                />
+                {role === "CREATOR" && (
+                    <SearchComponent
+                        isLoading={isLoading}
+                        searchResults={searchResults}
+                        onSearch={handleSearch}
+                    />
+                )}
             </div>
         </header>
     );

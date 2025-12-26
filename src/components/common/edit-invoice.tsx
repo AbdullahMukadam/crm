@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { ChangeEvent, FormEvent, useCallback, useEffect, useState } from "react"
+import { type FormEvent, useCallback, useEffect, useState } from "react"
 import {
     Dialog,
     DialogContent,
@@ -14,72 +13,103 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { CreateInvoiceRequest, InvoiceStatus, Project, ProjectStatus } from "@/types/project"
+import { type CreateInvoiceRequest, type InvoiceStatus, type Project } from "@/types/project"
 import { useAppDispatch } from "@/lib/store/hooks"
 import { toast } from "sonner"
-import { createInvoice, updateProject } from "@/lib/store/features/projectSlice"
-import { CalendarComp } from "../ui/date-pcker"
+import { CalendarComp } from "@/components/ui/date-pcker"
+import { editInvoiceSlice } from "@/lib/store/features/projectSlice"
 
-interface CreateInvoiceProps {
+// Define the shape of the Invoice object you are passing
+// (You should ideally import this from your types file)
+interface Invoice {
+    id: string
+    invoiceNumber: string
+    amount: number | string
+    status: InvoiceStatus
+    dueDate: string | Date
+    projectId: string
+    client?: { id: string }
+    clientId?: string
+}
+
+interface EditInvoiceProps {
     open: boolean
     onOpenChange: (open: boolean) => void
     isInvoiceLoading: boolean
     projects: Project[]
+    invoice: Invoice | null // The invoice to edit
 }
 
 interface FormData {
-    amount: string,
-    invoiceNumber: string,
-    projectId: string,
-    status: InvoiceStatus,
-    client: string
+    amount: string
+    invoiceNumber: string
+    projectId: string
+    status: InvoiceStatus
 }
 
-export function CreateInvoice({ open, onOpenChange, isInvoiceLoading, projects }: CreateInvoiceProps) {
+export function EditInvoice({ open, onOpenChange, isInvoiceLoading, projects, invoice }: EditInvoiceProps) {
     const [formData, setFormData] = useState<FormData>({
         amount: "",
         invoiceNumber: "",
         projectId: "",
         status: "DRAFT",
-        client: "",
     })
     const [date, setDate] = useState<Date | undefined>(undefined)
     const dispatch = useAppDispatch()
 
-
-    const handleSubmit = useCallback(async (e: FormEvent<HTMLFormElement>) => {
-        e.preventDefault()
-
-        try {
-
-            const client = projects?.find((p) => p.id === formData.projectId)
-            const data: CreateInvoiceRequest = {
-                invoiceNumber: formData.invoiceNumber,
-                amount: parseInt(formData.amount),
-                projectId: formData.projectId,
-                status: formData.status,
-                clientId: client?.clientId || client?.client.id,
-                dueDate: date || new Date()
-            }
-            const response = await dispatch(createInvoice(data))
-            if (createInvoice.fulfilled.match(response)) {
-                toast.success("Invoice Added Successfully")
-            }
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Unable to Update the Project")
-        } finally {
-            onOpenChange(false)
+    // --- POPULATE FORM DATA ---
+    useEffect(() => {
+        if (invoice && open) {
+            setFormData({
+                amount: invoice.amount.toString(),
+                invoiceNumber: invoice.invoiceNumber,
+                projectId: invoice.projectId,
+                status: invoice.status as InvoiceStatus,
+            })
+            setDate(new Date(invoice.dueDate))
         }
-    }, [formData, open, onOpenChange])
+    }, [invoice, open])
+
+    const handleSubmit = useCallback(
+        async (e: FormEvent<HTMLFormElement>) => {
+            e.preventDefault()
+
+            if (!invoice) return
+
+            try {
+                const project = projects?.find((p) => p.id === formData.projectId)
+                const data = {
+                    id: invoice.id,
+                    invoiceNumber: formData.invoiceNumber,
+                    amount: parseInt(formData.amount),
+                    projectId: formData.projectId,
+                    status: formData.status,
+                    clientId: project?.clientId || project?.client.id, // Fallback logic
+                    dueDate: date || new Date(),
+                }
+
+                const response = await dispatch(editInvoiceSlice(data))
+
+                if (editInvoiceSlice.fulfilled.match(response)) {
+                    toast.success("Invoice Updated Successfully")
+                    onOpenChange(false)
+                } else {
+                    toast.error("Failed to update invoice")
+                }
+            } catch (error) {
+                toast.error(error instanceof Error ? error.message : "Unable to Update the Invoice")
+            }
+        },
+        [formData, date, invoice, projects, dispatch, onOpenChange],
+    )
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="bg-card border-border">
                 <DialogHeader>
-                    <DialogTitle className="text-foreground">Create Invoice</DialogTitle>
-                    <DialogDescription>Create Invoice and send to your customer</DialogDescription>
+                    <DialogTitle className="text-foreground">Edit Invoice</DialogTitle>
+                    <DialogDescription>Update invoice details.</DialogDescription>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-4">
@@ -89,11 +119,12 @@ export function CreateInvoice({ open, onOpenChange, isInvoiceLoading, projects }
                         </Label>
                         <Input
                             id="amount"
-                            placeholder="e.g., 500$"
+                            placeholder="e.g., 500"
                             value={formData.amount}
                             onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                             className="bg-background border-border"
                             required
+                            type="number"
                         />
                     </div>
 
@@ -103,7 +134,7 @@ export function CreateInvoice({ open, onOpenChange, isInvoiceLoading, projects }
                         </Label>
                         <Input
                             id="invoiceNumber"
-                            placeholder="e.g., 2"
+                            placeholder="e.g., INV-001"
                             value={formData.invoiceNumber}
                             onChange={(e) => setFormData({ ...formData, invoiceNumber: e.target.value })}
                             className="bg-background border-border"
@@ -115,13 +146,19 @@ export function CreateInvoice({ open, onOpenChange, isInvoiceLoading, projects }
                         <Label htmlFor="projectId" className="text-foreground w-full">
                             Project
                         </Label>
-                        <Select required value={formData.projectId} onValueChange={(value) => setFormData({ ...formData, projectId: value })}>
+                        <Select
+                            required
+                            value={formData.projectId}
+                            onValueChange={(value) => setFormData({ ...formData, projectId: value })}
+                        >
                             <SelectTrigger id="projectId" className="bg-background border-border w-full">
-                                <SelectValue />
+                                <SelectValue placeholder="Select Project" />
                             </SelectTrigger>
                             <SelectContent className="bg-card border-border">
                                 {projects?.map((p) => (
-                                    <SelectItem value={p.id}>{p.title}</SelectItem>
+                                    <SelectItem key={p.id} value={p.id}>
+                                        {p.title}
+                                    </SelectItem>
                                 ))}
                             </SelectContent>
                         </Select>
@@ -132,7 +169,11 @@ export function CreateInvoice({ open, onOpenChange, isInvoiceLoading, projects }
                             <Label htmlFor="status" className="text-foreground">
                                 Status
                             </Label>
-                            <Select required value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value as InvoiceStatus })}>
+                            <Select
+                                required
+                                value={formData.status}
+                                onValueChange={(value) => setFormData({ ...formData, status: value as InvoiceStatus })}
+                            >
                                 <SelectTrigger id="status" className="bg-background border-border">
                                     <SelectValue />
                                 </SelectTrigger>
@@ -145,25 +186,8 @@ export function CreateInvoice({ open, onOpenChange, isInvoiceLoading, projects }
                             </Select>
                         </div>
 
-                        {/* <div className="space-y-2">
-                            <Label htmlFor="client" className="text-foreground">
-                                Recipient Name
-                            </Label>
-                            <Input
-                                id="client"
-                                placeholder="Client name"
-                                value={formData.client}
-                                onChange={(e) => setFormData({ ...formData, client: e.target.value })}
-                                className="bg-background border-border"
-                                required
-                            />
-                        </div> */}
-
                         <div className="space-y-2">
-                            <CalendarComp
-                                date={date}
-                                setDate={setDate}
-                            />
+                            <CalendarComp date={date} setDate={setDate} />
                         </div>
                     </div>
 
@@ -176,8 +200,12 @@ export function CreateInvoice({ open, onOpenChange, isInvoiceLoading, projects }
                         >
                             Cancel
                         </Button>
-                        <Button disabled={isInvoiceLoading} type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
-                            {isInvoiceLoading ? "Please wait" : "Create Invoice"}
+                        <Button
+                            disabled={isInvoiceLoading}
+                            type="submit"
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                        >
+                            {isInvoiceLoading ? "Saving..." : "Save Changes"}
                         </Button>
                     </DialogFooter>
                 </form>

@@ -15,86 +15,66 @@ export async function PATCH(request: NextRequest) {
     }
 
     try {
-        const { id, ...updateData } = data;
-
-        //add feedback
-
-        const response = await prisma.project.update({
-            where: {
-                id: id
-            },
-            data: {
-                invoices: {
-                    create: {
-                        invoiceNumber : data.invoiceNumber,
-                        amount : data.amount,
-                        dueDate : data.dueDate,
-                        status : data.status,
-                        clientId : data.client.id,
-                        projectId : data.projectId
-                    }
-                }
-            },
+        const project = await prisma.project.findUnique({
+            where: { id: data.projectId },
             select: {
                 id: true,
                 title: true,
-                description: true,
-                status: true,
-                createdAt: true,
-                updatedAt: true,
                 creatorId: true,
-                clientId: true,
-                proposalId: true,
-                client: true,
-                creator: true,
-                embedLink: true,
-                Feedback: {
-                    select: {
-                        author: {
-                            select: {
-                                id: true,
-                                username: true,
-                                email: true,
-                                avatarUrl: true,
-                                role: true
-                            }
-                        },
-                        id: true,
-                        replies: true,
-                        message: true,
-                        authorId: true,
-                        projectId: true,
-                        createdAt: true,
-                        updatedAt: true
-
-                    }
-                },
-                invoices : true
+                clientId: true
             }
-        })
+        });
 
-        if (!response) {
-            return NextResponse.json({
-                success: false,
-                message: "Unable to update the project"
-            })
+        if (!project) {
+            return NextResponse.json(
+                { success: false, message: "Project not found" },
+                { status: 404 }
+            );
         }
 
-        // Notify the project creator or client (not the person who left feedback)
-        const notifyUserId = user.id === response.creatorId ? response.clientId : response.creatorId;
+        // Create feedback directly (simpler, more efficient)
+        const invoice = await prisma.invoice.create({
+            data: {
+                projectId: data.projectId,
+                invoiceNumber: data.invoiceNumber,
+                amount: data.amount,
+                dueDate: data.dueDate,
+                status: data.status,
+                clientId: data.clientId
+            },
+            select: {
+                id: true,
+                createdAt: true,
+                clientId: true,
+                status: true,
+                projectId: true,
+                invoiceNumber: true,
+                amount: true,
+                dueDate: true,
+                paidAt: true,
+                client : true,
+                project : true
+            }
+        });
+
+        // Notify the other party (not the author)
+        const notifyUserId = user.id === project.creatorId
+            ? project.clientId
+            : project.creatorId;
 
         await createNotification({
             userId: notifyUserId,
-            title: `New Invoices Created.`,
-            message: `${user.username} created new invoice`,
+            title: "New Invoice Created",
+            message: `${user.username} created new invoice for ${project.title}`,
             type: "SYSTEM",
+            link: `` // Add link for better UX
         });
 
         return NextResponse.json({
             success: true,
-            message: "New Invoices Created.",
-            data: response
-        })
+            message: "Invoice Created successfully",
+            data: invoice
+        });
 
     } catch (error) {
         return NextResponse.json({

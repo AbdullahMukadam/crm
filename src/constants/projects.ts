@@ -8,5 +8,7 @@ export const PROJECTS_API_ENDPOINTS = {
     FETCH_PROJECT : "/api/projects/fetch-project",
     CREATE_FEEDBACK : "/api/projects/",
     REPLY_FEEDBACK : "/api/feedback/",
-    CREATE_INVOICE : "/api/invoices/create-invoice"
+    CREATE_INVOICE : "/api/invoices/create-invoice",
+    DELETE_INVOICE : "/api/invoices/delete-invoice",
+    EDIT_INVOICE : "/api/invoices/edit-invoice"
  } as const;

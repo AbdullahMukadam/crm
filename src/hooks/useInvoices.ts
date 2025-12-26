@@ -1,4 +1,4 @@
-import { Invoice, Project } from "@/types/project"
+import { Invoice, InvoiceStatus, Project } from "@/types/project"
 import { useCallback, useEffect, useState } from "react";
 import { format, isAfter, parseISO } from "date-fns";
 
@@ -87,6 +87,12 @@ export function useInvoices({ projects }: UseInvoicesProps) {
 
     }
 
+    const handleFilterInvoices = (status : InvoiceStatus) => {
+        const flatInvoices = projects.flatMap(p => p.invoices || []);
+        let filteredInvoices = flatInvoices.filter((inv) => inv.status === status)
+        setAllInvoices(filteredInvoices)
+    }
+
     useEffect(() => {
         processInvoices();
     }, [processInvoices]);
@@ -94,6 +100,7 @@ export function useInvoices({ projects }: UseInvoicesProps) {
     return {
         invoices: allInvoices,
         stats,
-        handleSearchInvoices
+        handleSearchInvoices,
+        handleFilterInvoices
     }
 }

@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
-import { CreateFeedbackRequest, Project, Feedback, replyFeedbackRequest } from '@/types/project';
+import { CreateFeedbackRequest, Project, Feedback, replyFeedbackRequest, CreateInvoiceRequest, EditInvoiceRequest } from '@/types/project';
 import projectService from '@/lib/api/projectsService';
 
 interface ProjectsState {
@@ -7,7 +7,10 @@ interface ProjectsState {
   reviewProject: Project | null;
   isLoading: boolean;
   isUpdateLoading: boolean;
-  isFeedbackLoading: boolean; // Separate loading state for feedback operations
+  isFeedbackLoading: boolean;
+  isInvoiceLoading: boolean;
+  isDeletingInvoice: boolean;
+  isEditingInvoice: boolean;
   error: string | null;
 }
 
@@ -17,6 +20,9 @@ const initialState: ProjectsState = {
   isLoading: false,
   isUpdateLoading: false,
   isFeedbackLoading: false,
+  isInvoiceLoading: false,
+  isDeletingInvoice: false,
+  isEditingInvoice: false,
   error: null,
 };
 
@@ -121,6 +127,62 @@ export const replyFeedback = createAsyncThunk(
     }
   }
 );
+
+export const createInvoice = createAsyncThunk(
+  'projects/createInvoice',
+  async (data: CreateInvoiceRequest, { rejectWithValue }) => {
+    try {
+      const response = await projectService.createInvoice(data);
+      if (response.success && response.data) {
+        // Return both the feedback and projectId for state update
+        return {
+          invoice: response.data,
+          projectId: data.projectId // assuming id is the project id
+        };
+      }
+      throw new Error('Failed to create Invoice');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'An error occurred');
+    }
+  }
+);
+
+export const deleteInvoiceSlice = createAsyncThunk(
+  'projects/deleteInvoice',
+  async (data: { id: string }, { rejectWithValue }) => {
+    try {
+      const response = await projectService.deleteInvoice(data);
+      if (response.success && response.data) {
+        return {
+          invoiceId: data.id,
+          projectId: response.data.projectId
+        };
+      }
+      throw new Error('Failed to delete Invoice');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'An error occurred');
+    }
+  }
+);
+
+export const editInvoiceSlice = createAsyncThunk(
+  'projects/editInvoice',
+  async (data: Partial<EditInvoiceRequest>, { rejectWithValue }) => {
+    try {
+      const response = await projectService.editInvoice(data);
+      if (response.success && response.data) {
+        return {
+          invoice: response.data,
+          projectId: response.data.projectId
+        };
+      }
+      throw new Error('Failed to delete Invoice');
+    } catch (error) {
+      return rejectWithValue(error instanceof Error ? error.message : 'An error occurred');
+    }
+  }
+);
+
 
 const projectsSlice = createSlice({
   name: 'projects',
@@ -291,6 +353,65 @@ const projectsSlice = createSlice({
       })
       .addCase(replyFeedback.rejected, (state, action) => {
         state.isFeedbackLoading = false;
+        state.error = action.payload as string;
+      })
+
+      //create Invoice
+      .addCase(createInvoice.pending, (state) => {
+        state.isInvoiceLoading = true;
+        state.error = null;
+      })
+      .addCase(createInvoice.fulfilled, (state, action) => {
+        state.isInvoiceLoading = false;
+        const projectIndex = state.projects.findIndex((p) => p.id === action.payload.projectId);
+        if (projectIndex !== -1) {
+          state.projects[projectIndex].invoices?.push(action.payload.invoice)
+        }
+
+      })
+      .addCase(createInvoice.rejected, (state, action) => {
+        state.isInvoiceLoading = false;
+        state.error = action.payload as string;
+      })
+
+      //delete invoice
+      .addCase(deleteInvoiceSlice.pending, (state) => {
+        state.isDeletingInvoice = true;
+        state.error = null;
+      })
+      .addCase(deleteInvoiceSlice.fulfilled, (state, action) => {
+        state.isDeletingInvoice = false;
+        const projectIndex = state.projects.findIndex((p) => p.id === action.payload.projectId);
+        if (projectIndex !== -1) {
+          let allInvoices = state.projects[projectIndex].invoices?.filter((inv) => inv.id !== action.payload.invoiceId)
+          state.projects[projectIndex].invoices = allInvoices
+        }
+
+      })
+      .addCase(deleteInvoiceSlice.rejected, (state, action) => {
+        state.isDeletingInvoice = false;
+        state.error = action.payload as string;
+      })
+
+
+      //edit invoice
+      .addCase(editInvoiceSlice.pending, (state) => {
+        state.isEditingInvoice = true;
+        state.error = null;
+      })
+      .addCase(editInvoiceSlice.fulfilled, (state, action) => {
+        state.isEditingInvoice = false;
+        const projectIndex = state.projects.findIndex((p) => p.id === action.payload.projectId);
+        if (projectIndex !== -1 && state.projects[projectIndex].invoices) {
+          const inVoiceIndex = state.projects[projectIndex].invoices?.findIndex((inv) => inv.id === action.payload.invoice.id)
+          if (inVoiceIndex !== -1) {
+            state.projects[projectIndex].invoices[inVoiceIndex] = action.payload.invoice
+          }
+        }
+
+      })
+      .addCase(editInvoiceSlice.rejected, (state, action) => {
+        state.isEditingInvoice = false;
         state.error = action.payload as string;
       })
   },
