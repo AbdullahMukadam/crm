@@ -88,12 +88,12 @@ export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject
 
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex -space-x-2">
-            <Avatar className="w-8 h-8 border-2 border-card">
+            <Avatar className="w-8 h-8 border-2">
               <AvatarImage src={project.creator.avatarUrl || "/auth-image.jpg"} />
               <AvatarFallback className="text-xs">{project.creator.username.charAt(0)}</AvatarFallback>
             </Avatar>
-            <Avatar className="w-8 h-8 border-2 border-card">
-              <AvatarImage src={project.creator.avatarUrl || "/auth-image.jpg"} />
+            <Avatar className="w-8 h-8 border-2">
+              <AvatarImage src={project.client.avatarUrl || "/auth-image.jpg"} />
               <AvatarFallback className="text-xs">{project.client.username.charAt(0)}</AvatarFallback>
             </Avatar>
           </div>

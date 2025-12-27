@@ -1,5 +1,5 @@
 import { API_ENDPOINTS } from "@/constants/auth";
-import { APIResponse, OnboardRequest, OnboardResponse, SigninCredentials, SigninResponse, SignupCredentials, SignupResponse } from "@/types/auth";
+import { APIResponse, OnboardRequest, OnboardResponse, SigninCredentials, SigninResponse, SignupCredentials, SignupResponse, UpdateProfileRequest, UpdateProfileResponse } from "@/types/auth";
 import { FetchClient } from "./fetchClient";
 
 
@@ -45,6 +45,13 @@ class AuthService {
     async getCurrentUser(): Promise<APIResponse<SigninResponse>> {
         return await FetchClient.makeRequest<SigninResponse>(API_ENDPOINTS.ME, {
             method: 'GET',
+        });
+    }
+
+    async updateProfile(data: Partial<UpdateProfileRequest>): Promise<APIResponse<UpdateProfileResponse>> {
+        return await FetchClient.makeRequest<UpdateProfileResponse>(API_ENDPOINTS.UPDATE_PROFILE, {
+            method: 'PATCH',
+            body: JSON.stringify(data)
         });
     }
 }

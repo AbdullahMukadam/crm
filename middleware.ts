@@ -1,5 +1,3 @@
-
-
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { jwtVerify } from 'jose';
@@ -12,7 +10,7 @@ const roleBasedRoutes: Record<string, string[]> = {
   '/dashboard/client': ['CLIENT'],
   '/portal': ['CLIENT'],
   '/settings': ['ADMIN', 'CREATOR'],
-  '/dashboard': ['ADMIN', 'CREATOR', 'CLIENT'], 
+  '/dashboard': ['ADMIN', 'CREATOR', 'CLIENT'],
 };
 
 const homePages: Record<string, string> = {
@@ -20,7 +18,6 @@ const homePages: Record<string, string> = {
   CREATOR: '/dashboard/creator',
   CLIENT: '/dashboard/client',
 };
-
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -36,7 +33,6 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
- 
   try {
     const jwtSecret = process.env.JWT_SECRET;
     if (!jwtSecret) throw new Error('JWT_SECRET not set');
@@ -55,7 +51,6 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL(homePages[role], request.url));
     }
 
-
     if (onboarded) {
       // Find all matching prefixes for the current path
       const matchingPrefixes = Object.keys(roleBasedRoutes).filter((prefix) =>
@@ -68,7 +63,6 @@ export async function middleware(request: NextRequest) {
         ''
       );
 
-
       if (mostSpecificPrefix) {
         const allowedRoles = roleBasedRoutes[mostSpecificPrefix];
         if (!allowedRoles.includes(role)) {
@@ -76,7 +70,6 @@ export async function middleware(request: NextRequest) {
         }
       }
     }
-
 
     return NextResponse.next();
   } catch (error) {
@@ -89,6 +82,11 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-   '/((?!api|_next/static|_next/image|favicon.ico|signin|signup|access-denied|lead-form|proposals|$).*)',
+    // Only protect specific routes, exclude API routes
+    '/dashboard/:path*',
+    '/admin/:path*',
+    '/portal/:path*',
+    '/settings/:path*',
+    '/onboard',
   ],
 };

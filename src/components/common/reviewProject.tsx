@@ -368,9 +368,6 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                                 }}
                             />
                             <div className="absolute bottom-2 right-2 flex items-center gap-1">
-                                <Button variant="ghost" size="icon" className="h-8 w-8">
-                                    <Paperclip className="w-4 h-4" />
-                                </Button>
                                 <Button
                                     disabled={isFeedbackLoading || !comment.trim()}
                                     size="sm"

@@ -1,5 +1,5 @@
 import { authService } from '@/lib/api/authService'
-import { AuthState, SigninCredentials, SignupCredentials } from '@/types/auth'
+import { AuthState, SigninCredentials, SignupCredentials, UpdateProfileRequest } from '@/types/auth'
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit'
 import type { PayloadAction } from '@reduxjs/toolkit'
 
@@ -87,13 +87,25 @@ export const LogoutUser = createAsyncThunk(
     async (_, { rejectWithValue }) => {
         try {
             const response = await authService.logout();
-
-            // Note: We don't check response.success here because we want to
-            // clear the local state regardless of server response
             return response;
         } catch (error: any) {
-            // Even if logout fails on server, clear local state
             return { success: true };
+        }
+    }
+)
+
+export const UpdateProfile = createAsyncThunk(
+    "auth/UpdateProfile",
+    async (data: Partial<UpdateProfileRequest>, { rejectWithValue }) => {
+        try {
+            const response = await authService.updateProfile(data);
+
+            if (!response.success) {
+                return rejectWithValue(response.message || 'Failed to update the profile');
+            }
+            return response.data;
+        } catch (error: any) {
+            return rejectWithValue(error.message || 'Failed to sign in user');
         }
     }
 )
@@ -230,6 +242,23 @@ export const AuthSlice = createSlice({
                     isLoading: false,
                     isInitialized: true
                 });
+            })
+
+            .addCase(UpdateProfile.pending, (state) => {
+                state.isLoading = true;
+                state.error = null;
+            })
+            .addCase(UpdateProfile.fulfilled, (state, action) => {
+                state.isLoading = false;
+                state.error = null;
+                if (action.payload) {
+                    Object.assign(state, action.payload);
+                }
+            })
+            .addCase(UpdateProfile.rejected, (state, action) => {
+                state.isLoading = false;
+                state.error = action.payload as string;
+                state.isInitialized = true;
             })
     },
 })

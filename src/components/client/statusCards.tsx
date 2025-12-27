@@ -50,17 +50,17 @@ export function SectionCards({ project }: ProjectCardsProps) {
   const invoices = project?.invoices || []
   const totalInvoicedAmount = invoices.reduce((acc, inv) => acc + inv.amount, 0)
   const totalPaidAmount = invoices
-    .filter(inv => inv.status === "paid")
+    .filter(inv => inv.status === "PAID")
     .reduce((acc, inv) => acc + inv.amount, 0)
 
-  const overdueCount = invoices.filter(inv => inv.status === "overdue").length
+  const overdueCount = invoices.filter(inv => inv.status === "OVERDUE").length
   const hasOverdue = overdueCount > 0
 
   return (
     <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
 
       {/* CARD 1: OVERALL STATUS */}
-      <Card className="flex flex-col justify-between w-[300px]">
+      <Card className="flex flex-col justify-between w-full md:w-[300px]">
         <CardHeader className="w-full pb-2">
           <div className="flex justify-between items-start">
             <CardDescription>Project Status</CardDescription>
@@ -86,7 +86,7 @@ export function SectionCards({ project }: ProjectCardsProps) {
       </Card>
 
       {/* CARD 2: DELIVERABLES */}
-      <Card className="flex flex-col justify-between w-[300px]">
+      <Card className="flex flex-col justify-between w-full md:w-[300px">
         <CardHeader className="w-full pb-2">
           <div className="flex justify-between items-start">
             <CardDescription>Deliverables</CardDescription>
@@ -110,7 +110,7 @@ export function SectionCards({ project }: ProjectCardsProps) {
       </Card>
 
       {/* CARD 3: INVOICES & REVENUE */}
-      <Card className="flex flex-col justify-between w-[300px]">
+      <Card className="flex flex-col justify-betweenw-full md:w-[300px]">
         <CardHeader className="w-full pb-2">
           <div className="flex justify-between items-start">
             <CardDescription>Total Revenue (Paid)</CardDescription>

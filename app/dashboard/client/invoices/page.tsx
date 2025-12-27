@@ -3,7 +3,7 @@ import React from 'react'
 
 function InvoicesPage() {
   return (
-    <div className='w-full'>
+    <div className='w-full min-h-screen'>
       <InVoices />
     </div>
   )

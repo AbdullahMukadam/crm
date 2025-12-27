@@ -71,3 +71,30 @@ export interface AuthState {
     proposals?: Proposal[];
     invoices?: Invoice[]
 }
+
+export interface UpdateProfileRequest {
+    id: string | null;
+    username: string | null;
+    email: string | null;
+    avatarUrl?: string | null;
+    role: UserRole | null;
+    onboarded: boolean | null;
+
+
+    createdProjects?: Project[];
+    clientProjects?: Project[];
+    proposals?: Proposal[];
+    invoices?: Invoice[]
+}
+
+export interface UpdateProfileResponse {
+    username: string;
+    id: string;
+    email: string;
+    avatarUrl: string | null;
+    role: $Enums.Role | null;
+    onboarded: boolean;
+    googleId: string | null;
+    createdAt: Date;
+    updatedAt: Date;
+}

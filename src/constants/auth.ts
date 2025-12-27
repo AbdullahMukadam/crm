@@ -6,4 +6,5 @@ export const API_ENDPOINTS = {
     ONBOARDING: '/api/onboard',
     VALIDATE: '/api/validate',
     ME: '/api/me',
+    UPDATE_PROFILE: "/api/update-profile"
 } as const;

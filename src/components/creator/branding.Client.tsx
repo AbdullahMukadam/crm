@@ -115,9 +115,9 @@ function BrandingClient() {
     return (
         <div className='w-full'>
 
-            <div className='w-full min-h-screen flex flex-col gap-5 mt-20 justify-start'>
+            <div className='w-full min-h-screen flex flex-col gap-5 mt-6 justify-start'>
                 <h1 className='text-3xl'>Brand Settings</h1>
-                <Tabs defaultValue="lead-form" className="w-[60%]">
+                <Tabs defaultValue="lead-form" className=" w-full md:w-[60%]">
                     <TabsList>
                         <TabsTrigger value="lead-form">Lead Form</TabsTrigger>
                         <TabsTrigger value="settings">Settings</TabsTrigger>
@@ -150,12 +150,12 @@ function BrandingClient() {
                         </div>
                     </TabsContent>
                     <TabsContent value="settings">
-                        <div className='w-10/12 p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
+                        <div className='w-full p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
                             <p className='text-white'>View your Lead Form</p>
                             <Button variant="destructive" onClick={handleOpenLeadForm}>Open</Button>
                         </div>
 
-                        <div className='w-10/12 p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
+                        <div className='w-full p-2 mt-4 rounded-md flex items-center justify-between bg-zinc-900 border border-zinc-800'>
                             <p className='text-white'>Generate your Lead Form Url</p>
                             <Button variant="destructive" onClick={() => setisModalOpen((prev) => !prev)}>Open</Button>
                         </div>

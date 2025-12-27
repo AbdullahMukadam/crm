@@ -1,4 +1,5 @@
 "use client"
+
 import { Download, Search, CheckCircle2, Clock, Calendar, Loader2, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -33,41 +34,26 @@ const statusConfig: Record<string, { label: string; className: string }> = {
 }
 
 const InvoicesStatus = [
-  {
-    id: "PAID",
-    label: "Paid"
-  },
-  {
-    id: "SENT",
-    label: "Sent"
-  },
-  {
-    id: "DRAFT",
-    label: "Draft"
-  },
-  {
-    id: "OVERDUE",
-    label: "Overdue"
-  },
+  { id: "PAID", label: "Paid" },
+  { id: "SENT", label: "Sent" },
+  { id: "DRAFT", label: "Draft" },
+  { id: "OVERDUE", label: "Overdue" },
 ]
 
 export default function Invoices() {
   const { projects, isLoading, isInvoiceLoading } = useAppSelector((state) => state.projects)
   const dispatch = useAppDispatch()
   const [searchQuery, setsearchQuery] = useState("")
-  const [isOpen, setisOpen] = useState(false)
+  // const [isOpen, setisOpen] = useState(false) // Unused state removed for cleanup
 
   // Use the hook to get real processed data
   const { invoices, stats, handleSearchInvoices, handleFilterInvoices } = useInvoices({ projects })
 
   useEffect(() => {
-    // Only fetch if we don't have projects loaded (or you might want to refetch on mount)
     if (projects.length === 0) {
       dispatch(fetchProjects());
     }
   }, [dispatch, projects.length]);
-
-
 
   useEffect(() => {
     let timerId = setTimeout(() => {
@@ -92,22 +78,24 @@ export default function Invoices() {
 
   return (
     <div className="min-h-screen bg-background font-brcolage-grotesque">
-      <div className="mx-auto max-w-7xl p-6 md:p-8 lg:p-12">
+      {/* Responsive Padding: p-4 on mobile, p-8 on tablet/desktop */}
+      <div className="mx-auto w-full p-4 md:p-8 lg:p-12">
 
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+            <h1 className="text-balance text-2xl md:text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
               Invoices & Payments
             </h1>
-            <p className="mt-2 text-pretty text-muted-foreground">
+            <p className="mt-2 text-sm md:text-base text-pretty text-muted-foreground">
               Manage your billing history and track revenue.
             </p>
           </div>
         </div>
 
-        {/* Stats Cards - Now using Real Data */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Stats Cards */}
+        {/* Using grid-cols-1 for mobile, 2 for tablet, 3 for large screens */}
+        <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
           {/* Total Paid Card */}
           <Card className="border-border bg-card shadow-sm">
@@ -115,7 +103,7 @@ export default function Invoices() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
-                  <p className="text-3xl font-bold tracking-tight">{formatCurrency(stats.totalPaid)}</p>
+                  <p className="text-2xl md:text-3xl font-bold tracking-tight">{formatCurrency(stats.totalPaid)}</p>
                   <p className="text-xs text-muted-foreground">Lifetime earnings</p>
                 </div>
                 <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
@@ -131,7 +119,7 @@ export default function Invoices() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Pending Amount</p>
-                  <p className="text-3xl font-bold tracking-tight">{formatCurrency(stats.pendingAmount)}</p>
+                  <p className="text-2xl md:text-3xl font-bold tracking-tight">{formatCurrency(stats.pendingAmount)}</p>
                   <p className="text-xs text-muted-foreground">Due from clients</p>
                 </div>
                 <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
@@ -147,7 +135,7 @@ export default function Invoices() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Next Due Date</p>
-                  <p className="text-3xl font-bold tracking-tight truncate">
+                  <p className="text-2xl md:text-3xl font-bold tracking-tight truncate">
                     {stats.nextDueDate || "N/A"}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -162,34 +150,50 @@ export default function Invoices() {
           </Card>
         </div>
 
-        {/* Invoices Table */}
+        {/* Invoices Table Section */}
         <Card className="border-border bg-card shadow-sm">
-          <CardContent className="p-6">
-            {/* Search and Filters */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="relative flex-1 sm:max-w-sm">
+          <CardContent className="p-4 md:p-6">
+            
+            {/* Search and Filters - Stack vertically on mobile, row on tablet */}
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full lg:max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setsearchQuery(e.target.value)} placeholder="Search by invoice ID..." className="pl-9" />
+                <Input 
+                  value={searchQuery} 
+                  onChange={(e) => setsearchQuery(e.target.value)} 
+                  placeholder="Search by invoice ID..." 
+                  className="pl-9 w-full" 
+                />
               </div>
-              <div className="flex gap-2">
-
+              
+              {/* Filter Buttons: flex-wrap ensures they don't squash on mobile */}
+              <div className="flex flex-wrap gap-2">
                 {InvoicesStatus.map((inv) => (
-                  <Button key={inv.id} size="sm" variant="secondary" onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}>{inv.label}</Button>
+                  <Button 
+                    key={inv.id} 
+                    size="sm" 
+                    variant="secondary" 
+                    className="flex-grow sm:flex-grow-0"
+                    onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}
+                  >
+                    {inv.label}
+                  </Button>
                 ))}
               </div>
             </div>
 
-            {/* Table */}
-            <div className="rounded-md border border-border">
+            {/* Table Container - overflow-x-auto allows scrolling on mobile */}
+            <div className="rounded-md border border-border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-semibold text-muted-foreground">INVOICE ID</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">ISSUED</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">DUE</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">AMOUNT</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">STATUS</TableHead>
-                    <TableHead className="text-right font-semibold text-muted-foreground">ACTIONS</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">INVOICE ID</TableHead>
+                    {/* Hiding Date columns on small screens to prioritize ID, Amount, Status */}
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap hidden md:table-cell">ISSUED</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap hidden sm:table-cell">DUE</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">AMOUNT</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">STATUS</TableHead>
+                    <TableHead className="text-right font-semibold text-muted-foreground whitespace-nowrap">ACTIONS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -198,24 +202,27 @@ export default function Invoices() {
                       const status = statusConfig[invoice.status] || statusConfig.DRAFT;
                       return (
                         <TableRow key={invoice.id}>
-                          <TableCell className="font-mono font-medium text-indigo-600">
+                          <TableCell className="font-mono font-medium text-indigo-600 whitespace-nowrap">
                             {invoice.invoiceNumber}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          
+                          {/* Matching Header visibility logic */}
+                          <TableCell className="text-muted-foreground whitespace-nowrap hidden md:table-cell">
                             {format(new Date(invoice.createdAt), 'MMM dd, yyyy')}
                           </TableCell>
-                          <TableCell className="text-muted-foreground">
+                          <TableCell className="text-muted-foreground whitespace-nowrap hidden sm:table-cell">
                             {format(new Date(invoice.dueDate), 'MMM dd, yyyy')}
                           </TableCell>
-                          <TableCell className="font-semibold">
+                          
+                          <TableCell className="font-semibold whitespace-nowrap">
                             {formatCurrency(Number(invoice.amount))}
                           </TableCell>
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <Badge variant="outline" className={status.className}>
                               {status.label}
                             </Badge>
                           </TableCell>
-                          <TableCell className="text-right">
+                          <TableCell className="text-right whitespace-nowrap">
                             <DownloadInvoiceBtn invoice={invoice} onDownload={() => {
                               console.log(`Invoice ${invoice.invoiceNumber} downloaded`);
                             }} />

@@ -27,7 +27,7 @@ import { EditInvoice } from "@/components/common/edit-invoice"
 import emailjs from '@emailjs/browser';
 
 // Initialize EmailJS (do this once in your app)
-emailjs.init(process.env.NEXT_PUBLIC_EMAIL_PUBLIC_KEY!);
+// emailjs.init(process.env.NEXT_PUBLIC_EMAIL_PUBLIC_KEY!); // Uncomment in production
 
 const statusConfig: Record<string, { label: string; className: string }> = {
   PAID: {
@@ -115,7 +115,6 @@ export default function Invoices() {
 
       toast.loading("Sending invoice...");
 
-      // Prepare email template parameters
       const templateParams = {
         to_email: invoice.client.email,
         to_name: invoice.client.username,
@@ -128,7 +127,6 @@ export default function Invoices() {
         company_name: 'Your Company Name',
       };
 
-      // Send email using EmailJS
       const response = await emailjs.send(
         process.env.NEXT_PUBLIC_EMAIL_PUBLIC_KEY!,
         'template_ohw0d1s', 
@@ -137,7 +135,6 @@ export default function Invoices() {
 
       console.log('Email sent successfully:', response);
 
-      // Update invoice status to SENT if it was DRAFT
       if (invoice.status === 'DRAFT') {
         await dispatch(editInvoiceSlice({
           id: invoiceId,
@@ -182,32 +179,34 @@ export default function Invoices() {
 
   return (
     <div className="min-h-screen bg-background font-brcolage-grotesque">
-      <div className="mx-auto max-w-7xl p-6 md:p-8 lg:p-12">
+      {/* Responsive Padding: smaller on mobile, larger on desktop */}
+      <div className="mx-auto w-full max-w-7xl p-4 md:p-8 lg:p-12">
 
-        {/* Header */}
+        {/* Header - Stacks on mobile */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-balance text-3xl font-semibold tracking-tight text-foreground md:text-4xl">
+            <h1 className="text-balance text-2xl md:text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
               Invoices & Payments
             </h1>
-            <p className="mt-2 text-pretty text-muted-foreground">
+            <p className="mt-2 text-sm md:text-base text-pretty text-muted-foreground">
               Manage your billing history and track revenue.
             </p>
           </div>
-          <Button className="gap-2" onClick={() => setisOpen(true)}>
+          <Button className="gap-2 w-full sm:w-auto" onClick={() => setisOpen(true)}>
             <Plus className="h-4 w-4" /> Create Invoice
           </Button>
         </div>
 
-        {/* Stats Cards */}
-        <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Stats Cards - 1 col mobile, 2 col tablet, 3 col desktop */}
+        <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          
           {/* Total Paid Card */}
           <Card className="border-border bg-card shadow-sm">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
-                  <p className="text-3xl font-bold tracking-tight">{formatCurrency(stats.totalPaid)}</p>
+                  <p className="text-2xl md:text-3xl font-bold tracking-tight">{formatCurrency(stats.totalPaid)}</p>
                   <p className="text-xs text-muted-foreground">Lifetime earnings</p>
                 </div>
                 <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
@@ -223,7 +222,7 @@ export default function Invoices() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Pending Amount</p>
-                  <p className="text-3xl font-bold tracking-tight">{formatCurrency(stats.pendingAmount)}</p>
+                  <p className="text-2xl md:text-3xl font-bold tracking-tight">{formatCurrency(stats.pendingAmount)}</p>
                   <p className="text-xs text-muted-foreground">Due from clients</p>
                 </div>
                 <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
@@ -233,13 +232,13 @@ export default function Invoices() {
             </CardContent>
           </Card>
 
-          {/* Next Due Date Card */}
+          {/* Next Due Date Card - Adjusted grid span */}
           <Card className="border-border bg-card shadow-sm sm:col-span-2 lg:col-span-1">
             <CardContent className="p-6">
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Next Due Date</p>
-                  <p className="text-3xl font-bold tracking-tight truncate">
+                  <p className="text-2xl md:text-3xl font-bold tracking-tight truncate">
                     {stats.nextDueDate || "N/A"}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -254,69 +253,87 @@ export default function Invoices() {
           </Card>
         </div>
 
-        {/* Invoices Table */}
+        {/* Invoices Table Section */}
         <Card className="border-border bg-card shadow-sm">
-          <CardContent className="p-6">
-            {/* Search and Filters */}
-            <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-              <div className="relative flex-1 sm:max-w-sm">
+          <CardContent className="p-4 md:p-6">
+            
+            {/* Search and Filters - Stacks on mobile */}
+            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+              <div className="relative w-full lg:max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input value={searchQuery} onChange={(e) => setsearchQuery(e.target.value)} placeholder="Search by invoice ID or client..." className="pl-9" />
+                <Input 
+                  value={searchQuery} 
+                  onChange={(e) => setsearchQuery(e.target.value)} 
+                  placeholder="Search invoice or client..." 
+                  className="pl-9 w-full" 
+                />
               </div>
-              <div className="flex gap-2">
+              {/* Filter Buttons wrapped */}
+              <div className="flex flex-wrap gap-2">
                 {InvoicesStatus.map((inv) => (
-                  <Button key={inv.id} size="sm" variant="secondary" onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}>{inv.label}</Button>
+                  <Button 
+                    key={inv.id} 
+                    size="sm" 
+                    variant="secondary" 
+                    className="flex-grow sm:flex-grow-0"
+                    onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}
+                  >
+                    {inv.label}
+                  </Button>
                 ))}
               </div>
             </div>
 
-            {/* Table */}
-            <div className="rounded-md border border-border">
+            {/* Table Container - Horizontal scroll on mobile */}
+            <div className="rounded-md border border-border overflow-x-auto">
               <Table>
                 <TableHeader>
                   <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-semibold text-muted-foreground">INVOICE ID</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">CLIENT / PROJECT</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">DUE DATE</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">AMOUNT</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground">STATUS</TableHead>
-                    <TableHead className="text-right font-semibold text-muted-foreground">ACTIONS</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">INVOICE ID</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">CLIENT / PROJECT</TableHead>
+                    {/* Hide Due Date on mobile to save space */}
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap hidden md:table-cell">DUE DATE</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">AMOUNT</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">STATUS</TableHead>
+                    <TableHead className="text-right font-semibold text-muted-foreground whitespace-nowrap">ACTIONS</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {invoices.length > 0 ? (
                     invoices.map((invoice) => {
                       const status = statusConfig[invoice.status] || statusConfig.DRAFT;
-                      // Safe check in case relations aren't populated
                       const clientName = invoice.client?.username || "Unknown Client";
                       const projectTitle = invoice.project?.title || "General";
 
                       return (
                         <TableRow key={invoice.id}>
-                          <TableCell className="font-mono font-medium text-indigo-600">
+                          <TableCell className="font-mono font-medium text-indigo-600 whitespace-nowrap">
                             {invoice.invoiceNumber}
                           </TableCell>
 
-                          <TableCell>
+                          <TableCell className="whitespace-nowrap">
                             <div className="flex flex-col">
                               <span className="font-medium">{clientName}</span>
-                              <span className="text-xs text-muted-foreground">{projectTitle}</span>
+                              <span className="text-xs text-muted-foreground truncate max-w-[150px]">{projectTitle}</span>
                             </div>
                           </TableCell>
 
-                          <TableCell className="text-muted-foreground">
+                          {/* Hide Due Date on mobile */}
+                          <TableCell className="text-muted-foreground whitespace-nowrap hidden md:table-cell">
                             {format(new Date(invoice.dueDate), 'MMM dd, yyyy')}
                           </TableCell>
-                          <TableCell className="font-semibold">
+                          
+                          <TableCell className="font-semibold whitespace-nowrap">
                             {formatCurrency(Number(invoice.amount))}
                           </TableCell>
-                          <TableCell>
+                          
+                          <TableCell className="whitespace-nowrap">
                             <Badge variant="outline" className={status.className}>
                               {status.label}
                             </Badge>
                           </TableCell>
 
-                          <TableCell className="text-right">
+                          <TableCell className="text-right whitespace-nowrap">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
                                 <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -341,14 +358,14 @@ export default function Invoices() {
                                   </DropdownMenuItem>
                                 )}
 
+                                {/* Send Invoice Logic - Uncomment if needed
                                 {invoice.status !== 'PAID' && (
                                   <DropdownMenuItem onClick={() => handleSendInvoice(invoice.id)} className="cursor-pointer">
                                     <Mail className="mr-2 h-4 w-4" />
                                     {invoice.status === 'DRAFT' ? 'Send to Client' : 'Resend Reminder'}
                                   </DropdownMenuItem>
-                                )}
+                                )} */}
 
-                                {/* Action 4: Edit (Only if Draft) */}
                                 {invoice.status === 'DRAFT' && (
                                   <DropdownMenuItem
                                     onClick={() => handleEditInvoice(invoice)}
@@ -374,7 +391,7 @@ export default function Invoices() {
                     })
                   ) : (
                     <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                      <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
                         No invoices found. Create one to get started!
                       </TableCell>
                     </TableRow>
