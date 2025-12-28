@@ -30,7 +30,7 @@ export function useLeads() {
     }, [leads])
 
     useEffect(() => {
-        fetchLeads()
+        if(leads.length === 0) fetchLeads();
     }, [])
 
 

@@ -1,10 +1,10 @@
-import AuthenticationForm from '@/components/form/form'
+import AuthenticationForm from '@/components/common/form'
 import React from 'react'
 
 function SignUpPage() {
 
   return (
-    <div className='w-full h-screen bg-zinc-950 p-4 overflow-hidden flex items-center justify-center'>
+    <div className='w-full h-screen bg-background p-4 overflow-hidden flex items-center justify-center'>
       <AuthenticationForm headerText='Create your Account' TypeofTheForm='Signup' />
     </div>
   )

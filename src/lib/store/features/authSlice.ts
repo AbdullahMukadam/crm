@@ -208,7 +208,7 @@ export const AuthSlice = createSlice({
                 state.isAuthenticated = true;
                 state.isInitialized = true;
                 if (action.payload) {
-                    Object.assign(state, action.payload);
+                   Object.assign(state, action.payload)
                 }
             })
             .addCase(SigninUser.rejected, (state, action) => {

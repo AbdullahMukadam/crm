@@ -16,7 +16,6 @@ import { FigmaEmbed } from "./figmaEmbed"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
-import { useFeedbackStream } from "@/hooks/useFeedbackStream"
 
 
 interface ReviewProjectComponentProps {
@@ -25,52 +24,13 @@ interface ReviewProjectComponentProps {
 
 function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
     const { projects, reviewProject, isLoading, isUpdateLoading, isFeedbackLoading } = useAppSelector((state) => state.projects)
+    const { id } = useAppSelector((state) => state.auth)
     const [comment, setComment] = useState("")
     const disptach = useAppDispatch()
     const [isOpen, setIsOpen] = useState(false)
     const [embedUrl, setEmbedUrl] = useState("")
     const [showReplyInput, setshowReplyInput] = useState(false)
     const [replyingFeedbackState, setreplyingFeedback] = useState<Feedback | null>(null)
-
-    const handleFeedbackCreated = useCallback(
-        (feedback: Feedback) => {
-            disptach(addFeedbackRealtime({ projectId, feedback }));
-        },
-        [disptach, projectId]
-    );
-
-    const handleReplyCreated = useCallback(
-        (reply: Feedback & { parentId: string }) => {
-            if (reply.parentId) {
-                disptach(
-                    addReplyRealtime({
-                        projectId,
-                        feedbackId: reply.parentId,
-                        reply,
-                    })
-                );
-            }
-        },
-        [disptach, projectId]
-    );
-
-
-    const { isConnected } = useFeedbackStream({
-        projectId,
-        onFeedbackCreated: handleFeedbackCreated,
-        onReplyCreated: handleReplyCreated,
-    })
-
-    const handlefetchProject = useCallback(async (projectId: string) => {
-        try {
-            const response = await disptach(fetchProject({ id: projectId }))
-            if (fetchProject.fulfilled.match(response)) {
-                toast.success("Project fetched successfully")
-            }
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Unable to fetch the project")
-        }
-    }, [disptach])
 
     useEffect(() => {
         if (!projectId) return;
@@ -190,6 +150,9 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                                 {reviewProject?.description ||
                                     "This version includes the updated color palette for the dark mode toggle and the revised transaction history table. Please review the interaction states."}
                             </p>
+                            {reviewProject?.embedLink && reviewProject.creatorId === id && (
+                                <Button className="mt-2" onClick={() => setIsOpen(true)}>Chnage Embed Url</Button>
+                            )}
                         </div>
 
                         {/* Figma embed area */}
@@ -232,9 +195,9 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
                                             <p className="text-sm text-muted-foreground mb-6 max-w-md">
                                                 Interact with the high-fidelity prototype directly in this window to leave context-aware comments.
                                             </p>
-                                            <Button onClick={() => setIsOpen(true)} size="lg" className="bg-foreground text-background hover:bg-foreground/90">
+                                            {reviewProject?.creatorId === id && <Button onClick={() => setIsOpen(true)} size="lg" className="bg-foreground text-background hover:bg-foreground/90">
                                                 Add the Link
-                                            </Button>
+                                            </Button>}
                                         </div>
                                     </>
                                 ) : (

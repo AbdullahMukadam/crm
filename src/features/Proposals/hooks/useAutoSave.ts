@@ -75,6 +75,7 @@ export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
 
     return {
         saveProposalData,
-        error
+        error,
+        hanldeAutoSave
     }
 }

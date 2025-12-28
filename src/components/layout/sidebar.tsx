@@ -13,7 +13,7 @@ import { CircleUser, LogOut, MoreVertical, PanelLeftClose, PanelRightClose, Sett
 import { removeProposals } from '@/lib/store/features/proposalsSlice';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { EditProfileDialog } from "@/components/common/edit-profile"
-import { Avatar, AvatarFallback, AvatarImage } from './avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 interface SidebarProps {
     navItems: NavItem[];
@@ -59,7 +59,7 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
 
             <aside
                 className={cn(
-                    "hidden h-screen flex-col font-brcolage-grotesque border-r bg-[#0A0A0A] dark:border-gray-800 dark:bg-gray-900 md:flex transition-all duration-300 ease-in-out",
+                    "hidden h-screen flex-col font-brcolage-grotesque border-r bg-background dark:border-gray-800 dark:bg-gray-900 md:flex transition-all duration-300 ease-in-out",
                     isCollapsed ? "w-20" : "w-64"
                 )}
             >
@@ -88,7 +88,7 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
                                 href={item.href}
                                 className={cn(
                                     "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-200 transition-all hover:text-gray-400 dark:text-gray-400 dark:hover:text-gray-50",
-                                    isActive ? "bg-zinc-800" : "",
+                                    isActive ? "bg-accent" : "",
                                     isCollapsed ? "justify-center" : ""
                                 )}
                                 title={isCollapsed ? item.label : undefined}
@@ -189,7 +189,7 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
 
             <aside
                 className={cn(
-                    "fixed font-brcolage-grotesque inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r bg-[#0A0A0A] dark:border-gray-800 dark:bg-gray-900 transition-transform duration-300 ease-in-out md:hidden",
+                    "fixed font-brcolage-grotesque inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r bg-background dark:border-gray-800 dark:bg-gray-900 transition-transform duration-300 ease-in-out md:hidden",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >

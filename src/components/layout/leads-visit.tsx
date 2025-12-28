@@ -23,17 +23,18 @@ import {
     SelectValue,
 } from '@/components/ui/select';
 
+// Updated config to ensure colors map correctly to CSS variables
 const chartConfig = {
     visitors: {
         label: "Visitors",
     },
     desktop: {
         label: "Desktop",
-        color: "var(--primary)",
+        color: "var(--primary)", 
     },
     mobile: {
         label: "Mobile",
-        color: "var(--primary)",
+        color: "var(--secondary)",
     },
 } satisfies ChartConfig
 
@@ -55,6 +56,7 @@ export function LeadVisitsChart({ username }: { username: string }) {
                 setLoading(true);
                 const days = timeRange === '7d' ? 7 : timeRange === '30d' ? 30 : 90;
 
+                // Simulated data fetch - replace with your actual API call
                 const response = await fetch(`/api/creator/visits/${username}?days=${days}`);
                 if (!response.ok) throw new Error('Failed to fetch visits');
 
@@ -76,17 +78,20 @@ export function LeadVisitsChart({ username }: { username: string }) {
     );
 
     return (
-        <Card>
-            <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-2">
+        <Card className='w-full'>
+            {/* Header: Stacked on mobile, Row on Desktop */}
+            <CardHeader className="flex flex-col gap-4 space-y-0 border-b p-4 sm:flex-row sm:items-center sm:justify-between sm:p-6">
                 <div className="space-y-1">
-                    <CardTitle>Lead Form Visitors</CardTitle>
-                    <CardDescription>
+                    <CardTitle className="text-base sm:text-lg">Lead Form Visitors</CardTitle>
+                    <CardDescription className="text-xs sm:text-sm">
                         Total visits: {totalVisits} • Last{' '}
                         {timeRange === '7d' ? '7 days' : timeRange === '30d' ? '30 days' : '90 days'}
                     </CardDescription>
                 </div>
+                
+                {/* Select: Full width on mobile, fixed width on desktop */}
                 <Select value={timeRange} onValueChange={setTimeRange}>
-                    <SelectTrigger className="w-[140px]">
+                    <SelectTrigger className="w-full sm:w-[140px]">
                         <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -96,13 +101,14 @@ export function LeadVisitsChart({ username }: { username: string }) {
                     </SelectContent>
                 </Select>
             </CardHeader>
+
             <CardContent className="px-2 pt-4 sm:px-6 sm:pt-6">
                 {loading ? (
-                    <div className="flex h-[250px] items-center justify-center">
-                        <p className="text-sm text-muted-foreground">Loading visit data...</p>
+                    <div className="flex h-[250px] items-center justify-center w-full">
+                        <p className="text-sm text-muted-foreground animate-pulse">Loading visit data...</p>
                     </div>
                 ) : chartData.length === 0 ? (
-                    <div className="flex h-[250px] items-center justify-center">
+                    <div className="flex h-[250px] items-center justify-center w-full">
                         <p className="text-sm text-muted-foreground">No visit data available</p>
                     </div>
                 ) : (
@@ -113,7 +119,7 @@ export function LeadVisitsChart({ username }: { username: string }) {
                                     <stop
                                         offset="5%"
                                         stopColor="var(--color-desktop)"
-                                        stopOpacity={1.0}
+                                        stopOpacity={0.8}
                                     />
                                     <stop
                                         offset="95%"
@@ -165,19 +171,19 @@ export function LeadVisitsChart({ username }: { username: string }) {
                                 }
                             />
                             <Area
-                            dataKey="mobile"
-                            type="natural"
-                            fill="url(#fillMobile)"
-                            stroke="var(--color-mobile)"
-                            stackId="a"
-                        />
-                        <Area
-                            dataKey="desktop"
-                            type="natural"
-                            fill="url(#fillDesktop)"
-                            stroke="var(--color-desktop)"
-                            stackId="a"
-                        />
+                                dataKey="mobile"
+                                type="natural"
+                                fill="url(#fillMobile)"
+                                stroke="var(--color-mobile)"
+                                stackId="a"
+                            />
+                            <Area
+                                dataKey="desktop"
+                                type="natural"
+                                fill="url(#fillDesktop)"
+                                stroke="var(--color-desktop)"
+                                stackId="a"
+                            />
                         </AreaChart>
                     </ChartContainer>
                 )}

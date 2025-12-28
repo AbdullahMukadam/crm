@@ -46,7 +46,7 @@ import {
 import { Input } from "../ui/input";
 import { Label } from "../ui/label";
 import { toast } from "sonner";
-import { Proposal, ProposalStatus } from "@/types/proposal";
+import { Proposal } from "@/types/proposal";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
@@ -62,8 +62,8 @@ const statusStyles: Record<string, {
         label: "Accepted",
         icon: CheckCircle2,
         color: "text-emerald-500",
-        borderColor: "border-emerald-500/20", // Low opacity border
-        bgColor: "bg-emerald-500/10",         // Very low opacity background
+        borderColor: "border-emerald-500/20",
+        bgColor: "bg-emerald-500/10",
     },
     rejected: {
         label: "Rejected",
@@ -81,7 +81,7 @@ const statusStyles: Record<string, {
     },
     sent: {
         label: "Sent",
-        icon: Send, // or Loader2 for 'processing' look
+        icon: Send,
         color: "text-blue-500",
         borderColor: "border-blue-500/20",
         bgColor: "bg-blue-500/10",
@@ -131,7 +131,10 @@ const createColumns = (
             accessorKey: "title",
             header: "Title",
             cell: ({ row }) => (
-                <span className="text-sm font-medium">{row.getValue("title")}</span>
+                // Added max-width and truncate for mobile responsiveness
+                <div className="text-sm font-medium max-w-[150px] sm:max-w-[250px] md:max-w-none truncate">
+                    {row.getValue("title")}
+                </div>
             ),
         },
         {
@@ -140,7 +143,7 @@ const createColumns = (
             cell: ({ row }) => {
                 const date = new Date(row.getValue("createdAt"));
                 return (
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-muted-foreground whitespace-nowrap">
                         {date.toLocaleDateString("en-US", {
                             month: "short",
                             day: "numeric",
@@ -169,10 +172,7 @@ const createColumns = (
               ${config.bgColor}
             `}
                         >
-                            {/* The Icon */}
                             <Icon className="h-3.5 w-3.5" />
-
-                            {/* The Text */}
                             <span className="capitalize">{config.label}</span>
                         </span>
                     </div>
@@ -266,7 +266,7 @@ function ProposalsClient() {
             try {
                 const response = await dispatch(createProposalSlice({
                     title: proposalTitle,
-                    description : proposalDescription,
+                    description: proposalDescription,
                     creatorId: id
                 }))
 
@@ -360,40 +360,35 @@ function ProposalsClient() {
     return (
         <div className="w-full min-h-screen bg-background p-4 sm:p-6 lg:p-8">
             <div className="max-w-7xl mx-auto space-y-6">
-                {/* Header */}
+                {/* Header - Stacks on mobile */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                     <div>
-                        <h1 className="text-3xl font-semibold tracking-tight">Proposals</h1>
+                        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Proposals</h1>
                         <p className="text-sm text-muted-foreground mt-1">
                             Manage and organize your proposals
                         </p>
                     </div>
-                    <Button onClick={() => setisDialogOpen(true)} className="gap-2">
+                    <Button onClick={() => setisDialogOpen(true)} className="w-full sm:w-auto gap-2">
                         <Plus size={18} />
                         New Proposal
                     </Button>
                 </div>
 
-                {/* Table */}
+                {/* Table Container */}
                 <div className="rounded-xl border border-border bg-card">
-                    {/* Filters Bar */}
+                    {/* Filters Bar - Stacks on mobile */}
                     <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 border-b border-border p-4">
-                        <div className="flex flex-wrap items-center gap-2">
-                            <div className="relative w-full md:w-auto">
+                        <div className="flex flex-1 items-center gap-2">
+                            <div className="relative w-full md:max-w-md">
                                 <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
                                     placeholder="Search proposals..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-8 h-9 w-full md:w-[700px] border border-zinc-800"
+                                    className="pl-8 h-9 w-full border border-zinc-800"
                                 />
                             </div>
                         </div>
-
-                        <Button variant="outline" size="sm" className="h-9 gap-2">
-                            <FileInput className="size-4" />
-                            Export
-                        </Button>
                     </div>
 
                     {/* Table Content */}
@@ -402,19 +397,29 @@ function ProposalsClient() {
                             <TableHeader>
                                 {table.getHeaderGroups().map((headerGroup) => (
                                     <TableRow key={headerGroup.id} className="bg-muted/50">
-                                        {headerGroup.headers.map((header) => (
-                                            <TableHead
-                                                key={header.id}
-                                                className="text-muted-foreground font-medium bg-[#1E1E1E]"
-                                            >
-                                                {header.isPlaceholder
-                                                    ? null
-                                                    : flexRender(
-                                                        header.column.columnDef.header,
-                                                        header.getContext()
+                                        {headerGroup.headers.map((header) => {
+                                            // Responsive Logic: Determine if column should be hidden
+                                            const isHiddenOnMobile = header.id === 'createdAt' ? 'hidden md:table-cell' : '';
+                                            const isHiddenOnTablet = header.id === 'id' ? 'hidden lg:table-cell' : '';
+
+                                            return (
+                                                <TableHead
+                                                    key={header.id}
+                                                    className={cn(
+                                                        "text-muted-foreground font-medium bg-[#1E1E1E]",
+                                                        isHiddenOnMobile,
+                                                        isHiddenOnTablet
                                                     )}
-                                            </TableHead>
-                                        ))}
+                                                >
+                                                    {header.isPlaceholder
+                                                        ? null
+                                                        : flexRender(
+                                                            header.column.columnDef.header,
+                                                            header.getContext()
+                                                        )}
+                                                </TableHead>
+                                            )
+                                        })}
                                     </TableRow>
                                 ))}
                             </TableHeader>
@@ -425,14 +430,23 @@ function ProposalsClient() {
                                             key={row.id}
                                             data-state={row.getIsSelected() && "selected"}
                                         >
-                                            {row.getVisibleCells().map((cell) => (
-                                                <TableCell key={cell.id}>
-                                                    {flexRender(
-                                                        cell.column.columnDef.cell,
-                                                        cell.getContext()
-                                                    )}
-                                                </TableCell>
-                                            ))}
+                                            {row.getVisibleCells().map((cell) => {
+                                                // Responsive Logic: Apply same hiding logic to cells
+                                                const isHiddenOnMobile = cell.column.id === 'createdAt' ? 'hidden md:table-cell' : '';
+                                                const isHiddenOnTablet = cell.column.id === 'id' ? 'hidden lg:table-cell' : '';
+
+                                                return (
+                                                    <TableCell
+                                                        key={cell.id}
+                                                        className={cn(isHiddenOnMobile, isHiddenOnTablet)}
+                                                    >
+                                                        {flexRender(
+                                                            cell.column.columnDef.cell,
+                                                            cell.getContext()
+                                                        )}
+                                                    </TableCell>
+                                                )
+                                            })}
                                         </TableRow>
                                     ))
                                 ) : (
@@ -449,103 +463,44 @@ function ProposalsClient() {
                         </Table>
                     </div>
 
-                    {/* Pagination */}
+                    {/* Pagination - Simplified on mobile */}
                     <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-t border-border p-4">
-                        <div className="flex items-center gap-4">
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="size-8"
-                                onClick={() => table.setPageIndex(0)}
-                                disabled={!table.getCanPreviousPage()}
-                            >
-                                <ChevronsLeft className="size-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="size-8"
-                                onClick={() => table.previousPage()}
-                                disabled={!table.getCanPreviousPage()}
-                            >
-                                <ChevronLeft className="size-4" />
-                            </Button>
-
-                            <div className="flex items-center gap-1">
-                                {Array.from(
-                                    { length: Math.min(5, table.getPageCount()) },
-                                    (_, i) => {
-                                        const pageIndex = i;
-                                        const isActive =
-                                            table.getState().pagination.pageIndex === pageIndex;
-                                        return (
-                                            <button
-                                                key={i}
-                                                onClick={() => table.setPageIndex(pageIndex)}
-                                                className={cn(
-                                                    "size-8 rounded-lg text-sm font-semibold",
-                                                    isActive
-                                                        ? "bg-muted text-foreground"
-                                                        : "text-foreground hover:bg-muted"
-                                                )}
-                                            >
-                                                {pageIndex + 1}
-                                            </button>
-                                        );
-                                    }
-                                )}
-                                {table.getPageCount() > 5 && (
-                                    <>
-                                        <span className="px-2 text-muted-foreground">...</span>
-                                        <button
-                                            onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                                            className="size-8 rounded-lg text-sm font-semibold text-foreground hover:bg-muted"
-                                        >
-                                            {table.getPageCount()}
-                                        </button>
-                                    </>
-                                )}
-                            </div>
-
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="size-8"
-                                onClick={() => table.nextPage()}
-                                disabled={!table.getCanNextPage()}
-                            >
-                                <ChevronRight className="size-4" />
-                            </Button>
-                            <Button
-                                variant="outline"
-                                size="icon"
-                                className="size-8"
-                                onClick={() => table.setPageIndex(table.getPageCount() - 1)}
-                                disabled={!table.getCanNextPage()}
-                            >
-                                <ChevronsRight className="size-4" />
-                            </Button>
-                        </div>
-
-                        <div className="flex items-center gap-4">
-                            <span className="text-sm text-muted-foreground">
-                                Showing{" "}
-                                {table.getState().pagination.pageIndex *
-                                    table.getState().pagination.pageSize +
-                                    1}{" "}
-                                to{" "}
-                                {Math.min(
-                                    (table.getState().pagination.pageIndex + 1) *
-                                    table.getState().pagination.pageSize,
-                                    table.getFilteredRowModel().rows.length
-                                )}{" "}
-                                of {table.getFilteredRowModel().rows.length} entries
+                        <div className="flex items-center gap-2 sm:gap-4 w-full justify-between sm:justify-start">
+                            <span className="text-xs sm:text-sm text-muted-foreground">
+                                {table.getFilteredRowModel().rows.length} entries
                             </span>
 
+                            <div className="flex items-center gap-1 sm:gap-2">
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => table.previousPage()}
+                                    disabled={!table.getCanPreviousPage()}
+                                >
+                                    <ChevronLeft className="size-4" />
+                                </Button>
+                                <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="size-8"
+                                    onClick={() => table.nextPage()}
+                                    disabled={!table.getCanNextPage()}
+                                >
+                                    <ChevronRight className="size-4" />
+                                </Button>
+                            </div>
+                        </div>
+
+                        {/* Hide advanced pagination on very small screens, show simple prev/next above */}
+                        <div className="hidden sm:flex items-center gap-4">
+                            <span className="text-sm text-muted-foreground">
+                                Page {table.getState().pagination.pageIndex + 1} of {table.getPageCount()}
+                            </span>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="sm" className="h-8 gap-2">
-                                        Show {table.getState().pagination.pageSize}
+                                        {table.getState().pagination.pageSize} rows
                                         <ChevronDown className="size-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -565,9 +520,9 @@ function ProposalsClient() {
                 </div>
             </div>
 
-            {/* Create Proposal Dialog */}
+            {/* Create Proposal Dialog - Responsive Width */}
             <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
-                <DialogContent className="sm:max-w-[400px]">
+                <DialogContent className="w-[90vw] max-w-[400px] sm:max-w-[400px]">
                     <DialogHeader>
                         <DialogTitle className="text-lg font-semibold">
                             Create New Proposal
@@ -603,9 +558,9 @@ function ProposalsClient() {
                         </div>
                     </div>
 
-                    <DialogFooter className="mt-6">
+                    <DialogFooter className="mt-6 flex-row gap-2 justify-end">
                         <DialogClose asChild>
-                            <Button type="button" variant="outline">
+                            <Button type="button" variant="outline" className="mt-0">
                                 Cancel
                             </Button>
                         </DialogClose>

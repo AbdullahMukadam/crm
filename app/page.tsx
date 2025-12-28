@@ -1,4 +1,4 @@
-import Footer from '@/components/footer'
+import Footer from '@/components/layout/footer'
 import GradientBlinds from '@/components/ui/GradientBlinds'
 import React from 'react'
 

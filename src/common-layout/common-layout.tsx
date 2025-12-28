@@ -1,6 +1,6 @@
 
 import { AuthInitializer } from '@/components/common/authInitializer'
-import Navbar from '@/components/navbar'
+import Navbar from '@/components/layout/navbar'
 import { Toaster } from '@/components/ui/sonner'
 import ReduxProvider from '@/providers/ReduxProvider'
 import React from 'react'

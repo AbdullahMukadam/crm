@@ -1,4 +1,4 @@
-import LeadCaptureForm from '@/components/form/leadCaptureForm';
+import LeadCaptureForm from '@/components/creator/leadCaptureForm';
 import { CREATOR_API_ENDPOINTS } from '@/constants/creator';
 import { FetchClient } from '@/lib/api/fetchClient';
 import React from 'react';

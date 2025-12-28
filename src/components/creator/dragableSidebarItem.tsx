@@ -1,59 +1,92 @@
-import { Block } from '@/types/proposal'
+'use client';
+
+import { Block } from '@/types/proposal';
 import { useDraggable } from '@dnd-kit/core';
-import React from 'react'
+import React from 'react';
 import { Button } from '../ui/button';
 import { cn } from '@/lib/utils';
-import { Image, Pen, Video } from 'lucide-react';
+import { 
+  Image as ImageIcon, 
+  Type, 
+  Video, 
+  Box, 
+  Heading, 
+  Columns2,
+  LayoutTemplate
+} from 'lucide-react';
 
 interface DragableSidebarItemProps {
-    item: Block,
+    item: Block;
+    isCollapsed?: boolean;
 }
 
-function DragableSidebarItem({ item }: DragableSidebarItemProps) {
-    const { id, type, props, size, position } = item;
+// Helper to map block types to icons
+const getBlockIcon = (type: string) => {
+    switch (type.toLowerCase()) {
+        case 'text': return <Type size={18} />;
+        case 'heading': return <Heading size={18} />;
+        case 'image': return <ImageIcon size={18} />;
+        case 'video': return <Video size={18} />;
+        case 'columns': return <Columns2 size={18} />;
+        case 'hero': return <LayoutTemplate size={18} />;
+        default: return <Box size={18} />;
+    }
+};
+
+function DragableSidebarItem({ item, isCollapsed = false }: DragableSidebarItemProps) {
+    const { id, type } = item;
+    
     const { isDragging, attributes, listeners, setNodeRef } = useDraggable({
         id: id,
         data: {
             type: 'sidebar-item',
             item,
         },
-    })
+    });
 
     return (
         <Button
             ref={setNodeRef}
-            // Changed variant to "outline" or "secondary" usually fits better, 
-            // but here we use custom classes for the strict B&W look.
-            variant={"outline"} 
+            // "ghost" is standard for sidebar items; "secondary" if you want them filled
+            variant="ghost" 
             className={cn(
-                // Base Layout & Sizing
-                "w-full h-auto py-4 px-4 justify-start flex items-center gap-6 overflow-hidden pl-7",
+                // Base Layout
+                "h-10 w-full flex items-center transition-all duration-200 ease-in-out",
                 
-                // Typography (Clean & Minimal)
-                "text-xs font-semibold uppercase tracking-widest text-neutral-900",
-                
-                // Colors & Borders (Black & White Theme)
-                "bg-white border border-neutral-200 shadow-sm",
-                
+                // Collapsed vs Expanded Layout
+                isCollapsed 
+                    ? "justify-center px-0 w-10 mx-auto" // Square shape when collapsed
+                    : "justify-start px-3 gap-3",        // Full width when expanded
+
+                // Colors (Dark mode friendly based on your sidebar)
+                "text-zinc-400 hover:text-white hover:bg-zinc-800",
+
+                // Dragging State
+                isDragging && "opacity-50 ring-2 ring-zinc-700 bg-zinc-800/50 cursor-grabbing",
+
                 // Cursor interaction
-                "cursor-grab active:cursor-grabbing",
-                
-                // Dragging State (Visual feedback)
-                isDragging && "opacity-50 border-neutral-400 border-dashed bg-neutral-50",
-                
-                // Custom prop overrides
-                props?.className
+                "cursor-grab active:cursor-grabbing"
             )}
             {...listeners}
             {...attributes}
+            title={type} // Tooltip fallback for collapsed state
         >
-           {type === "text" && (<Pen />)}
-           {type === "image" && (<Image />)}
-           {type === "video" && (<Video />)}
+            {/* Icon Wrapper */}
+            <span className={cn(
+                "flex items-center justify-center transition-colors",
+                isDragging ? "text-white" : "text-current"
+            )}>
+                {getBlockIcon(type)}
+            </span>
             
-            {type}
+            {/* Label - Hidden when collapsed */}
+            {!isCollapsed && (
+                <span className="text-sm font-medium capitalize truncate">
+                    {type}
+                </span>
+            )}
         </Button>
-    )
+    );
 }
 
-export default DragableSidebarItem
+export default DragableSidebarItem;

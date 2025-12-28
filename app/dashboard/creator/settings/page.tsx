@@ -4,7 +4,7 @@ import React from 'react'
 
 function SettingsPage() {
   return (
-    <div className='w-full p-2 text-white font-brcolage-grotesque'>
+    <div className='w-full p-2 text-white font-brcolage-grotesque bg-background'>
         <BrandingClient />
     </div>
   )

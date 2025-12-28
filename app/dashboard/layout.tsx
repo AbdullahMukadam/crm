@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Sidebar, MobileSidebar } from '@/components/ui/sidebar';
+import { Sidebar, MobileSidebar } from '@/components/layout/sidebar';
 import { ClientSidebarItems, CreatorSidebarItems } from '@/config/sidebarConfig';
 import { useAppSelector } from '@/lib/store/hooks';
 import { NavItem } from '@/types/ui';
-import { Header } from '@/components/header';
+import { Header } from '@/components/layout/header';
 
 
 export default function DashboardLayout({

@@ -22,7 +22,7 @@ export function BlockRenderer({
     updateBlockPosition,
     updateBlockSize,
     deleteBlock,
-    uploadImage
+    uploadImage,
 }: BlockRendererProps) {
     const { id } = useAppSelector((state) => state.auth)
     const [isSelected, setIsSelected] = useState(false);

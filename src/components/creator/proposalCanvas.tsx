@@ -6,6 +6,7 @@ import imageService from '@/lib/api/imageService';
 import { useAutoSave } from '@/features/Proposals/hooks/useAutoSave';
 import { cn } from '@/lib/utils'; // Assuming you have this, if not, standard class strings work too
 
+
 interface ProposalCanvasProps {
     blocks: Block[];
     setBlocks: React.Dispatch<React.SetStateAction<Block[]>>;
@@ -17,7 +18,7 @@ function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: Proposa
     const { setNodeRef, isOver } = useDroppable({
         id: 'canvas'
     });
-    
+
     const { saveProposalData } = useAutoSave({
         AutoSaveInterval: 10000,
         autoSave: isAutosaveOn
@@ -69,10 +70,10 @@ function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: Proposa
                     // Base Layout & Sizing
                     "w-full min-h-[800px] relative transition-all duration-300",
                     "rounded-none overflow-hidden", // Sharp corners for Swiss look
-                    
+
                     // Colors & Borders (Default)
                     "bg-white border border-neutral-200",
-                    
+
                     // Drag Over State (Replaces Blue Ring with Black Border)
                     isOver && "bg-neutral-50 border-neutral-900 border-dashed"
                 )}

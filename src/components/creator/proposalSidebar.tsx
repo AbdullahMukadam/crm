@@ -1,72 +1,110 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { type NavItem } from '@/types/ui';
-import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { PanelLeftClose, PanelRightClose } from 'lucide-react';
+import { PanelLeftClose, PanelRightClose, GripVertical, Box } from 'lucide-react'; // Added icons
 import { Block } from '@/types/proposal';
 import DragableSidebarItem from './dragableSidebarItem';
-import { useEffect, useRef, useState } from 'react';
 import { DragOverlay } from '@dnd-kit/core';
-
+import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area'; // Optional: If you have shadcn ScrollArea, otherwise use div
 
 interface SidebarProps {
     sidebarDragableItems: Block[];
     isCollapsed: boolean;
     setIsCollapsed: (isCollapsed: boolean) => void;
-    activeBlock : Block | null;
+    activeBlock: Block | null;
 }
 
-function ProposalSidebar({ sidebarDragableItems, isCollapsed, setIsCollapsed, activeBlock }: SidebarProps) {
-    const blocksRef = useRef<Block[] | null>(sidebarDragableItems);
-    useEffect(() => {
-        if (!blocksRef.current) {
-            blocksRef.current = sidebarDragableItems;
-        }
-
-    }, [sidebarDragableItems])
+function ProposalSidebar({ 
+    sidebarDragableItems, 
+    isCollapsed, 
+    setIsCollapsed, 
+    activeBlock 
+}: SidebarProps) {
 
     return (
         <aside
             className={cn(
-                "hidden h-dvh sticky top-0 left-0 flex-col font-brcolage-grotesque border-r bg-[#0A0A0A] dark:border-gray-800 dark:bg-gray-900 md:flex transition-all duration-300 ease-in-out",
-                isCollapsed ? "w-20" : "w-64"
+                "flex flex-col h-full bg-zinc-900 border-r border-zinc-800 transition-all duration-300 ease-in-out",
+                // Width is controlled by parent on desktop, but we handle internal spacing here
+                "w-full" 
             )}
         >
             {/* Sidebar Header */}
-            <div className="flex h-16 items-center border-b px-6 justify-between">
-                <Link href="/" className={cn("flex items-center gap-2 font-semibold", isCollapsed && "justify-center")}>
-                    <h1 className={`${isCollapsed ? "hidden" : "text-white font-bold text-xl tracking-tight cursor-pointer"}`}>StudioFlow</h1>
-                </Link>
+            <div className={cn(
+                "flex h-14 items-center border-b border-zinc-800 px-4 shrink-0",
+                isCollapsed ? "justify-center" : "justify-between"
+            )}>
+                {!isCollapsed && (
+                    <div className="flex items-center gap-2 font-semibold text-white">
+                       
+                        <span className="tracking-tight">StudioFlow</span>
+                    </div>
+                )}
+
+                {/* Collapse Toggle - Hidden on mobile (since mobile uses a drawer) */}
                 <Button
-                    variant="default"
+                    variant="ghost"
                     size="icon"
-                    className="hidden md:flex"
+                    className="hidden md:flex h-8 w-8 text-zinc-400 hover:text-white hover:bg-zinc-800"
                     onClick={() => setIsCollapsed(!isCollapsed)}
                 >
-                    {isCollapsed ? <PanelRightClose className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
+                    {isCollapsed ? <PanelRightClose size={18} /> : <PanelLeftClose size={18} />}
                 </Button>
             </div>
 
-            <div className='pt-4 pl-4 space-x-2'>
-                <h2 className='text-white text-xl font-bold'>Blocks</h2>
+            {/* Section Header */}
+            <div className={cn(
+                "py-4 shrink-0", 
+                isCollapsed ? "px-2 text-center" : "px-4"
+            )}>
+                {isCollapsed ? (
+                    <div className="w-full h-px bg-zinc-800 my-2" />
+                ) : (
+                    <h2 className='text-zinc-400 text-xs font-bold uppercase tracking-wider'>
+                        Blocks Library
+                    </h2>
+                )}
             </div>
 
-            {/* Navigation Links */}
-            <nav className="flex-1 space-y-2 p-4">
-                {
-                    blocksRef.current?.map((item) => (
-                        <DragableSidebarItem item={item} key={item.id} />
-                    ))
-                }
-            </nav>
+            {/* Navigation Links / Draggable Items */}
+            {/* Using flex-1 and overflow-y-auto ensures this section scrolls while header stays fixed */}
+            <div className="flex-1 overflow-y-auto px-3 pb-4 custom-scrollbar">
+                <nav className="space-y-2">
+                    {sidebarDragableItems?.map((item) => (
+                        <DragableSidebarItem 
+                            key={item.id} 
+                            item={item} 
+                            // You might need to pass isCollapsed to the item to hide text there too
+                            // isCollapsed={isCollapsed} 
+                        />
+                    ))}
+                    
+                    {sidebarDragableItems.length === 0 && (
+                        <div className="text-center py-10 text-zinc-600 text-sm">
+                            No blocks found.
+                        </div>
+                    )}
+                </nav>
+            </div>
 
-            <DragOverlay>
+            {/* Drag Overlay - Visual feedback when dragging */}
+            <DragOverlay dropAnimation={{
+                duration: 250,
+                easing: 'cubic-bezier(0.18, 0.67, 0.6, 1.22)',
+            }}>
                 {activeBlock ? (
-                    <div className="bg-zinc-950 text-white p-4 rounded-md shadow-2xl border-2 border-white opacity-90">
-                        <div className="font-semibold">{activeBlock.type} Block</div>
+                    <div className="cursor-grabbing w-[200px] flex items-center gap-3 bg-zinc-800 text-zinc-100 p-3 rounded-xl shadow-2xl ring-2 ring-emerald-500/50 border border-zinc-700 opacity-90 scale-105">
+                        <div className="p-2 bg-zinc-900 rounded-md border border-zinc-700">
+                             {/* Try to render the specific icon for the block type here if available */}
+                            <Box size={16} className="text-emerald-400" />
+                        </div>
+                        <div className="flex flex-col">
+                            <span className="font-semibold text-sm">{activeBlock.type}</span>
+                            <span className="text-[10px] text-zinc-400">Drop to add</span>
+                        </div>
+                        <GripVertical className="ml-auto text-zinc-600" size={16} />
                     </div>
                 ) : null}
             </DragOverlay>

@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Loader2, Search, User } from 'lucide-react';
 import { LeadsDataForDashboard } from '@/types/branding';
 // Assuming Card and CardContent are styled for a dark theme (e.g., using bg-gray-800)
-import { Card, CardContent } from './card';
+import { Card, CardContent } from '../ui/card';
 
 interface SearchComponentProps {
     onSearch: (query: string) => void;
@@ -117,7 +117,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
                                                     </h4>
                                                     {/* Status Tag - Red/Dark Red accent */}
                                                     {lead.status && (
-                                                        <span className="px-2 py-0.5 bg-red-900/40 text-red-400 text-xs font-medium rounded-full border border-red-900">
+                                                        <span className="px-2 py-0.5 bg-background text-[#D27E4D] text-xs font-medium rounded-full border border-[#D27E4D]">
                                                             {lead.status}
                                                         </span>
                                                     )}

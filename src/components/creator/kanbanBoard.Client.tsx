@@ -28,7 +28,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { updateLeadStatusSlice } from '@/lib/store/features/leadSlice';
 
 const LeadVisitsChart = dynamic(
-    () => import('../ui/leads-visit').then(mod => mod.LeadVisitsChart),
+    () => import('../layout/leads-visit').then(mod => mod.LeadVisitsChart),
     {
         ssr: false,
         loading: () => <div className="h-[300px] w-full animate-pulse bg-zinc-900 rounded-xl" />
@@ -361,7 +361,7 @@ const KanbanBoard = () => {
 
     if (loadind) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+            <div className="w-full h-screen flex items-center justify-center bg-background text-zinc-300">
                 <Loader2 className="animate-spin mr-2" /> Loading Leads...
             </div>
         );
