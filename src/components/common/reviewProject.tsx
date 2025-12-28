@@ -16,6 +16,7 @@ import { FigmaEmbed } from "./figmaEmbed"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "../ui/dialog"
 import { Label } from "../ui/label"
 import { Input } from "../ui/input"
+import { useFeedbackStream } from "@/hooks/useFeedbackStream"
 
 
 interface ReviewProjectComponentProps {
@@ -31,6 +32,34 @@ function ReviewProjectComponent({ projectId }: ReviewProjectComponentProps) {
     const [embedUrl, setEmbedUrl] = useState("")
     const [showReplyInput, setshowReplyInput] = useState(false)
     const [replyingFeedbackState, setreplyingFeedback] = useState<Feedback | null>(null)
+
+    const handleFeedbackCreated = useCallback(
+        (feedback: Feedback) => {
+            disptach(addFeedbackRealtime({ projectId, feedback }));
+        },
+        [disptach, projectId]
+    );
+
+    const handleReplyCreated = useCallback(
+        (reply: Feedback & { parentId: string }) => {
+            if (reply.parentId) {
+                disptach(
+                    addReplyRealtime({
+                        projectId,
+                        feedbackId: reply.parentId,
+                        reply,
+                    })
+                );
+            }
+        },
+        [disptach, projectId]
+    );
+
+    const { isConnected } = useFeedbackStream({
+        projectId,
+        onFeedbackCreated: handleFeedbackCreated,
+        onReplyCreated: handleReplyCreated,
+    })
 
     useEffect(() => {
         if (!projectId) return;

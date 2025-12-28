@@ -103,7 +103,7 @@ export default function Invoices() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
-                  <p className="text-2xl md:text-3xl font-bold tracking-tight">{formatCurrency(stats.totalPaid)}</p>
+                  <p className="text-2xl md:text-2xl font-bold tracking-tight">{formatCurrency(stats.totalPaid)}</p>
                   <p className="text-xs text-muted-foreground">Lifetime earnings</p>
                 </div>
                 <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
@@ -119,7 +119,7 @@ export default function Invoices() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Pending Amount</p>
-                  <p className="text-2xl md:text-3xl font-bold tracking-tight">{formatCurrency(stats.pendingAmount)}</p>
+                  <p className="text-2xl md:text-2xl font-bold tracking-tight">{formatCurrency(stats.pendingAmount)}</p>
                   <p className="text-xs text-muted-foreground">Due from clients</p>
                 </div>
                 <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
@@ -135,7 +135,7 @@ export default function Invoices() {
               <div className="flex items-start justify-between">
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-muted-foreground">Next Due Date</p>
-                  <p className="text-2xl md:text-3xl font-bold tracking-tight truncate">
+                  <p className="text-2xl md:text-2xl font-bold tracking-tight truncate">
                     {stats.nextDueDate || "N/A"}
                   </p>
                   <p className="text-xs text-muted-foreground">
