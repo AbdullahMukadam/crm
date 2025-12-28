@@ -11,7 +11,7 @@ import { FormDetails } from '@/types/branding'
 import brandingService from '@/lib/api/brandingService'
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogDescription } from '../ui/dialog'
 import { LeadFormUrlCreationDropdown } from './LeadFormUrlCreationDropdown'
-import { Copy, ExternalLink, Settings } from 'lucide-react'
+import { Check, Copy, ExternalLink, Globe, Link as LinkIcon, Settings } from 'lucide-react' // Added Check, Globe, LinkIcon
 import { useAppSelector } from '@/lib/store/hooks'
 import { useRouter } from 'next/navigation'
 
@@ -27,6 +27,7 @@ function BrandingClient() {
     const [isModalOpen, setisModalOpen] = useState(false)
     const [selectedOption, setselectedOption] = useState<SelectedOption | null>(null)
     const [generatedUrl, setgeneratedUrl] = useState("")
+    const [hasCopied, setHasCopied] = useState(false) // Added for copy feedback
     const router = useRouter()
 
     const sensors = useSensors(
@@ -42,12 +43,9 @@ function BrandingClient() {
 
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event
-
         if (!over) return;
-
         const activeId = active.id;
         const overId = over.id;
-
         if (activeId === overId) return;
 
         setItems((currentItems) => {
@@ -93,12 +91,20 @@ function BrandingClient() {
 
     const handleSelect = (option: SelectedOption) => {
         setselectedOption(option)
+        // Optional: clear previous url when selection changes
+        // setgeneratedUrl("") 
     }
 
     const handleCopy = () => {
         if (!generatedUrl) return;
         navigator.clipboard.writeText(generatedUrl)
-        toast.success("Copied Successfully")
+        setHasCopied(true)
+        toast.success("Copied to clipboard")
+
+        // Reset check icon after 2 seconds
+        setTimeout(() => {
+            setHasCopied(false)
+        }, 2000)
     }
 
     const handleOpenLeadForm = () => {
@@ -129,7 +135,6 @@ function BrandingClient() {
                                 </p>
                             </div>
 
-                            {/* Header Row - Hidden on mobile, visible on tablet+ */}
                             <div className='hidden sm:flex w-full items-center justify-between px-4 py-2 text-sm font-medium text-muted-foreground bg-muted/50 rounded-lg border border-border'>
                                 <span>Field Label</span>
                                 <span>Mapping</span>
@@ -151,8 +156,8 @@ function BrandingClient() {
                         </div>
 
                         <div className='flex justify-end pt-4 border-t'>
-                            <Button 
-                                onClick={handleSubmit} 
+                            <Button
+                                onClick={handleSubmit}
                                 disabled={isLoading}
                                 className="w-full sm:w-auto"
                             >
@@ -186,55 +191,77 @@ function BrandingClient() {
                     </TabsContent>
                 </Tabs>
 
+                {/* --- UPDATED DIALOG LAYOUT --- */}
                 <Dialog open={isModalOpen} onOpenChange={setisModalOpen}>
-                    <DialogContent className='w-[95vw] max-w-[425px] bg-zinc-950 text-zinc-100 border-zinc-800'>
-                        <DialogHeader>
-                            <DialogTitle className="text-xl">Create New URL</DialogTitle>
-                            <DialogDescription className="text-zinc-400">
-                                Select an option to generate a specific lead form URL.
-                            </DialogDescription>
-                        </DialogHeader>
+                    <DialogContent className='w-full sm:max-w-md bg-zinc-950 text-zinc-100 border-zinc-800 p-0 gap-0 overflow-hidden'>
 
-                        <div className="py-4 space-y-4">
-                            <LeadFormUrlCreationDropdown 
-                                handleSelect={handleSelect} 
-                                selectedOption={selectedOption} 
-                            />
-                            
-                            {generatedUrl && (
-                                <div className='rounded-lg bg-zinc-900 border border-zinc-800 p-3 space-y-2'>
-                                    <p className='text-xs text-zinc-500 font-medium uppercase'>Generated URL</p>
-                                    <div className="flex items-center gap-2">
-                                        <code className='flex-1 text-sm bg-black/50 p-2 rounded text-zinc-300 truncate font-mono'>
-                                            {generatedUrl}
-                                        </code>
-                                        <Button 
-                                            size="icon" 
-                                            variant="ghost" 
-                                            onClick={handleCopy}
-                                            className="h-9 w-9 shrink-0 hover:bg-zinc-800 hover:text-white"
-                                        >
-                                            <Copy size={16} />
-                                        </Button>
-                                    </div>
+                        <div className="p-6 pb-4">
+                            <DialogHeader>
+                                <DialogTitle className="text-xl flex items-center gap-2">
+                                    Create New URL
+                                </DialogTitle>
+                                <DialogDescription className="text-zinc-400 mt-2">
+                                    Select a configuration option below to generate a trackable lead form link.
+                                </DialogDescription>
+                            </DialogHeader>
+
+                            <div className="mt-6 space-y-4">
+                                <div className="space-y-2">
+                                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Configuration</label>
+                                    <LeadFormUrlCreationDropdown
+                                        handleSelect={handleSelect}
+                                        selectedOption={selectedOption}
+                                    />
                                 </div>
-                            )}
+
+                                {generatedUrl && (
+                                    <div className="animate-in fade-in slide-in-from-top-2 duration-300">
+                                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2 block">
+                                            Generated Link
+                                        </label>
+                                        <div className='flex items-center gap-1 rounded-lg bg-zinc-900 border border-zinc-800 p-1 pl-3 transition-colors focus-within:ring-1 focus-within:ring-zinc-700'>
+                                            <LinkIcon className="h-4 w-4 text-zinc-500 shrink-0" />
+                                            <input
+                                                readOnly
+                                                value={generatedUrl}
+                                                className="flex-1 bg-transparent border-none text-sm text-zinc-200 focus:outline-none placeholder:text-zinc-600 truncate py-2 font-mono"
+                                            />
+                                            <Button
+                                                size="sm"
+                                                variant="ghost"
+                                                onClick={handleCopy}
+                                                className="h-8 px-3 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                            >
+                                                {hasCopied ? (
+                                                    <Check className="h-4 w-4 text-green-500" />
+                                                ) : (
+                                                    <Copy className="h-4 w-4" />
+                                                )}
+                                            </Button>
+                                        </div>
+                                        <p className="text-[11px] text-zinc-500 mt-2">
+                                            Anyone with this link can access the specific lead form configuration.
+                                        </p>
+                                    </div>
+                                )}
+                            </div>
                         </div>
 
-                        <DialogFooter className="gap-2 sm:gap-0">
-                            <Button 
-                                variant="outline" 
+                        <DialogFooter className="bg-zinc-900/50 p-6 border-t border-zinc-800 flex flex-col sm:flex-row gap-3">
+                            <Button
+                                variant="outline"
                                 onClick={() => setisModalOpen(false)}
-                                className="border-zinc-700 hover:bg-zinc-800 text-zinc-300"
+                                className="border-zinc-700 hover:bg-zinc-800 text-zinc-300 hover:text-white w-full sm:w-auto"
                             >
                                 Close
                             </Button>
-                            <Button 
-                                variant="default" 
+                            <Button
+                                variant="default"
                                 onClick={handleGenerateUrl}
                                 disabled={!selectedOption}
+                                className=" w-full sm:w-auto"
                             >
-                                Generate URL
+                                Generate Link
                             </Button>
                         </DialogFooter>
                     </DialogContent>

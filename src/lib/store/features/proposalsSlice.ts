@@ -157,7 +157,6 @@ const proposalsSlice = createSlice({
       })
       // Create Proposal
       .addCase(createProposalSlice.pending, (state) => {
-        state.isLoading = true;
         state.error = null;
       })
       .addCase(createProposalSlice.fulfilled, (state, action) => {
@@ -188,7 +187,7 @@ const proposalsSlice = createSlice({
       })
       // Delete Proposal
       .addCase(deleteProposal.pending, (state) => {
-        state.isLoading = true;
+        state.isLoading = false;
         state.error = null;
       })
       .addCase(deleteProposal.fulfilled, (state, action: PayloadAction<string>) => {
