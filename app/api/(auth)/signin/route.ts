@@ -23,6 +23,8 @@ export async function POST(request: NextRequest) {
             }
         })
 
+        console.log(isUserPresent)
+
         if (!isUserPresent) {
             return NextResponse.json({
                 success: false,

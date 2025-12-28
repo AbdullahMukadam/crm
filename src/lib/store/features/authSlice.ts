@@ -75,6 +75,7 @@ export const SigninUser = createAsyncThunk(
             if (!response.success) {
                 return rejectWithValue(response.message || 'Failed to sign in user');
             }
+            console.log("signinuser", response.data)
             return response.data;
         } catch (error: any) {
             return rejectWithValue(error.message || 'Failed to sign in user');
@@ -146,6 +147,7 @@ export const AuthSlice = createSlice({
                 state.isInitialized = true;
                 if (action.payload) {
                     Object.assign(state, action.payload);
+                    console.log(action.payload)
                 }
             })
             .addCase(ValidateStoredAuth.rejected, (state, action) => {
@@ -170,6 +172,7 @@ export const AuthSlice = createSlice({
                 state.error = null;
                 if (action.payload) {
                     Object.assign(state, action.payload);
+                    console.log(action.payload)
                 }
             })
             .addCase(GetCurrentUser.rejected, (state, action) => {
@@ -209,6 +212,7 @@ export const AuthSlice = createSlice({
                 state.isInitialized = true;
                 if (action.payload) {
                    Object.assign(state, action.payload)
+                   console.log(action.payload)
                 }
             })
             .addCase(SigninUser.rejected, (state, action) => {

@@ -229,7 +229,7 @@ function ProposalsClient() {
     const { id } = useAppSelector((state) => state.auth);
     const [isDialogOpen, setisDialogOpen] = useState(false);
     const [proposalTitle, setproposalTitle] = useState("");
-    const [proposalDescription, setproposalDescription] = useState("");
+    const [proposalDescription, setProposalDescription] = useState("");
     const [isProposalCreatedLoadind, setisProposalCreatedLoadind] = useState(false);
     const [isProposalDeletedLoading, setisProposalDeletedLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
@@ -283,7 +283,7 @@ function ProposalsClient() {
                 setisProposalCreatedLoadind(false);
             }
         },
-        [proposalTitle, id]
+        [proposalTitle, id, proposalDescription]
     );
 
     const handleDeleteProposal = useCallback(async (proposalId: string) => {
@@ -551,7 +551,7 @@ function ProposalsClient() {
                                 id="description"
                                 placeholder="Enter proposal description"
                                 value={proposalDescription}
-                                onChange={(e) => setproposalDescription(e.target.value)}
+                                onChange={(e) => setProposalDescription(e.target.value)}
                                 required
                                 className="resize-none"
                             />

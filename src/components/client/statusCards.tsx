@@ -7,14 +7,12 @@ import {
   CardTitle,
 } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Project, DeliverableStatus, InvoiceStatus } from "@/types/project"
+import { Project } from "@/types/project"
 import { getProgress, statusConfig } from "./project-card"
 import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  DollarSign,
-  FileText,
   TrendingUp
 } from "lucide-react"
 
@@ -60,7 +58,7 @@ export function SectionCards({ project }: ProjectCardsProps) {
     <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
 
       {/* CARD 1: OVERALL STATUS */}
-      <Card className="flex flex-col justify-between w-full md:w-[300px]">
+      <Card className="flex flex-col justify-between h-full">
         <CardHeader className="w-full pb-2">
           <div className="flex justify-between items-start">
             <CardDescription>Project Status</CardDescription>
@@ -86,7 +84,7 @@ export function SectionCards({ project }: ProjectCardsProps) {
       </Card>
 
       {/* CARD 2: DELIVERABLES */}
-      <Card className="flex flex-col justify-between w-full md:w-[300px">
+      <Card className="flex flex-col justify-between h-full">
         <CardHeader className="w-full pb-2">
           <div className="flex justify-between items-start">
             <CardDescription>Deliverables</CardDescription>
@@ -110,7 +108,7 @@ export function SectionCards({ project }: ProjectCardsProps) {
       </Card>
 
       {/* CARD 3: INVOICES & REVENUE */}
-      <Card className="flex flex-col justify-betweenw-full md:w-[300px]">
+      <Card className="flex flex-col justify-between h-full">
         <CardHeader className="w-full pb-2">
           <div className="flex justify-between items-start">
             <CardDescription>Total Revenue (Paid)</CardDescription>

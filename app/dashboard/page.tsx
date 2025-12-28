@@ -1,5 +1,6 @@
 "use client"
 import { useAppSelector } from '@/lib/store/hooks'
+import { Loader2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React, { useEffect } from 'react'
 
@@ -12,7 +13,11 @@ function page() {
             router.push(`/dashboard/${role?.toLowerCase()}`)
         }
     }, [onboarded])
-    return null;
+    return (
+        <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+            <Loader2 className="animate-spin mr-2" /> Please wait...
+        </div>
+    );
 }
 
 export default page

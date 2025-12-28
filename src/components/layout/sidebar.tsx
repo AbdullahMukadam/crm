@@ -109,10 +109,10 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
                         {!isCollapsed && (
                             <div className="flex items-center gap-3 overflow-hidden">
                                 <Avatar>
-                                    <AvatarImage src={avatarUrl || ""} alt={username || ""} />
+                                    <AvatarImage src={avatarUrl ? avatarUrl : "/auth-image.jpg"} alt={username || ""} />
                                     <AvatarFallback>{username?.charAt(0) || "U"}</AvatarFallback>
                                 </Avatar>
-                               
+
                                 <div className="flex flex-col min-w-0">
                                     <p className="truncate text-sm font-medium text-gray-50">{username || "User"}</p>
                                     <p className="truncate text-xs text-gray-500 dark:text-gray-400">{role?.toUpperCase() || "GUEST"}</p>
@@ -222,11 +222,10 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
                 <div className='mt-auto p-4 border-t border-zinc-800/50'>
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 overflow-hidden">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-300 dark:bg-gray-700">
-                                <span className="font-semibold text-gray-600 dark:text-gray-300">
-                                    {username?.charAt(0) || "U"}
-                                </span>
-                            </div>
+                            <Avatar>
+                                <AvatarImage src={avatarUrl ? avatarUrl : "/auth-image.jpg"} alt={username || ""} />
+                                <AvatarFallback>{username?.charAt(0) || "U"}</AvatarFallback>
+                            </Avatar>
                             <div className="flex flex-col min-w-0">
                                 <p className="truncate text-sm font-medium text-gray-50">{username || "User"}</p>
                                 <p className="truncate text-xs text-gray-500 dark:text-gray-400">{role?.toUpperCase() || "GUEST"}</p>
