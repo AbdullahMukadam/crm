@@ -34,7 +34,7 @@ function page() {
               </h1>
 
               <p className='text-xl  text-white/80 max-w-3xl mx-auto leading-relaxed'>
-                The all-in-one suite for freelance developers and designers to win clients, manage projects, and get paid. No more scattered tools.
+                The all-in-one suite for freelance designers to win clients, manage projects, and get paid. No more scattered tools.
               </p>
             </div>
           </div>

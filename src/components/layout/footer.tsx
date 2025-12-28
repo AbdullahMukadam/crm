@@ -8,10 +8,10 @@ function Footer() {
             <div className='w-full lg:w-[70%] lg:flex items-center justify-between'>
                 <section className='w-full md:w-[40%] flex flex-col gap-2'>
                     <h2 className='text-2xl text-white font-bold font-brcolage-grotesque'>StudioFlow</h2>
-                    <p className='text-gray-400 text-sm font-brcolage-grotesque'>The all-in-one suite for freelance developers and designers to win clients, manage projects, and get paid. No more scattered tools.</p>
+                    <p className='text-gray-400 text-sm font-brcolage-grotesque'>The all-in-one suite for freelance designers to win clients, manage projects, and get paid. No more scattered tools.</p>
                     <div className='w-full flex gap-2 mt-2 '>
-                        <Link href={"/"}><Github size={20} className='text-gray-400 hover:text-white' /></Link>
-                        <Link href={"/"}><Twitter size={20} className='text-gray-400 hover:text-white' /></Link>
+                        <Link href={"https://github.com/AbdullahMukadam"}><Github size={20} className='text-gray-400 hover:text-white' /></Link>
+                        <Link href={"https://x.com/abd_mukadam"}><Twitter size={20} className='text-gray-400 hover:text-white' /></Link>
                     </div>
                 </section>
                 <section className='w-full md:w-[40%] flex gap-2 mt-8 lg:mt-0'>
