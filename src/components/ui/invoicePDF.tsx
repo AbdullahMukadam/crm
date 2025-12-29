@@ -62,10 +62,6 @@ export const InvoicePDF = ({ invoice }: InvoicePDFProps) => (
             {/* Header */}
             <View style={styles.header}>
                 <View>
-                    <Text style={styles.brandTitle}>YOUR BRAND</Text>
-                    <Text style={{ fontSize: 10, marginTop: 4 }}>contact@yourbrand.com</Text>
-                </View>
-                <View>
                     <Text style={styles.invoiceTitle}>INVOICE</Text>
                     <View style={styles.metadata}>
                         <View style={styles.metadataRow}>
@@ -118,7 +114,6 @@ export const InvoicePDF = ({ invoice }: InvoicePDFProps) => (
             {/* Footer */}
             <View style={styles.footer}>
                 <Text>Thank you for your business.</Text>
-                <Text>Please make checks payable to Your Brand Name.</Text>
             </View>
 
         </Page>
