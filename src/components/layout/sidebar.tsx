@@ -201,7 +201,7 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 space-y-2 p-4 overflow-y-auto">
+                <nav className="flex-1 space-y-2 p-4 overflow-y-auto bg-background">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}

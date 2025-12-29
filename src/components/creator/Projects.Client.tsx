@@ -12,7 +12,6 @@ import { EditProjectDialog } from "../common/create-project"
 import { Project } from "@/types/project"
 import { toast } from "sonner"
 
-
 type TabValue = "all" | "active" | "planning" | "completed"
 
 export default function ProjectsClient() {
@@ -52,26 +51,29 @@ export default function ProjectsClient() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-background">
-      <div className="px-8 py-8">
+    <div className="min-h-screen bg-background w-full">
+      {/* Added container, max-w, and responsive padding */}
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
           <div>
             <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
             </div>
-            <h1 className="text-4xl font-bold text-foreground mb-2">Your Projects</h1>
-            <p className="text-muted-foreground">Manage and track the progress of your active collaborations.</p>
+            {/* Added break-words to prevent overflow on very long titles */}
+            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 break-words">Your Projects</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">Manage and track the progress of your active collaborations.</p>
           </div>
         </div>
 
         {/* Tabs and Search */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)} className="w-full lg:w-auto">
-            <TabsList className="bg-muted">
-              <TabsTrigger value="all">All Projects</TabsTrigger>
-              <TabsTrigger value="active">Active</TabsTrigger>
-              <TabsTrigger value="planning">Planning</TabsTrigger>
-              <TabsTrigger value="completed">Completed</TabsTrigger>
+            {/* Made TabsList wrap on small screens and use auto height */}
+            <TabsList className="bg-muted w-full sm:w-auto flex flex-wrap h-auto justify-start p-1">
+              <TabsTrigger className="flex-1 sm:flex-none" value="all">All Projects</TabsTrigger>
+              <TabsTrigger className="flex-1 sm:flex-none" value="active">Active</TabsTrigger>
+              <TabsTrigger className="flex-1 sm:flex-none" value="planning">Planning</TabsTrigger>
+              <TabsTrigger className="flex-1 sm:flex-none" value="completed">Completed</TabsTrigger>
             </TabsList>
           </Tabs>
 
@@ -81,24 +83,25 @@ export default function ProjectsClient() {
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-card border-border"
+              className="pl-10 bg-card border-border w-full"
             />
           </div>
         </div>
 
         {isLoading ? (
-          <div className="w-full flex justify-center text-zinc-300">
+          <div className="w-full flex justify-center text-zinc-300 py-12">
             <Loader2 className="animate-spin mr-2" /> Loading projects...
           </div>
         ) : (
           <>
             {
               filteredProjects.length === 0 ? (
-                <div className="flex items-center justify-center">
-                  <h1 className="text-white font-brcolage-grotesque text-3xl text-center">No projects Found</h1>
+                <div className="flex items-center justify-center py-12">
+                  <h1 className="text-white font-brcolage-grotesque text-2xl sm:text-3xl text-center">No projects Found</h1>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                // Adjusted grid gap and column settings
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   {filteredProjects.map((project) => (
                     <ProjectCard
                       key={project.id}

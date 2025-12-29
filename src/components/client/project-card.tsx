@@ -45,9 +45,10 @@ export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject
   const router = useRouter()
 
   return (
-    <Card className="hover:shadow-lg transition-shadow border-border font-brcolage-grotesque">
+    // Added w-full and overflow-hidden to prevent layout breakage
+    <Card className="hover:shadow-lg transition-shadow border-border font-brcolage-grotesque w-full overflow-hidden flex flex-col justify-between">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
-        <Badge className={`${config.color} text-xs font-semibold`}>
+        <Badge className={`${config.color} text-xs font-semibold whitespace-nowrap`}>
           <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor} inline-block mr-1.5`}></span>
           {config.label}
         </Badge>
@@ -70,8 +71,9 @@ export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject
 
       <CardContent className="space-y-4">
         <div>
-          <h3 className="font-bold text-foreground text-lg mb-2">{project.title}</h3>
-          <p className="text-sm text-muted-foreground line-clamp-2">{project.description}</p>
+          {/* Added truncate/break-words to title */}
+          <h3 className="font-bold text-foreground text-lg mb-2 break-words">{project.title}</h3>
+          <p className="text-sm text-muted-foreground line-clamp-2 break-words">{project.description}</p>
         </div>
 
         <div>
@@ -88,28 +90,26 @@ export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject
 
         <div className="flex items-center justify-between pt-2 border-t border-border">
           <div className="flex -space-x-2">
-            <Avatar className="w-8 h-8 border-2">
+            <Avatar className="w-8 h-8 border-2 ring-2 ring-background">
               <AvatarImage src={project.creator.avatarUrl || "/auth-image.jpg"} />
               <AvatarFallback className="text-xs">{project.creator.username.charAt(0)}</AvatarFallback>
             </Avatar>
-            <Avatar className="w-8 h-8 border-2">
+            <Avatar className="w-8 h-8 border-2 ring-2 ring-background">
               <AvatarImage src={project.client.avatarUrl || "/auth-image.jpg"} />
               <AvatarFallback className="text-xs">{project.client.username.charAt(0)}</AvatarFallback>
             </Avatar>
           </div>
-          <span className="text-xs text-muted-foreground">{now}</span>
+          <span className="text-xs text-muted-foreground whitespace-nowrap">{now}</span>
         </div>
       </CardContent>
     </Card>
   )
 }
 
+// Helper function (unchanged, just included for context)
 export function getTimeAgo(dateInput: Date | string): string {
-  // 1. Ensure we have a valid Date object
   const date = new Date(dateInput);
   const now = new Date();
-
-  // 2. Perform the calculation
   const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
   if (seconds < 60) return "Just now";

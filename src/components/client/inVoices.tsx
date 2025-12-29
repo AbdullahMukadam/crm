@@ -44,7 +44,6 @@ export default function Invoices() {
   const { projects, isLoading, isInvoiceLoading } = useAppSelector((state) => state.projects)
   const dispatch = useAppDispatch()
   const [searchQuery, setsearchQuery] = useState("")
-  // const [isOpen, setisOpen] = useState(false) // Unused state removed for cleanup
 
   // Use the hook to get real processed data
   const { invoices, stats, handleSearchInvoices, handleFilterInvoices } = useInvoices({ projects })
@@ -77,9 +76,9 @@ export default function Invoices() {
   }
 
   return (
-    <div className="min-h-screen bg-background font-brcolage-grotesque">
-      {/* Responsive Padding: p-4 on mobile, p-8 on tablet/desktop */}
-      <div className="mx-auto w-full p-4 md:p-8 lg:p-12">
+    <div className="min-h-screen bg-background font-brcolage-grotesque w-full">
+      {/* Added max-w-7xl and standard responsive padding to constrain width */}
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
 
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -94,7 +93,7 @@ export default function Invoices() {
         </div>
 
         {/* Stats Cards */}
-        {/* Using grid-cols-1 for mobile, 2 for tablet, 3 for large screens */}
+        {/* Grid is already responsive, but constraints above ensure it doesn't stretch too wide */}
         <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
 
           {/* Total Paid Card */}
@@ -151,28 +150,29 @@ export default function Invoices() {
         </div>
 
         {/* Invoices Table Section */}
-        <Card className="border-border bg-card shadow-sm">
+        {/* Added overflow-hidden to prevent the card border from cutting off if table is large */}
+        <Card className="border-border bg-card shadow-sm overflow-hidden">
           <CardContent className="p-4 md:p-6">
-            
+
             {/* Search and Filters - Stack vertically on mobile, row on tablet */}
             <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
               <div className="relative w-full lg:max-w-sm">
                 <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input 
-                  value={searchQuery} 
-                  onChange={(e) => setsearchQuery(e.target.value)} 
-                  placeholder="Search by invoice ID..." 
-                  className="pl-9 w-full" 
+                <Input
+                  value={searchQuery}
+                  onChange={(e) => setsearchQuery(e.target.value)}
+                  placeholder="Search by invoice ID..."
+                  className="pl-9 w-full"
                 />
               </div>
-              
+
               {/* Filter Buttons: flex-wrap ensures they don't squash on mobile */}
               <div className="flex flex-wrap gap-2">
                 {InvoicesStatus.map((inv) => (
-                  <Button 
-                    key={inv.id} 
-                    size="sm" 
-                    variant="secondary" 
+                  <Button
+                    key={inv.id}
+                    size="sm"
+                    variant="secondary"
                     className="flex-grow sm:flex-grow-0"
                     onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}
                   >
@@ -205,7 +205,7 @@ export default function Invoices() {
                           <TableCell className="font-mono font-medium text-indigo-600 whitespace-nowrap">
                             {invoice.invoiceNumber}
                           </TableCell>
-                          
+
                           {/* Matching Header visibility logic */}
                           <TableCell className="text-muted-foreground whitespace-nowrap hidden md:table-cell">
                             {format(new Date(invoice.createdAt), 'MMM dd, yyyy')}
@@ -213,7 +213,7 @@ export default function Invoices() {
                           <TableCell className="text-muted-foreground whitespace-nowrap hidden sm:table-cell">
                             {format(new Date(invoice.dueDate), 'MMM dd, yyyy')}
                           </TableCell>
-                          
+
                           <TableCell className="font-semibold whitespace-nowrap">
                             {formatCurrency(Number(invoice.amount))}
                           </TableCell>
