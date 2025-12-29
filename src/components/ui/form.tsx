@@ -21,7 +21,7 @@ function LeadForm({ username }: LeadFormProps) {
     const handlefetchBranding = useCallback(async () => {
         try {
             setisLoading(true)
-            const response = await brandingService.fetchBranding()
+            const response = await brandingService.fetchBranding(username)
             if (response.success && response.data) {
                 setbrnadingData(response.data.formFeilds)
                 // toast.success("Successfully fetch the response") // Optional: reduced noise

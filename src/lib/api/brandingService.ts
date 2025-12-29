@@ -13,8 +13,8 @@ class BrandingService {
         })
     }
 
-    async fetchBranding(): Promise<APIResponse<fetchBrandingResponse>> {
-        return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.FETCH_BRANDING, {
+    async fetchBranding(username: string): Promise<APIResponse<fetchBrandingResponse>> {
+        return FetchClient.makeRequest(`${CREATOR_API_ENDPOINTS.FETCH_BRANDING}/${username}`, {
             method: 'GET',
         })
     }
