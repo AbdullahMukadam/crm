@@ -1,16 +1,9 @@
-import { verifyUser } from "@/lib/middleware/verify-user";
+
 import { prisma } from "@/lib/prisma";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function GET(request: NextRequest) {
     try {
-        const { user, error } = await verifyUser(request)
-        if (!user || error) {
-            return NextResponse.json({
-                success: false,
-                message: "Data not received"
-            })
-        }
 
         const response = await prisma.branding.findMany({
             select: {
