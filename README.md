@@ -1,8 +1,8 @@
-# Its Hover
+# StudioFlow
 
 The all-in-one suite for freelance designers to win clients, manage projects, and get paid. No more scattered tools.
 
-![Its Hover Product Screenshot](public/og-image.png)
+![Its Hover Product Screenshot](public/studioflow-new.PNGg)
 
 ## Features
 
