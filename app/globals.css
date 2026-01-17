@@ -334,6 +334,7 @@
 
 body {
   letter-spacing: var(--tracking-normal);
+  font-family: var(--font-brcolage-grotesque);
 }
 
 @layer base {
