@@ -59,19 +59,19 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
 
             <aside
                 className={cn(
-                    "hidden h-screen flex-col font-brcolage-grotesque border-r bg-background dark:border-gray-800 dark:bg-gray-900 md:flex transition-all duration-300 ease-in-out",
+                    "hidden h-screen flex-col border-r bg-sidebar text-sidebar-foreground md:flex transition-all duration-300 ease-in-out",
                     isCollapsed ? "w-20" : "w-64"
                 )}
             >
                 {/* Sidebar Header */}
-                <div className={cn("flex h-16 items-center px-4 border-b", isCollapsed ? "justify-center" : "justify-between")}>
+                <div className={cn("flex h-16 items-center px-4 border-b border-sidebar-border", isCollapsed ? "justify-center" : "justify-between")}>
                     <Link href="/" className={cn("flex items-center gap-2 font-semibold", isCollapsed && "hidden")}>
-                        <h1 className="text-white font-bold text-xl tracking-tight cursor-pointer">StudioFlow</h1>
+                        <h1 className="text-foreground font-bold text-xl tracking-tight cursor-pointer">StudioFlow</h1>
                     </Link>
                     <Button
                         variant="ghost"
                         size="icon"
-                        className="text-gray-400 hover:text-white"
+                        className="text-muted-foreground hover:text-foreground"
                         onClick={() => setIsCollapsed(!isCollapsed)}
                     >
                         {isCollapsed ? <PanelRightClose className="h-5 w-5" /> : <PanelLeftClose className="h-5 w-5" />}
@@ -87,8 +87,8 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
                                 key={item.href}
                                 href={item.href}
                                 className={cn(
-                                    "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-200 transition-all hover:text-gray-400 dark:text-gray-400 dark:hover:text-gray-50",
-                                    isActive ? "bg-accent" : "",
+                                    "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                    isActive ? "bg-sidebar-accent text-sidebar-accent-foreground" : "",
                                     isCollapsed ? "justify-center" : ""
                                 )}
                                 title={isCollapsed ? item.label : undefined}
@@ -103,7 +103,7 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
                 </nav>
 
                 {/* Sidebar Footer */}
-                <div className="mt-auto border-t border-zinc-800/50 p-4">
+                <div className="mt-auto border-t border-sidebar-border p-4">
                     <div className={cn("flex items-center", isCollapsed ? "justify-center" : "justify-between gap-3")}>
 
                         {!isCollapsed && (
@@ -114,26 +114,26 @@ export function Sidebar({ navItems, isCollapsed, setIsCollapsed }: SidebarProps)
                                 </Avatar>
 
                                 <div className="flex flex-col min-w-0">
-                                    <p className="truncate text-sm font-medium text-gray-50">{username || "User"}</p>
-                                    <p className="truncate text-xs text-gray-500 dark:text-gray-400">{role?.toUpperCase() || "GUEST"}</p>
+                                    <p className="truncate text-sm font-medium text-foreground">{username || "User"}</p>
+                                    <p className="truncate text-xs text-muted-foreground">{role?.toUpperCase() || "GUEST"}</p>
                                 </div>
                             </div>
                         )}
 
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="w-8 h-8 -mr-2">
+                                <Button variant="ghost" size="icon" className="w-8 h-8 -mr-2 text-muted-foreground hover:text-foreground">
                                     <MoreVertical className="w-4 h-4" />
                                 </Button>
                             </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end" className="bg-card border-border">
+                            <DropdownMenuContent align="end" className="bg-popover border-border">
                                 <DropdownMenuItem
-                                    className="hover:bg-muted cursor-pointer"
+                                    className="hover:bg-accent hover:text-accent-foreground cursor-pointer"
                                     onClick={() => setIsEditProfileOpen(true)} // Open Dialog on click
                                 >
                                     <CircleUser className="h-5 w-5 mr-2" /> My Account
                                 </DropdownMenuItem>
-                                <DropdownMenuItem className="hover:bg-muted cursor-pointer" onClick={handleLogout}>
+                                <DropdownMenuItem className="hover:bg-accent hover:text-accent-foreground cursor-pointer" onClick={handleLogout}>
                                     <LogOut className="h-5 w-5 mr-2" /> Logout
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
@@ -189,27 +189,27 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
 
             <aside
                 className={cn(
-                    "fixed font-brcolage-grotesque inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r bg-background dark:border-gray-800 dark:bg-gray-900 transition-transform duration-300 ease-in-out md:hidden",
+                    "fixed inset-y-0 left-0 z-40 flex h-full w-64 flex-col border-r bg-sidebar text-sidebar-foreground transition-transform duration-300 ease-in-out md:hidden",
                     isOpen ? "translate-x-0" : "-translate-x-full"
                 )}
             >
                 {/* Header */}
-                <div className="flex h-16 items-center border-b px-6">
+                <div className="flex h-16 items-center border-b border-sidebar-border px-6">
                     <Link href="/" className="flex items-center gap-2 font-semibold" onClick={() => setIsOpen(false)}>
-                        <span className="text-white font-bold text-xl tracking-tight cursor-pointer">StudioFlow</span>
+                        <span className="text-foreground font-bold text-xl tracking-tight cursor-pointer">StudioFlow</span>
                     </Link>
                 </div>
 
                 {/* Nav */}
-                <nav className="flex-1 space-y-2 p-4 overflow-y-auto bg-background">
+                <nav className="flex-1 space-y-2 p-4 overflow-y-auto bg-sidebar">
                     {navItems.map((item) => (
                         <Link
                             key={item.href}
                             href={item.href}
                             onClick={() => setIsOpen(false)}
                             className={cn(
-                                "flex items-center gap-3 rounded-lg px-3 py-2 text-gray-200 transition-all hover:text-gray-400 dark:text-gray-400 dark:hover:text-gray-50",
-                                { "bg-gray-200 text-gray-900 dark:bg-gray-800 dark:text-gray-50": pathname === item.href }
+                                "flex items-center gap-3 rounded-lg px-3 py-2 text-muted-foreground transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                                { "bg-sidebar-accent text-sidebar-accent-foreground": pathname === item.href }
                             )}
                         >
                             <item.icon className="h-4 w-4" />
@@ -219,7 +219,7 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
                 </nav>
 
                 {/* Footer (Fixed Layout) */}
-                <div className='mt-auto p-4 border-t border-zinc-800/50'>
+                <div className='mt-auto p-4 border-t border-sidebar-border'>
                     <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-3 overflow-hidden">
                             <Avatar>
@@ -227,8 +227,8 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
                                 <AvatarFallback>{username?.charAt(0) || "U"}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col min-w-0">
-                                <p className="truncate text-sm font-medium text-gray-50">{username || "User"}</p>
-                                <p className="truncate text-xs text-gray-500 dark:text-gray-400">{role?.toUpperCase() || "GUEST"}</p>
+                                <p className="truncate text-sm font-medium text-foreground">{username || "User"}</p>
+                                <p className="truncate text-xs text-muted-foreground">{role?.toUpperCase() || "GUEST"}</p>
                             </div>
                         </div>
 
@@ -238,7 +238,7 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
                                 variant="ghost"
                                 size="icon"
                                 onClick={() => setIsEditProfileOpen(true)}
-                                className="text-gray-400 hover:text-white"
+                                className="text-muted-foreground hover:text-foreground"
                                 title="Edit Profile"
                             >
                                 <Settings className="h-5 w-5" />
@@ -247,7 +247,7 @@ export function MobileSidebar({ navItems, isOpen, setIsOpen }: { navItems: NavIt
                                 variant="ghost"
                                 size="icon"
                                 onClick={handleLogout}
-                                className="text-gray-400 hover:text-white"
+                                className="text-muted-foreground hover:text-foreground"
                                 title="Logout"
                             >
                                 <LogOut className="h-5 w-5" />

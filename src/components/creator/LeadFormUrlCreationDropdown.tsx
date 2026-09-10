@@ -28,12 +28,12 @@ export function LeadFormUrlCreationDropdown({ handleSelect, selectedOption }: Pr
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button className="w-full bg-white text-black hover:bg-gray-100">
+                <Button className="w-full justify-between gap-2">
                     {selectedOption?.Label || "Options"}
                     <ChevronDown />
                 </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-80" align="center">
+            <DropdownMenuContent align="center">
                 {LeadFormGenerationOptions.map((option : SelectedOption) => (
                     <DropdownMenuItem onClick={() => handleSelect(option)}>
                         {option.Label} 

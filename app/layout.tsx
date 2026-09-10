@@ -1,22 +1,13 @@
 import type { Metadata } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import { Outfit } from "next/font/google";
 import "./globals.css";
 import CommonLayout from "@/common-layout/common-layout";
 import { ThemeProvider } from "@/providers/theme-provider";
+import { cn } from "@/lib/utils";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const fontSans = Outfit({
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const brcolageGrotesque = Bricolage_Grotesque({
-  variable: "--font-brcolage-grotesque",
-  subsets: ["latin"],
+  variable: "--font-sans",
 });
 
 // --- METADATA CONFIGURATION ---
@@ -120,7 +111,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning className={cn("font-sans", fontSans.variable)}>
       <head>
         {/* JSON-LD Structured Data for Rich Results */}
         <script
@@ -147,7 +138,7 @@ export default function RootLayout({
         />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} ${brcolageGrotesque.variable} antialiased`}
+        className={`${fontSans.variable} antialiased`}
       >
         <ThemeProvider
           attribute="class"

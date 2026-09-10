@@ -52,16 +52,13 @@ export default function ProjectsClient() {
 
   return (
     <div className="min-h-screen bg-background w-full">
-      {/* Added container, max-w, and responsive padding */}
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+      {/* Standard container */}
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2 text-sm text-muted-foreground">
-            </div>
-            {/* Added break-words to prevent overflow on very long titles */}
-            <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-2 break-words">Your Projects</h1>
-            <p className="text-muted-foreground text-sm sm:text-base">Manage and track the progress of your active collaborations.</p>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Your Projects</h1>
+            <p className="text-sm text-muted-foreground sm:text-base">Manage and track the progress of your active collaborations.</p>
           </div>
         </div>
 
@@ -89,7 +86,7 @@ export default function ProjectsClient() {
         </div>
 
         {isLoading ? (
-          <div className="w-full flex justify-center text-zinc-300 py-12">
+          <div className="w-full flex justify-center text-muted-foreground py-12">
             <Loader2 className="animate-spin mr-2" /> Loading projects...
           </div>
         ) : (
@@ -97,7 +94,7 @@ export default function ProjectsClient() {
             {
               filteredProjects.length === 0 ? (
                 <div className="flex items-center justify-center py-12">
-                  <h1 className="text-white font-brcolage-grotesque text-2xl sm:text-3xl text-center">No projects Found</h1>
+                  <h1 className="text-lg font-medium text-muted-foreground text-center">No projects found</h1>
                 </div>
               ) : (
                 // Adjusted grid gap and column settings

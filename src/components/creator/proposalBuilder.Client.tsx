@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import dynamic from 'next/dynamic';
 import {
     DndContext,
@@ -11,14 +11,13 @@ import {
     useSensor,
     useSensors,
     pointerWithin,
-    DragOverlay
 } from '@dnd-kit/core';
 import { SortableContext, arrayMove, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable';
 import { nanoid } from 'nanoid';
 import { Block } from '@/types/proposal';
 import { ProposalBuilderBlocks } from '@/config/proposalsBluiderConfig';
 import { useProposal } from '@/hooks/useProposal';
-import { Link, Loader2, Menu, X, Save } from 'lucide-react';
+import { Link, Loader2, Menu, X, Save, LayoutTemplate } from 'lucide-react';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
@@ -28,13 +27,13 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 // Dynamic imports
 const ProposalSidebar = dynamic(() => import('./proposalSidebar'), {
     ssr: false,
-    loading: () => <div className="w-full h-full bg-zinc-900 animate-pulse" />
+    loading: () => <div className="w-full h-full bg-card animate-pulse" />
 });
 
 const ProposalCanvas = dynamic(() => import('./proposalCanvas'), {
     ssr: false,
     loading: () => (
-        <div className="w-full h-full flex items-center justify-center text-zinc-500">
+        <div className="w-full h-full flex items-center justify-center text-muted-foreground">
             <Loader2 className="animate-spin h-8 w-8" />
         </div>
     )
@@ -42,7 +41,7 @@ const ProposalCanvas = dynamic(() => import('./proposalCanvas'), {
 
 function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
-    const {isLoading : isProposalLoading} = useAppSelector((state) => state.proposal)
+    const { isLoading: isProposalLoading } = useAppSelector((state) => state.proposal)
     const [blocks, setBlocks] = useState<Block[]>([]);
     const [activeBlock, setActiveBlock] = useState<Block | null>(null);
     const [isInitialized, setIsInitialized] = useState(false);
@@ -144,15 +143,15 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
 
     if (isLoading) {
         return (
-            <div className="w-full h-screen flex flex-col items-center justify-center bg-zinc-950 text-zinc-100">
+            <div className="w-full h-screen flex flex-col items-center justify-center bg-background text-foreground">
                 <Loader2 className="animate-spin mb-4 h-10 w-10 text-primary" />
-                <p className="uppercase tracking-widest text-xs font-semibold text-zinc-500 animate-pulse">Loading Proposal...</p>
+                <p className="uppercase tracking-widest text-xs font-semibold text-muted-foreground animate-pulse">Loading Proposal...</p>
             </div>
         )
     }
 
     return (
-        <div className="w-full h-screen bg-zinc-950 text-zinc-100 font-sans selection:bg-zinc-800 flex flex-col overflow-hidden">
+        <div className="w-full h-screen bg-background text-foreground selection:bg-primary/20 flex flex-col overflow-hidden">
             <DndContext
                 sensors={sensors}
                 collisionDetection={pointerWithin}
@@ -160,68 +159,83 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                 onDragEnd={handleDragEnd}
             >
                 {/* Header - Fixed Top */}
-                <header className='w-full px-4 sm:px-6 py-3 border-b border-zinc-800 bg-zinc-900 flex justify-between items-center z-20 shadow-sm'>
+                <header className='w-full px-4 sm:px-6 py-3 border-b border-border bg-background/95 backdrop-blur flex justify-between items-center z-20'>
                     <div className="flex items-center gap-3">
                         {/* Mobile Menu Toggle */}
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="md:hidden text-zinc-400"
+                            className="md:hidden text-muted-foreground"
                             onClick={() => setIsMobileMenuOpen(true)}
                         >
                             <Menu className="h-5 w-5" />
                         </Button>
 
-                        <div>
-                            <h1 className="text-lg sm:text-xl font-bold uppercase tracking-tight text-white hidden sm:block">
+                        <div className="hidden sm:block">
+                            <h1 className="text-lg sm:text-xl font-bold uppercase tracking-tight text-foreground">
                                 Proposal Builder
                             </h1>
-                            <h1 className="text-lg font-bold uppercase tracking-tight text-white sm:hidden">
-                                Builder
-                            </h1>
-                            <p className="text-zinc-500 text-[10px] sm:text-xs font-medium tracking-wide hidden sm:block">
+                            <p className="text-muted-foreground text-[10px] sm:text-xs font-medium tracking-wide">
                                 Drag blocks to canvas &bull; Reorder freely
                             </p>
                         </div>
+
+                        <span className="sm:hidden text-lg font-bold uppercase tracking-tight text-foreground">
+                            Builder
+                        </span>
                     </div>
 
                     <div className='flex items-center gap-2 sm:gap-4'>
                         <Button
-
                             size="sm"
-                            className=" hidden sm:flex gap-2"
+                            className="hidden sm:flex gap-2"
                             onClick={() => handleManualSave()}
                             disabled={isProposalLoading}
                         >
-                            {isLoading ? "saving.." : "Save"}
+                            {isProposalLoading ? (
+                                <>
+                                    <Loader2 className="h-4 w-4 animate-spin" />
+                                    Saving...
+                                </>
+                            ) : (
+                                <>
+                                    <Save className="h-4 w-4" />
+                                    Save
+                                </>
+                            )}
                         </Button>
 
                         <Button
                             variant="ghost"
                             size="sm"
-                            className="text-zinc-400 hover:text-white hidden sm:flex gap-2"
+                            className="text-muted-foreground hover:text-foreground hidden sm:flex gap-2"
                             onClick={() => handleCreateSharableLink(proposalId)}
                         >
                             <Link size={14} />
                             Share Link
                         </Button>
 
-                        <div className="flex items-center gap-2 bg-zinc-800/50 rounded-full px-3 py-1.5 border border-zinc-800">
-                            <div
-                                className="relative inline-flex items-center cursor-pointer"
+                        <div className="flex items-center gap-2.5 rounded-full bg-muted/50 border border-border px-3 py-1.5">
+                            <button
+                                type="button"
+                                role="switch"
+                                aria-checked={isAutoSaveOn}
+                                aria-label="Toggle auto-save"
+                                className={cn(
+                                    "relative h-4.5 w-8 rounded-full transition-colors duration-200",
+                                    isAutoSaveOn ? "bg-primary" : "bg-input"
+                                )}
                                 onClick={() => setisAutoSaveOn(prev => !prev)}
                             >
-                                <input
-                                    className="sr-only peer"
-                                    type="checkbox"
-                                    checked={isAutoSaveOn}
-                                    readOnly
+                                <span
+                                    className={cn(
+                                        "absolute top-0.5 left-0.5 size-3.5 rounded-full bg-white shadow-sm transition-transform duration-200 ease-in-out",
+                                        isAutoSaveOn && "translate-x-3.5"
+                                    )}
                                 />
-                                <div className="w-8 h-4 bg-zinc-700 rounded-full peer-checked:bg-emerald-500 transition-colors duration-200 ease-in-out"></div>
-                                <div className="absolute left-0.5 top-0.5 bg-zinc-300 peer-checked:bg-white w-3 h-3 rounded-full transition-transform duration-200 ease-in-out peer-checked:translate-x-full shadow-sm"></div>
-                            </div>
-                            <span className={`text-[10px] font-bold uppercase tracking-widest ${isAutoSaveOn ? 'text-emerald-400' : 'text-zinc-500'}`}>
-                                {isAutoSaveOn ? 'Auto-Save On' : 'Off'}
+                            </button>
+                            <span className={`text-[10px] font-bold uppercase tracking-widest transition-colors ${isAutoSaveOn ? 'text-primary' : 'text-muted-foreground'}`}>
+                                {isAutoSaveOn ? 'Auto-Save' : 'Auto-Save Off'}
                             </span>
                         </div>
 
@@ -229,7 +243,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="sm:hidden text-zinc-400"
+                            className="sm:hidden text-muted-foreground"
                             onClick={() => handleCreateSharableLink(proposalId)}
                         >
                             <Link className="h-5 w-5" />
@@ -241,7 +255,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                     {/* Desktop Sidebar */}
                     <aside
                         className={cn(
-                            "hidden md:block border-r border-zinc-800 bg-zinc-900 h-full overflow-y-auto shrink-0 z-10 transition-all duration-300 ease-in-out",
+                            "hidden md:block border-r border-border bg-card h-full overflow-y-auto shrink-0 z-10 transition-all duration-300 ease-in-out custom-scrollbar",
                             isCollapsed ? "w-[80px]" : "w-[280px] lg:w-[320px]" // Dynamic width here
                         )}
                     >
@@ -262,10 +276,10 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                                 onClick={() => setIsMobileMenuOpen(false)}
                             />
                             {/* Drawer Content */}
-                            <div className="relative w-[85%] max-w-[300px] bg-zinc-900 h-full border-r border-zinc-800 shadow-2xl animate-in slide-in-from-left duration-200">
-                                <div className="flex items-center justify-between p-4 border-b border-zinc-800">
-                                    <span className="font-semibold text-white">Blocks Library</span>
-                                    <Button variant="ghost" size="icon" onClick={() => setIsMobileMenuOpen(false)}>
+                            <div className="relative w-[85%] max-w-[300px] bg-card h-full border-r border-border shadow-2xl animate-in slide-in-from-left duration-200">
+                                <div className="flex items-center justify-between p-4 border-b border-border">
+                                    <span className="font-semibold text-foreground">Blocks Library</span>
+                                    <Button variant="ghost" size="icon" className="text-muted-foreground" onClick={() => setIsMobileMenuOpen(false)}>
                                         <X className="h-5 w-5" />
                                     </Button>
                                 </div>
@@ -282,10 +296,10 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                     )}
 
                     {/* Main Canvas Area */}
-                    <main className="flex-grow h-full overflow-hidden bg-zinc-950 relative">
+                    <main className="flex-grow h-full overflow-hidden bg-muted/40 relative">
                         {/* Scrollable Container */}
                         <div className="h-full overflow-y-auto overflow-x-hidden p-4 sm:p-8 custom-scrollbar">
-                            <div className="max-w-4xl mx-auto min-h-[calc(100vh-100px)] pb-20">
+                            <div className="max-w-4xl mx-auto min-h-[calc(100vh-100px)] pb-20 relative">
                                 <SortableContext
                                     items={blocks.map(b => b.id)}
                                     strategy={verticalListSortingStrategy}
@@ -300,8 +314,9 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
 
                                 {/* Drop Zone Hint (Visible when empty) */}
                                 {blocks.length === 0 && (
-                                    <div className="mt-10 border-2 border-dashed border-zinc-800 rounded-xl p-10 text-center text-zinc-600">
-                                        <p className="text-lg font-medium">Your canvas is empty</p>
+                                    <div className="mt-10 border-2 border-dashed border-border rounded-xl p-10 text-center text-muted-foreground">
+                                        <LayoutTemplate className="h-10 w-10 mx-auto mb-3 text-muted-foreground/50" />
+                                        <p className="text-lg font-semibold text-foreground/80">Your canvas is empty</p>
                                         <p className="text-sm mt-1">Open the sidebar and drag a block here to start.</p>
                                     </div>
                                 )}
@@ -309,9 +324,6 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                         </div>
                     </main>
                 </div>
-
-                {/* Drag Overlay - Optional but recommended for visual feedback during drag */}
-                {/* <DragOverlay> ... </DragOverlay> */}
             </DndContext>
         </div>
     );

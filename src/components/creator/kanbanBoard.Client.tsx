@@ -31,7 +31,7 @@ const LeadVisitsChart = dynamic(
     () => import('../layout/leads-visit').then(mod => mod.LeadVisitsChart),
     {
         ssr: false,
-        loading: () => <div className="h-[300px] w-full animate-pulse bg-zinc-900 rounded-xl" />
+        loading: () => <div className="h-[300px] w-full animate-pulse bg-muted rounded-xl" />
     }
 );
 
@@ -62,13 +62,13 @@ interface Column {
 interface ColoumDefinations {
     id: string;
     title: string;
-    color: "bg-red-500" | "bg-white" | "bg-blue-500" | "bg-purple-500" | "bg-green-500";
+    color: "bg-red-500" | "bg-foreground" | "bg-blue-500" | "bg-purple-500" | "bg-green-500";
 }
 
 // Column definitions
 const COLUMN_DEFINITIONS: ColoumDefinations[] = [
     { id: 'new-lead', title: 'Leads', color: 'bg-red-500' },
-    { id: 'contacted', title: 'Contacted', color: 'bg-white' },
+    { id: 'contacted', title: 'Contacted', color: 'bg-foreground' },
     { id: 'qualified', title: 'Qualified', color: 'bg-blue-500' },
     { id: 'proposal-sent', title: 'Proposal Sent', color: 'bg-purple-500' },
     { id: 'won', title: 'Won', color: 'bg-green-500' },
@@ -361,7 +361,7 @@ const KanbanBoard = () => {
 
     if (loadind) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-background text-zinc-300">
+            <div className="w-full h-screen flex items-center justify-center bg-background text-muted-foreground">
                 <Loader2 className="animate-spin mr-2" /> Loading Leads...
             </div>
         );

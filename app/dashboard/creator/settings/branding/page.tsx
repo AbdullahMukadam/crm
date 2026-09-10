@@ -3,7 +3,7 @@ import React from 'react'
 
 function BrandingPage() {
   return (
-    <div className='w-full p-2 text-white font-brcolage-grotesque'>
+    <div className='w-full bg-background'>
         <BrandingClient />
     </div>
   )

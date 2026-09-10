@@ -65,68 +65,63 @@ export default function AddTaskModal({
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
-            <DialogContent className="bg-zinc-900 border-zinc-700 text-white sm:max-w-[425px]">
+            <DialogContent className="bg-card border-border sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Add Task to {columnTitle}</DialogTitle>
                 </DialogHeader>
                 
                 <form onSubmit={AddTask} className="grid gap-4 py-2">
                     <div className="grid gap-2">
-                        <Label htmlFor="name" className="text-zinc-300">Name</Label>
+                        <Label htmlFor="name">Name</Label>
                         <Input
                             id="name"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Name"
                             required
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="companyName" className="text-zinc-300">Company Name</Label>
+                        <Label htmlFor="companyName">Company Name</Label>
                         <Input
                             id="companyName"
                             value={companyName}
                             onChange={(e) => setcompanyName(e.target.value)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Company Name"
                             required
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="email" className="text-zinc-300">Email</Label>
+                        <Label htmlFor="email">Email</Label>
                         <Input
                             id="email"
                             type="email"
                             value={email}
                             onChange={(e) => setEmail(e.target.value)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Email"
                             required
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="mobileNumber" className="text-zinc-300">Mobile Number</Label>
+                        <Label htmlFor="mobileNumber">Mobile Number</Label>
                         <Input
                             id="mobileNumber"
                             value={mobileNumber}
                             onChange={(e) => setmobileNumber(e.target.value)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Mobile Number"
                             required
                         />
                     </div>
 
                     <div className="grid gap-2">
-                        <Label htmlFor="note" className="text-zinc-300">Note</Label>
+                        <Label htmlFor="note">Note</Label>
                         <Input
                             id="note"
                             value={note}
                             onChange={(e) => setnote(e.target.value)}
-                            className="bg-zinc-800 border-zinc-700 text-white"
                             placeholder="Enter Note"
                             required
                         />
@@ -137,7 +132,6 @@ export default function AddTaskModal({
                             type="button" 
                             variant="outline" 
                             onClick={onClose}
-                            className="border-zinc-700 text-zinc-300 hover:bg-zinc-800 hover:text-white"
                         >
                             Cancel
                         </Button>

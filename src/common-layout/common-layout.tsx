@@ -12,7 +12,7 @@ function CommonLayout({ children }: Props) {
     return (
         <ReduxProvider>
             <AuthInitializer>
-                <div className='w-full h-full bg-black'>
+                <div className='w-full h-full bg-background'>
                     <Navbar />
                     <main className='w-full'>
                         {children}

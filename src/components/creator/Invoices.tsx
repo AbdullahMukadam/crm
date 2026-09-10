@@ -138,7 +138,7 @@ export default function Invoices() {
         </DropdownMenuItem>
 
         {(invoice.status === 'SENT' || invoice.status === 'OVERDUE') && (
-          <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)} className="cursor-pointer text-emerald-600 focus:text-emerald-700">
+          <DropdownMenuItem onClick={() => handleMarkAsPaid(invoice.id)} className="cursor-pointer text-emerald-600 dark:text-emerald-400">
             <Check className="mr-2 h-4 w-4" /> Mark as Paid
           </DropdownMenuItem>
         )}
@@ -172,16 +172,16 @@ export default function Invoices() {
   }
 
   return (
-    <div className="min-h-screen bg-background font-brcolage-grotesque">
-      <div className="mx-auto w-full max-w-7xl p-4 md:p-8">
+    <div className="min-h-screen bg-background">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
 
         {/* Header Section */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight text-foreground md:text-4xl">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Invoices
             </h1>
-            <p className="mt-1 text-sm text-muted-foreground md:text-base">
+            <p className="text-sm text-muted-foreground">
               Manage your billing, track payments, and view revenue.
             </p>
           </div>
@@ -266,19 +266,19 @@ export default function Invoices() {
             </div>
           </CardHeader>
           
-          <CardContent className="p-0">
+          <CardContent className="p-4 md:p-6">
             {/* Desktop Table View (Hidden on Mobile) */}
-            <div className="hidden md:block overflow-x-auto">
+            <div className="hidden md:block rounded-md border border-border overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="hover:bg-transparent">
-                    <TableHead className="w-[100px]">Invoice</TableHead>
-                    <TableHead>Client</TableHead>
-                    <TableHead>Project</TableHead>
-                    <TableHead>Due Date</TableHead>
-                    <TableHead>Amount</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
+                  <TableRow className="bg-muted/50 hover:bg-muted/50">
+                    <TableHead className="w-[100px] font-semibold text-muted-foreground whitespace-nowrap">Invoice</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Client</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Project</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Due Date</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Amount</TableHead>
+                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-right font-semibold text-muted-foreground whitespace-nowrap">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -287,16 +287,16 @@ export default function Invoices() {
                       const status = statusConfig[invoice.status] || statusConfig.DRAFT;
                       return (
                         <TableRow key={invoice.id} className="hover:bg-muted/50">
-                          <TableCell className="font-mono font-medium">{invoice.invoiceNumber}</TableCell>
+                          <TableCell className="font-mono font-medium whitespace-nowrap">{invoice.invoiceNumber}</TableCell>
                           <TableCell>
-                            <div className="font-medium">{invoice.client?.username || "Unknown"}</div>
+                            <div className="font-medium whitespace-nowrap">{invoice.client?.username || "Unknown"}</div>
                             <div className="text-xs text-muted-foreground">{invoice.client?.email}</div>
                           </TableCell>
-                          <TableCell className="text-muted-foreground">{invoice.project?.title || "General"}</TableCell>
+                          <TableCell className="text-muted-foreground whitespace-nowrap">{invoice.project?.title || "General"}</TableCell>
                           <TableCell className="whitespace-nowrap text-muted-foreground">
                             {format(new Date(invoice.dueDate), 'MMM dd, yyyy')}
                           </TableCell>
-                          <TableCell className="font-semibold">{formatCurrency(Number(invoice.amount))}</TableCell>
+                          <TableCell className="font-semibold whitespace-nowrap">{formatCurrency(Number(invoice.amount))}</TableCell>
                           <TableCell>
                             <Badge variant="outline" className={`rounded-full px-3 py-0.5 ${status.className}`}>
                               {status.label}
@@ -323,7 +323,7 @@ export default function Invoices() {
             </div>
 
             {/* Mobile List View (Hidden on Desktop) */}
-            <div className="md:hidden">
+            <div className="md:hidden rounded-md border border-border">
               {invoices.length > 0 ? (
                 <div className="divide-y">
                   {invoices.map((invoice) => {

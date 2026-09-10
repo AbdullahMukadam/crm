@@ -50,18 +50,18 @@ export default function DashboardLayout({
 
                 <label className='absolute top-2 left-2 md:hidden z-50' htmlFor="menu-toggle">
                     <div
-                        className="w-9 h-10 cursor-pointer flex flex-col items-center justify-center bg-white rounded-full"
+                        className="w-9 h-10 cursor-pointer flex flex-col items-center justify-center bg-card border border-border rounded-full shadow-sm"
                         onClick={() => setIsMobileSidebarOpen(prev => !prev)}
                     >
                         <input className="hidden peer" type="checkbox" />
                         <div
-                            className="w-[50%] h-[2px] bg-black rounded-sm transition-all duration-300 origin-left translate-y-[0.45rem] peer-checked:rotate-[-45deg]"
+                            className="w-[50%] h-[2px] bg-foreground rounded-sm transition-all duration-300 origin-left translate-y-[0.45rem] peer-checked:rotate-[-45deg]"
                         ></div>
                         <div
-                            className="w-[50%] h-[2px] bg-black rounded-md transition-all duration-300 origin-center peer-checked:hidden"
+                            className="w-[50%] h-[2px] bg-foreground rounded-md transition-all duration-300 origin-center peer-checked:hidden"
                         ></div>
                         <div
-                            className="w-[50%] h-[2px] bg-black rounded-md transition-all duration-300 origin-left -translate-y-[0.45rem] peer-checked:rotate-[45deg]"
+                            className="w-[50%] h-[2px] bg-foreground rounded-md transition-all duration-300 origin-left -translate-y-[0.45rem] peer-checked:rotate-[45deg]"
                         ></div>
                     </div>
                 </label>

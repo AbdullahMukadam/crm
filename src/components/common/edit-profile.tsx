@@ -106,7 +106,7 @@ export function EditProfileDialog({ open, onOpenChange, initialData }: EditProfi
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="bg-card border-border sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Edit Profile</DialogTitle>
                     <DialogDescription>

@@ -40,7 +40,7 @@ function ClientDashboard() {
 
   if (isLoading) {
     return (
-      <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+      <div className="w-full h-screen flex items-center justify-center bg-background text-muted-foreground">
         <Loader2 className="animate-spin mr-2" /> Loading dashboard...
       </div>
     );
@@ -52,17 +52,17 @@ function ClientDashboard() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
         {/* Icon with glowing effect */}
         <div className="relative mb-6">
-          <div className="absolute inset-0 bg-red-500/20 blur-xl rounded-full" />
-          <div className="relative p-6 bg-zinc-900 rounded-2xl ring-1 ring-white/10 shadow-2xl">
-            <Layers className="h-10 w-10 text-red-500" />
+          <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
+          <div className="relative p-6 bg-card rounded-2xl ring-1 ring-border shadow-2xl">
+            <Layers className="h-10 w-10 text-primary" />
           </div>
         </div>
 
-        <h2 className="text-2xl font-bold tracking-tight text-white mb-2">
+        <h2 className="text-2xl font-bold tracking-tight text-foreground mb-2">
           No Active Projects
         </h2>
 
-        <p className="text-zinc-400 max-w-[400px] text-base leading-relaxed mb-8">
+        <p className="text-muted-foreground max-w-[400px] text-base leading-relaxed mb-8">
           It looks quiet here. You are not currently assigned to any active projects.
         </p>
 
@@ -76,12 +76,12 @@ function ClientDashboard() {
 
   return (
     // Replaced 'flex center' with standard dashboard layout classes
-    <div className='container max-w-7xl mx-auto p-4 md:p-8 font-brcolage-grotesque space-y-8 min-h-screen pb-20'>
+    <div className='mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-8 min-h-screen pb-20'>
 
       {/* HEADER SECTION */}
       <div className='flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6'>
         <div className="space-y-1">
-          <h1 className='text-3xl md:text-4xl font-bold tracking-tight'>Welcome back, {username}</h1>
+          <h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>Welcome back, {username}</h1>
           <p className="text-muted-foreground">Here is what's happening with your projects today.</p>
         </div>
 

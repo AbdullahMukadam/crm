@@ -1,6 +1,7 @@
 "use client"
-import React, { useCallback, useEffect, useState, useRef } from 'react';
-import { Bell } from 'lucide-react';
+import React, { useCallback } from 'react';
+import { Bell, BellRing, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -8,55 +9,97 @@ import {
 } from "@/components/ui/dropdown-menu"
 import SearchComponent from './search';
 import { useSearch } from '@/hooks/useSearch';
-import { NotificationsData } from '@/types/notifications';
 import notificationService from '@/lib/api/notificarionService';
 import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/lib/store/hooks';
 import { useNotificationStream } from '@/hooks/useNotificationStream';
+import { cn, formatTimeAgo } from '@/lib/utils';
 
-function ListItem({
+interface NotificationItemProps {
+    title: string;
+    message: string;
+    href?: string | null;
+    createdAt?: Date;
+    isRead?: boolean;
+    notificationId: string;
+    onMarkasRead: (notificationId: string) => void;
+}
+
+function NotificationItem({
     title,
-    children,
+    message,
     href,
+    createdAt,
     isRead = false,
-    onMarkasRead,
     notificationId,
-    ...props
-}: React.ComponentPropsWithoutRef<"li"> & { href: string; isRead?: boolean, onMarkasRead: (notificationId: string) => void, notificationId: string }) {
+    onMarkasRead,
+}: NotificationItemProps) {
 
-    const itemClassName = `relative p-3 sm:p-4 rounded-lg transition-colors duration-200 
-                           ${isRead ? 'bg-zinc-800' : 'bg-zinc-800 border'}`;
-
-    const titleClassName = `text-sm font-semibold leading-none ${isRead ? 'text-gray-200' : 'text-white'}`;
-    const messageClassName = `line-clamp-2 text-xs sm:text-sm leading-snug mt-1 ${isRead ? 'text-gray-500' : 'text-gray-400'}`;
-
-    return (
-        <li className={itemClassName} {...props}>
-            <div className='hover:bg-transparent'>
-                <div className="block w-full">
-                    {!isRead && (
-                        <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-[#D27E4D] rounded-r-sm" aria-hidden="true"></span>
+    const body = (
+        <div className="flex items-start gap-3">
+            {!isRead && (
+                <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
+            )}
+            <div className="min-w-0 flex-1">
+                <div className="flex items-center justify-between gap-2">
+                    <span className={cn("text-sm truncate", isRead ? "font-medium text-muted-foreground" : "font-semibold text-foreground")}>
+                        {title}
+                    </span>
+                    {createdAt && (
+                        <span className="shrink-0 text-[11px] text-muted-foreground">{formatTimeAgo(createdAt)}</span>
                     )}
+                </div>
+                <p className="text-xs sm:text-sm leading-snug mt-0.5 text-muted-foreground line-clamp-2">{message}</p>
 
-                    <div className={titleClassName}>{title}</div>
-                    <p className={messageClassName}>{children}</p>
-
-                    <div className="flex justify-end mt-2">
-                        {!isRead && <Button
-                            variant={"outline"}
+                {!isRead ? (
+                    <div className="flex items-center gap-2 mt-2">
+                        <Button
+                            variant="outline"
                             size="sm"
-                            className="h-7 text-xs"
+                            className="h-7 text-xs border-border"
                             onClick={(e) => {
                                 e.preventDefault();
+                                e.stopPropagation();
                                 onMarkasRead(notificationId);
                             }}
                         >
-                            Mark as Read
-                        </Button>}
+                            Mark as read
+                        </Button>
+                        {href && (
+                            <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs text-muted-foreground hover:text-foreground"
+                            >
+                                View
+                            </Button>
+                        )}
                     </div>
-                </div>
+                ) : (
+                    <span className="text-[11px] text-muted-foreground/70">Read</span>
+                )}
             </div>
+        </div>
+    );
+
+    return (
+        <li className={cn(
+            "flex items-center rounded-lg border px-3 py-2.5 transition-colors",
+            isRead
+                ? "border-transparent hover:bg-muted/50"
+                : "bg-accent/60 border-border"
+        )}>
+            {href ? (
+                <Link href={href} className="flex-1 min-w-0 group">
+                    <div className="flex items-center gap-3">
+                        {body}
+                        <ChevronRight className="size-4 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
+                    </div>
+                </Link>
+            ) : (
+                <div className="flex-1 min-w-0">{body}</div>
+            )}
         </li>
     )
 }
@@ -99,16 +142,15 @@ export const Header: React.FC = () => {
     return (
         <header className="h-16 border-b border-border bg-background backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-all">
 
-            <div className="text-lg font-mono text-gray-300 truncate mr-2">
-                {/* Connection status indicator (optional) */}
+            <div className="text-sm text-muted-foreground truncate mr-2">
                 {!isConnected && (
-                    <span className="text-xs text-yellow-500">● Reconnecting...</span>
+                    <span className="text-yellow-500">● Reconnecting...</span>
                 )}
             </div>
 
             <div className="flex items-center gap-2 sm:gap-4">
                 {role === "CREATOR" && (
-                    <div className="w-full max-w-[150px] sm:max-w-xs transition-all">
+                    <div className="w-full max-w-[150px] sm:max-w-sm md:max-w-md transition-all">
                         <SearchComponent
                             isLoading={isLoading}
                             searchResults={searchResults}
@@ -122,12 +164,13 @@ export const Header: React.FC = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="relative rounded-full bg-gray-900 text-gray-400 hover:bg-gray-800 hover:text-red-500 transition-all focus-visible:ring-1 focus-visible:ring-red-600 outline-none"
+                            className="relative rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                            aria-label={`Notifications (${unreadCount} unread)`}
                         >
-                            <Bell size={20} />
+                            {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
                             {unreadCount > 0 && (
-                                <span className="absolute top-0 right-0 w-4 h-4 sm:w-5 sm:h-5 bg-[#D27E4D] rounded-full text-[10px] sm:text-xs text-black flex items-center justify-center font-bold border-2 border-black">
-                                    {unreadCount}
+                                <span className="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 px-1 bg-primary text-[10px] text-primary-foreground rounded-full flex items-center justify-center font-bold">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
                                 </span>
                             )}
                         </Button>
@@ -135,37 +178,46 @@ export const Header: React.FC = () => {
 
                     <DropdownMenuContent
                         align="end"
-                        className="w-[85vw] sm:w-[380px] bg-zinc-900 border-zinc-800 p-0 shadow-2xl rounded-xl overflow-hidden"
+                        className="w-[85vw] sm:w-[380px] bg-popover border-border p-0 shadow-2xl rounded-xl overflow-hidden"
                     >
-                        <div className="p-4 bg-zinc-900/50 backdrop-blur border-b border-zinc-800">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-sm font-semibold text-white">Notifications</h3>
+                        <div className="flex items-center justify-between p-4 bg-muted/40 border-b border-border">
+                            <div className="flex items-center gap-2">
+                                <Bell size={16} className="text-muted-foreground" />
+                                <h3 className="text-sm font-semibold text-foreground">Notifications</h3>
                                 {unreadCount > 0 && (
-                                    <span className="text-xs font-medium text-[#D27E4D] bg-red-400/10 px-2 py-0.5 rounded-full">
+                                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                                         {unreadCount} new
                                     </span>
                                 )}
                             </div>
+                            {!isConnected && (
+                                <span className="text-[11px] text-yellow-500 flex items-center gap-1">
+                                    <span className="size-1.5 rounded-full bg-yellow-500 animate-pulse" />
+                                    Reconnecting
+                                </span>
+                            )}
                         </div>
 
                         <div className="max-h-[60vh] sm:max-h-[400px] overflow-y-auto p-2">
-                            <ul className="flex flex-col gap-2">
+                            <ul className="flex flex-col gap-1">
                                 {notifications?.map((notification) => (
-                                    <ListItem
+                                    <NotificationItem
                                         key={notification.id}
                                         title={notification.title}
-                                        href={notification.link || "#"}
+                                        message={notification.message}
+                                        href={notification.link}
+                                        createdAt={notification.createdAt}
                                         isRead={notification.isRead}
                                         onMarkasRead={handleMarkasRead}
                                         notificationId={notification.id}
-                                    >
-                                        {notification.message}
-                                    </ListItem>
+                                    />
                                 ))}
                                 {notifications.length === 0 && (
-                                    <li className="py-8 text-center text-sm text-zinc-500">
-                                        <Bell className="w-8 h-8 mx-auto mb-2 opacity-20" />
-                                        No new notifications
+                                    <li className="py-10 text-center text-sm text-muted-foreground">
+                                        <span className="flex items-center justify-center size-12 mx-auto mb-3 rounded-full bg-muted border border-border">
+                                            <Bell className="size-6 text-muted-foreground/50" />
+                                        </span>
+                                        You're all caught up
                                     </li>
                                 )}
                             </ul>

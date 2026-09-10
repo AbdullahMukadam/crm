@@ -76,17 +76,16 @@ export default function Invoices() {
   }
 
   return (
-    <div className="min-h-screen bg-background font-brcolage-grotesque w-full">
-      {/* Added max-w-7xl and standard responsive padding to constrain width */}
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
+    <div className="min-h-screen bg-background w-full">
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
 
         {/* Header */}
         <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-balance text-2xl md:text-3xl font-semibold tracking-tight text-foreground lg:text-4xl">
+          <div className="space-y-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
               Invoices & Payments
             </h1>
-            <p className="mt-2 text-sm md:text-base text-pretty text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Manage your billing history and track revenue.
             </p>
           </div>
@@ -202,7 +201,7 @@ export default function Invoices() {
                       const status = statusConfig[invoice.status] || statusConfig.DRAFT;
                       return (
                         <TableRow key={invoice.id}>
-                          <TableCell className="font-mono font-medium text-indigo-600 whitespace-nowrap">
+                          <TableCell className="font-mono font-medium whitespace-nowrap">
                             {invoice.invoiceNumber}
                           </TableCell>
 

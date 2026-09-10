@@ -14,7 +14,7 @@ function page() {
         }
     }, [onboarded])
     return (
-        <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+        <div className="w-full h-screen flex items-center justify-center bg-background text-muted-foreground">
             <Loader2 className="animate-spin mr-2" /> Please wait...
         </div>
     );

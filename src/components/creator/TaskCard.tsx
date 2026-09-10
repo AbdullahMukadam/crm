@@ -89,7 +89,7 @@ function TaskCard({
             style={style}
             {...attributes}
             {...listeners}
-            className={`bg-background shrink-0 rounded-lg font-brcolage-grotesque overflow-hidden border border-border cursor-grab active:cursor-grabbing transition-all duration-200 hover:shadow-md
+            className={`bg-background shrink-0 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing transition-all duration-200 hover:shadow-md
                 ${isDragging ? "opacity-70 scale-[1.03] shadow-lg" : ""}
             `}
             onClick={() => {

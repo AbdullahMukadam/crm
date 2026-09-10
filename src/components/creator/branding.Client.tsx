@@ -113,10 +113,10 @@ function BrandingClient() {
     }
 
     return (
-        <div className='w-full min-h-screen p-4 sm:p-6 lg:p-8'>
+        <div className='w-full min-h-screen px-4 sm:px-6 lg:px-8 py-6 md:py-8'>
             <div className='max-w-4xl mx-auto flex flex-col gap-6'>
-                <div className="flex flex-col gap-2">
-                    <h1 className='text-2xl sm:text-3xl font-semibold tracking-tight'>Brand Settings</h1>
+                <div className="flex flex-col gap-1">
+                    <h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>Brand Settings</h1>
                     <p className="text-sm text-muted-foreground">Manage your branding and lead form configurations.</p>
                 </div>
 
@@ -193,21 +193,21 @@ function BrandingClient() {
 
                 {/* --- UPDATED DIALOG LAYOUT --- */}
                 <Dialog open={isModalOpen} onOpenChange={setisModalOpen}>
-                    <DialogContent className='w-full sm:max-w-md bg-zinc-950 text-zinc-100 border-zinc-800 p-0 gap-0 overflow-hidden'>
+                    <DialogContent className='w-full sm:max-w-md p-0 gap-0 overflow-hidden'>
 
                         <div className="p-6 pb-4">
                             <DialogHeader>
                                 <DialogTitle className="text-xl flex items-center gap-2">
                                     Create New URL
                                 </DialogTitle>
-                                <DialogDescription className="text-zinc-400 mt-2">
+                                <DialogDescription className="mt-2">
                                     Select a configuration option below to generate a trackable lead form link.
                                 </DialogDescription>
                             </DialogHeader>
 
                             <div className="mt-6 space-y-4">
                                 <div className="space-y-2">
-                                    <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Configuration</label>
+                                    <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Configuration</label>
                                     <LeadFormUrlCreationDropdown
                                         handleSelect={handleSelect}
                                         selectedOption={selectedOption}
@@ -216,30 +216,30 @@ function BrandingClient() {
 
                                 {generatedUrl && (
                                     <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                                        <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider mb-2 block">
+                                        <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-2 block">
                                             Generated Link
                                         </label>
-                                        <div className='flex items-center gap-1 rounded-lg bg-zinc-900 border border-zinc-800 p-1 pl-3 transition-colors focus-within:ring-1 focus-within:ring-zinc-700'>
-                                            <LinkIcon className="h-4 w-4 text-zinc-500 shrink-0" />
+                                        <div className='flex items-center gap-1 rounded-lg bg-accent/40 border border-border p-1 pl-3 transition-colors focus-within:ring-1 focus-within:ring-ring'>
+                                            <LinkIcon className="h-4 w-4 text-muted-foreground shrink-0" />
                                             <input
                                                 readOnly
                                                 value={generatedUrl}
-                                                className="flex-1 bg-transparent border-none text-sm text-zinc-200 focus:outline-none placeholder:text-zinc-600 truncate py-2 font-mono"
+                                                className="flex-1 bg-transparent border-none text-sm text-foreground focus:outline-none placeholder:text-muted-foreground truncate py-2 font-mono"
                                             />
                                             <Button
                                                 size="sm"
                                                 variant="ghost"
                                                 onClick={handleCopy}
-                                                className="h-8 px-3 text-zinc-400 hover:text-white hover:bg-zinc-800"
+                                                className="h-8 px-3 text-muted-foreground hover:text-foreground hover:bg-accent"
                                             >
                                                 {hasCopied ? (
-                                                    <Check className="h-4 w-4 text-green-500" />
+                                                    <Check className="h-4 w-4 text-emerald-500" />
                                                 ) : (
                                                     <Copy className="h-4 w-4" />
                                                 )}
                                             </Button>
                                         </div>
-                                        <p className="text-[11px] text-zinc-500 mt-2">
+                                        <p className="text-[11px] text-muted-foreground mt-2">
                                             Anyone with this link can access the specific lead form configuration.
                                         </p>
                                     </div>
@@ -247,11 +247,11 @@ function BrandingClient() {
                             </div>
                         </div>
 
-                        <DialogFooter className="bg-zinc-900/50 p-6 border-t border-zinc-800 flex flex-col sm:flex-row gap-3">
+                        <DialogFooter className="bg-muted/50 p-6 border-t border-border flex flex-col sm:flex-row gap-3">
                             <Button
                                 variant="outline"
                                 onClick={() => setisModalOpen(false)}
-                                className="border-zinc-700 hover:bg-zinc-800 text-zinc-300 hover:text-white w-full sm:w-auto"
+                                className="w-full sm:w-auto"
                             >
                                 Close
                             </Button>
@@ -259,7 +259,7 @@ function BrandingClient() {
                                 variant="default"
                                 onClick={handleGenerateUrl}
                                 disabled={!selectedOption}
-                                className=" w-full sm:w-auto"
+                                className="w-full sm:w-auto"
                             >
                                 Generate Link
                             </Button>

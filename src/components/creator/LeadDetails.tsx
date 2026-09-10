@@ -26,22 +26,35 @@ interface LeadsDetailsProps {
 export function LeadsDetails({ selectedLead, selectedLeadData, onOpenChnage, deleteLead, isLoading }: LeadsDetailsProps) {
     return (
         <Dialog open={selectedLead} onOpenChange={onOpenChnage}>
-            <DialogContent className="sm:max-w-[425px]">
+            <DialogContent className="bg-card border-border sm:max-w-[425px]">
                 <DialogHeader>
                     <DialogTitle>Lead Details</DialogTitle>
                 </DialogHeader>
                 <div className="grid gap-4">
-                    <Label htmlFor="companyName">Company Name</Label>
-                    <h1 id="companyName">{selectedLeadData?.companyName || "Not Provided"}</h1>
-                    <Label htmlFor="name"> Name</Label>
-                    <h1 id="name">{selectedLeadData?.name || "Not Provided"}</h1>
-                    <Label htmlFor="Email">Email</Label>
-                    <h1 id="Email">{selectedLeadData?.email || "Not Provided"}</h1>
-                    <Label htmlFor="Note">Note</Label>
-                    <h1 id="Note">{selectedLeadData?.note || "Not Provided"}</h1>
+                    <div className="space-y-1">
+                        <Label htmlFor="companyName">Company Name</Label>
+                        <p id="companyName" className="text-sm font-medium">{selectedLeadData?.companyName || "Not Provided"}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="name">Name</Label>
+                        <p id="name" className="text-sm font-medium">{selectedLeadData?.name || "Not Provided"}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="Email">Email</Label>
+                        <p id="Email" className="text-sm font-medium">{selectedLeadData?.email || "Not Provided"}</p>
+                    </div>
+                    <div className="space-y-1">
+                        <Label htmlFor="Note">Note</Label>
+                        <p id="Note" className="text-sm text-muted-foreground">{selectedLeadData?.note || "Not Provided"}</p>
+                    </div>
                 </div>
                 <DialogFooter>
-                    <Button disabled={isLoading} onClick={() => deleteLead(selectedLeadData?.id || "")}>Delete Lead</Button>
+                    <DialogClose asChild>
+                        <Button variant="outline">Close</Button>
+                    </DialogClose>
+                    <Button variant="destructive" disabled={isLoading} onClick={() => deleteLead(selectedLeadData?.id || "")}>
+                        Delete Lead
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>

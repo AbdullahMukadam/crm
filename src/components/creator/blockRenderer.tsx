@@ -6,6 +6,7 @@ import Editor from '../common/Editor';
 import { Block, ImageUploadRequest } from '@/types/proposal';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/lib/store/hooks';
+import { GripVertical, Trash2 } from 'lucide-react';
 
 interface BlockRendererProps {
     block: Block;
@@ -187,9 +188,9 @@ export function BlockRenderer({
                                 />
                                 {isSelected && (
                                     <div className="absolute bottom-2 left-2 right-2 bg-white/90 backdrop-blur-sm rounded-lg p-2 shadow-lg">
-                                        <label className="text-xs font-medium text-gray-700 mb-1 block">Fit</label>
+                                        <label className="text-xs font-medium text-neutral-700 mb-1 block">Fit</label>
                                         <select
-                                            className="w-full text-xs border border-gray-300 rounded px-2 py-1"
+                                            className="w-full text-xs border border-neutral-300 rounded px-2 py-1"
                                             value={block.props.objectFit || 'cover'}
                                             onChange={(e) => updateBlockProps(block.id, { objectFit: e.target.value })}
                                         >
@@ -201,8 +202,8 @@ export function BlockRenderer({
                                         <Button
                                             onClick={() => setisImageUrlUpdating(!isImageUrlUpdating)}
                                             variant={"outline"}
-                                            className='mt-2 text-white'
-                                            title="Delete block"
+                                            className='mt-2'
+                                            title="Toggle URL editor"
                                         >
                                             {isImageUrlUpdating ? "Close URL Editor" : "Update Image URL"}
                                         </Button>
@@ -211,20 +212,20 @@ export function BlockRenderer({
                             </div>
                         ) : (
                             <>
-                                <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg flex flex-col items-center justify-center" onClick={handleFileUploadClick}>
-                                    <svg className="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <div className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg flex flex-col items-center justify-center" onClick={handleFileUploadClick}>
+                                    <svg className="w-12 h-12 text-neutral-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
                                     </svg>
-                                    <span className="text-sm text-gray-400">No image selected</span>
+                                    <span className="text-sm text-neutral-400">No image selected</span>
                                     {isUploading ? (
-                                        <p className='text-xl text-black animate-bounce'>Image uploading, Please Wait</p>
+                                        <p className='text-xl text-neutral-700 animate-bounce'>Image uploading, Please Wait</p>
                                     ) : (
-                                        <span className="text-sm text-gray-400">Paste a URL below or Click to upload</span>
+                                        <span className="text-sm text-neutral-400">Paste a URL below or Click to upload</span>
                                     )}
                                 </div>
                                 <input
                                     type="text"
-                                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                    className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-400 text-sm"
                                     placeholder="Paste image URL"
                                     value={block.props.url || ''}
                                     onChange={(e) => updateBlockProps(block.id, { url: e.target.value })}
@@ -242,7 +243,7 @@ export function BlockRenderer({
                         {isImageUrlUpdating && (
                             <input
                                 type="text"
-                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 text-sm"
+                                className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-400 text-sm"
                                 placeholder="Paste image URL"
                                 value={block.props.url || ''}
                                 onChange={(e) => updateBlockProps(block.id, { url: e.target.value })}
@@ -254,9 +255,9 @@ export function BlockRenderer({
             case 'video':
                 return (
                     <div className="space-y-3 h-full flex flex-col">
-                        <label className="text-xs font-medium text-gray-700 uppercase tracking-wide">Video Block</label>
+                        <label className="text-xs font-medium text-neutral-700 uppercase tracking-wide">Video Block</label>
                         {block.props.url ? (
-                            <div className="relative flex-1 rounded-lg overflow-hidden border border-gray-200">
+                            <div className="relative flex-1 rounded-lg overflow-hidden border border-neutral-200">
                                 <video
                                     controls
                                     className="w-full h-full bg-black"
@@ -267,16 +268,16 @@ export function BlockRenderer({
                                 </video>
                             </div>
                         ) : (
-                            <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg flex flex-col items-center justify-center">
-                                <svg className="w-12 h-12 text-gray-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div className="flex-1 bg-neutral-50 border border-neutral-200 rounded-lg flex flex-col items-center justify-center">
+                                <svg className="w-12 h-12 text-neutral-300 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
                                 </svg>
-                                <span className="text-sm text-gray-400">No video selected</span>
+                                <span className="text-sm text-neutral-400">No video selected</span>
                             </div>
                         )}
                         <input
                             type="text"
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                            className="w-full px-3 py-2 border border-neutral-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-neutral-400 text-sm"
                             placeholder="Paste video URL"
                             value={block.props.url || ''}
                             onChange={(e) => updateBlockProps(block.id, { url: e.target.value })}
@@ -286,8 +287,8 @@ export function BlockRenderer({
 
             default:
                 return (
-                    <div className="p-4 bg-gray-50 border border-gray-200 rounded-lg">
-                        <span className="text-sm text-gray-500">Unsupported block type: {block.type}</span>
+                    <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg">
+                        <span className="text-sm text-neutral-500">Unsupported block type: {block.type}</span>
                     </div>
                 );
         }
@@ -302,8 +303,8 @@ export function BlockRenderer({
                 }
             }}
             style={style}
-            className={`bg-white text-black rounded-lg p-5 transition-all ${isSelected
-                && 'border-blue-500 shadow-lg ring-2 ring-blue-200'
+            className={`flex flex-col bg-white text-neutral-900 rounded-lg border border-neutral-200 p-5 transition-all ${isSelected
+                && 'border-primary/40 shadow-sm ring-2 ring-primary/25'
                 }`}
             onClick={(e) => {
                 e.stopPropagation();
@@ -317,84 +318,74 @@ export function BlockRenderer({
             tabIndex={0}
         >
             {/* Drag Handle and Actions */}
-            {isSelected && (
-                <div className="absolute -left-10 top-4 flex flex-col gap-1">
-                    <button
-                        {...attributes}
-                        {...listeners}
-                        className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-gray-50 cursor-grab active:cursor-grabbing"
-                        title="Drag to reposition"
-                    >
-                        <svg className="w-4 h-4 text-gray-400" fill="currentColor" viewBox="0 0 16 16">
-                            <circle cx="4" cy="3" r="1" />
-                            <circle cx="8" cy="3" r="1" />
-                            <circle cx="4" cy="8" r="1" />
-                            <circle cx="8" cy="8" r="1" />
-                            <circle cx="4" cy="13" r="1" />
-                            <circle cx="8" cy="13" r="1" />
-                        </svg>
-                    </button>
-                    <button
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            deleteBlock(block.id);
-                        }}
-                        className="w-8 h-8 flex items-center justify-center rounded border border-gray-200 bg-white hover:bg-red-50 hover:border-red-200"
-                        title="Delete block"
-                    >
-                        <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                    </button>
-                </div>
-            )}
-
-            {/* Resize Handles - Only show when selected */}
-            {isSelected && (
-                <>
-                    {/* Corner Handles */}
-                    <div
-                        className="absolute -top-1 -left-1 w-3 h-3 bg-blue-400 rounded-full cursor-nw-resize z-10"
-                        onMouseDown={handleResize('nw')}
-                    />
-                    <div
-                        className="absolute -top-1 -right-1 w-3 h-3 bg-blue-400 rounded-full cursor-ne-resize z-10"
-                        onMouseDown={handleResize('ne')}
-                    />
-                    <div
-                        className="absolute -bottom-1 -left-1 w-3 h-3 bg-blue-400 rounded-full cursor-sw-resize z-10"
-                        onMouseDown={handleResize('sw')}
-                    />
-                    <div
-                        className="absolute -bottom-1 -right-1 w-3 h-3 bg-blue-400 rounded-full cursor-se-resize z-10"
-                        onMouseDown={handleResize('se')}
-                    />
-
-                    {/* Edge Handles */}
-                    <div
-                        className="absolute -top-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-n-resize z-10"
-                        onMouseDown={handleResize('n')}
-                    />
-                    <div
-                        className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-s-resize z-10"
-                        onMouseDown={handleResize('s')}
-                    />
-                    <div
-                        className="absolute -left-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-w-resize z-10"
-                        onMouseDown={handleResize('w')}
-                    />
-                    <div
-                        className="absolute -right-1 top-1/2 -translate-y-1/2 w-3 h-3 bg-blue-400 rounded-full cursor-e-resize z-10"
-                        onMouseDown={handleResize('e')}
-                    />
-
-                    {/* Position & Size Display */}
-                    <div className="absolute -bottom-8 left-0 bg-gray-900 text-white text-xs px-2 py-1 rounded whitespace-nowrap">
-                        Position: ({Math.round(block.position.x)}, {Math.round(block.position.y)}) •
-                        Size: {Math.round(block.size.width)} × {Math.round(block.size.height)}
+{isSelected && (
+                    <div className="absolute -left-11 top-4 flex flex-col gap-1.5">
+                        <button
+                            {...attributes}
+                            {...listeners}
+                            className="size-8 flex items-center justify-center rounded-lg border border-neutral-200 bg-white shadow-sm hover:bg-neutral-50 cursor-grab active:cursor-grabbing text-neutral-500"
+                            title="Drag to reposition"
+                        >
+                            <GripVertical className="size-4" />
+                        </button>
+                        <button
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                deleteBlock(block.id);
+                            }}
+                            className="size-8 flex items-center justify-center rounded-lg border border-neutral-200 bg-white shadow-sm text-neutral-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                            title="Delete block"
+                        >
+                            <Trash2 className="size-4" />
+                        </button>
                     </div>
-                </>
-            )}
+                )}
+
+                {/* Resize Handles - Only show when selected */}
+                {isSelected && (
+                    <>
+                        {/* Corner Handles */}
+                        <div
+                            className="absolute -top-1.5 -left-1.5 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-nw-resize z-10"
+                            onMouseDown={handleResize('nw')}
+                        />
+                        <div
+                            className="absolute -top-1.5 -right-1.5 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-ne-resize z-10"
+                            onMouseDown={handleResize('ne')}
+                        />
+                        <div
+                            className="absolute -bottom-1.5 -left-1.5 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-sw-resize z-10"
+                            onMouseDown={handleResize('sw')}
+                        />
+                        <div
+                            className="absolute -bottom-1.5 -right-1.5 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-se-resize z-10"
+                            onMouseDown={handleResize('se')}
+                        />
+
+                        {/* Edge Handles */}
+                        <div
+                            className="absolute -top-1.5 left-1/2 -translate-x-1/2 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-n-resize z-10"
+                            onMouseDown={handleResize('n')}
+                        />
+                        <div
+                            className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-s-resize z-10"
+                            onMouseDown={handleResize('s')}
+                        />
+                        <div
+                            className="absolute -left-1.5 top-1/2 -translate-y-1/2 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-w-resize z-10"
+                            onMouseDown={handleResize('w')}
+                        />
+                        <div
+                            className="absolute -right-1.5 top-1/2 -translate-y-1/2 size-3 bg-primary rounded-full ring-2 ring-white shadow-sm cursor-e-resize z-10"
+                            onMouseDown={handleResize('e')}
+                        />
+
+                        {/* Position & Size Display */}
+                        <div className="absolute -bottom-9 left-0 bg-neutral-900 text-white text-[11px] font-mono px-2.5 py-1 rounded-md shadow-sm whitespace-nowrap">
+                            Position: ({Math.round(block.position.x)}, {Math.round(block.position.y)}) • Size: {Math.round(block.size.width)} × {Math.round(block.size.height)}
+                        </div>
+                    </>
+                )}
 
             {/* Block Content */}
             <div className="h-full overflow-hidden">

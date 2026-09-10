@@ -26,7 +26,7 @@ function KanbanColumn({
 }: {
     column: Column;
     onAddTask: (columnId: string) => void;
-    statusColor?: 'bg-red-500' | 'bg-white' | 'bg-green-500' | 'bg-blue-500' | 'bg-purple-500';
+    statusColor?: 'bg-red-500' | 'bg-foreground' | 'bg-green-500' | 'bg-blue-500' | 'bg-purple-500';
     setselectedLead: React.Dispatch<React.SetStateAction<boolean>>;
     setselectedLeadId: React.Dispatch<React.SetStateAction<string>>
 }) {

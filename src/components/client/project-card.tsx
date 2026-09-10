@@ -46,7 +46,7 @@ export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject
 
   return (
     // Added w-full and overflow-hidden to prevent layout breakage
-    <Card className="hover:shadow-lg transition-shadow border-border font-brcolage-grotesque w-full overflow-hidden flex flex-col justify-between">
+    <Card className="hover:shadow-lg transition-shadow border-border w-full overflow-hidden flex flex-col justify-between">
       <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
         <Badge className={`${config.color} text-xs font-semibold whitespace-nowrap`}>
           <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor} inline-block mr-1.5`}></span>

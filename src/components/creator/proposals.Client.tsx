@@ -351,20 +351,20 @@ function ProposalsClient() {
 
     if (isLoading) {
         return (
-            <div className="w-full h-screen flex items-center justify-center bg-zinc-950 text-zinc-300">
+            <div className="w-full h-screen flex items-center justify-center bg-background text-muted-foreground">
                 <Loader2 className="animate-spin mr-2" /> Loading proposals...
             </div>
         );
     }
 
     return (
-        <div className="w-full min-h-screen bg-background p-4 sm:p-6 lg:p-8">
-            <div className="max-w-7xl mx-auto space-y-6">
+        <div className="w-full min-h-screen bg-background">
+            <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-6">
                 {/* Header - Stacks on mobile */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div>
-                        <h1 className="text-2xl sm:text-3xl font-semibold tracking-tight">Proposals</h1>
-                        <p className="text-sm text-muted-foreground mt-1">
+                    <div className="space-y-1">
+                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Proposals</h1>
+                        <p className="text-sm text-muted-foreground">
                             Manage and organize your proposals
                         </p>
                     </div>
@@ -382,11 +382,11 @@ function ProposalsClient() {
                             <div className="relative w-full md:max-w-md">
                                 <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                    placeholder="Search proposals..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    className="pl-8 h-9 w-full border border-zinc-800"
-                                />
+                                        placeholder="Search proposals..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="pl-8 h-9 w-full border-border"
+                                    />
                             </div>
                         </div>
                     </div>
@@ -406,7 +406,7 @@ function ProposalsClient() {
                                                 <TableHead
                                                     key={header.id}
                                                     className={cn(
-                                                        "text-muted-foreground font-medium bg-[#1E1E1E]",
+                                                        "text-muted-foreground font-medium",
                                                         isHiddenOnMobile,
                                                         isHiddenOnTablet
                                                     )}
@@ -520,65 +520,60 @@ function ProposalsClient() {
                 </div>
             </div>
 
-            {/* Create Proposal Dialog - Responsive Width */}
+            {/* Create Proposal Dialog - same layout as invoice dialogs */}
             <Dialog open={isDialogOpen} onOpenChange={setisDialogOpen}>
-                <DialogContent className="w-[90vw] max-w-[400px] sm:max-w-[400px]">
+                <DialogContent className="bg-card border-border">
                     <DialogHeader>
-                        <DialogTitle className="text-lg font-semibold">
-                            Create New Proposal
-                        </DialogTitle>
-                        <DialogDescription>
-                            Enter a title for your new proposal.
-                        </DialogDescription>
+                        <DialogTitle className="text-foreground">Create New Proposal</DialogTitle>
+                        <DialogDescription>Start with a title and description for your new proposal.</DialogDescription>
                     </DialogHeader>
 
-                    <div className="space-y-4 mt-4">
+                    <form onSubmit={(e) => { e.preventDefault(); createProposal(); }} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="title">Title</Label>
+                            <Label htmlFor="title" className="text-foreground">Title</Label>
                             <Input
                                 id="title"
                                 placeholder="Enter proposal title"
                                 value={proposalTitle}
                                 onChange={(e) => setproposalTitle(e.target.value)}
+                                className="bg-background border-border"
                             />
                         </div>
-                    </div>
 
-                    <div className="space-y-2 mt-2">
                         <div className="space-y-2">
-                            <Label htmlFor="description">Description</Label>
+                            <Label htmlFor="description" className="text-foreground">Description</Label>
                             <Textarea
                                 id="description"
                                 placeholder="Enter proposal description"
                                 value={proposalDescription}
                                 onChange={(e) => setProposalDescription(e.target.value)}
                                 required
-                                className="resize-none"
+                                className="bg-background border-border resize-none"
                             />
                         </div>
-                    </div>
 
-                    <DialogFooter className="mt-6 flex-row gap-2 justify-end">
-                        <DialogClose asChild>
-                            <Button type="button" variant="outline" className="mt-0">
-                                Cancel
+                        <DialogFooter>
+                            <DialogClose asChild>
+                                <Button type="button" variant="outline" className="border-border text-foreground hover:bg-muted">
+                                    Cancel
+                                </Button>
+                            </DialogClose>
+                            <Button
+                                type="submit"
+                                disabled={isProposalCreatedLoadind}
+                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                            >
+                                {isProposalCreatedLoadind ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Creating...
+                                    </>
+                                ) : (
+                                    "Create"
+                                )}
                             </Button>
-                        </DialogClose>
-                        <Button
-                            type="button"
-                            onClick={createProposal}
-                            disabled={isProposalCreatedLoadind}
-                        >
-                            {isProposalCreatedLoadind ? (
-                                <>
-                                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                    Creating...
-                                </>
-                            ) : (
-                                "Create"
-                            )}
-                        </Button>
-                    </DialogFooter>
+                        </DialogFooter>
+                    </form>
                 </DialogContent>
             </Dialog>
         </div>
