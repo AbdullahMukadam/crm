@@ -1,9 +1,11 @@
 
 import { saveProposal } from "@/lib/store/features/proposalsSlice"
 import { useAppDispatch } from "@/lib/store/hooks"
-import { Block } from "@/types/proposal"
+import { QUERY_KEYS } from "@/constants/query-keys"
+import { useQueryClient } from "@tanstack/react-query"
 import { useCallback, useEffect, useState } from "react"
 import { toast } from "sonner"
+import type { Block } from "@/types/proposal"
 
 interface useAutoSaveProps {
     AutoSaveInterval?: number
@@ -22,6 +24,7 @@ export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
     })
     const [error, seterror] = useState("")
     const dispatch = useAppDispatch()
+    const queryClient = useQueryClient()
 
     const saveProposalData = (blocksData: Block[], proposalId: string) => {
         if (!blocksData || !proposalId) {
@@ -48,6 +51,9 @@ export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
 
             if (saveProposal.fulfilled.match(response)) {
                 toast.success("Data Saved Successfully")
+                queryClient.invalidateQueries({
+                    queryKey: QUERY_KEYS.proposals.detail(autoSaveData.proposalIdState)
+                })
             } else if (saveProposal.rejected.match(response)) {
                 seterror("Unable to get the proposal Data")
             }
@@ -58,7 +64,7 @@ export function useAutoSave({ AutoSaveInterval, autoSave }: useAutoSaveProps) {
                 seterror("Unable to save the data")
             }
         }
-    }, [autoSaveData])
+    }, [autoSaveData, queryClient, dispatch])
 
     useEffect(() => {
         if (autoSave) {

@@ -3,35 +3,29 @@ import { fetchProjects } from '@/lib/store/features/projectSlice'
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks'
 import { Figma, Layers, Loader2 } from 'lucide-react'
 import React, { useEffect, useState } from 'react'
-import { SectionCards } from './statusCards' // Assuming this is the file name
+import { SectionCards } from './statusCards'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useProject } from '@/hooks/useProject'
-import { FigmaEmbed } from '@/components/common/figmaEmbed' // Fixed path based on standard conventions
+import { FigmaEmbed } from '@/components/common/figmaEmbed' 
 import { Button } from '@/components/ui/button'
 
 function ClientDashboard() {
   const { projects, isLoading } = useAppSelector((state) => state.projects)
   const { username } = useAppSelector((state) => state.auth)
   const dispatch = useAppDispatch()
-
-  // Safe initialization: Don't access projects[0] directly in useState
   const [currentProjectName, setcurrentProjectName] = useState<string>("")
-
   const { currentProject, findCurrentProject } = useProject({ projects })
 
-  // 1. Fetch Projects on mount
   useEffect(() => {
     if (projects.length === 0) dispatch(fetchProjects());
   }, [dispatch, projects.length]);
 
-  // 2. Set Default Project when projects load
   useEffect(() => {
     if (projects.length > 0 && !currentProjectName) {
       setcurrentProjectName(projects[0].title);
     }
   }, [projects, currentProjectName]);
 
-  // 3. Update hook when selection changes
   useEffect(() => {
     if (currentProjectName) {
       findCurrentProject(currentProjectName)
@@ -50,7 +44,6 @@ function ClientDashboard() {
   if (!isLoading && projects.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        {/* Icon with glowing effect */}
         <div className="relative mb-6">
           <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
           <div className="relative p-6 bg-card rounded-2xl ring-1 ring-border shadow-2xl">
@@ -66,7 +59,6 @@ function ClientDashboard() {
           It looks quiet here. You are not currently assigned to any active projects.
         </p>
 
-        {/* Action Button - highly recommended for empty states */}
         <div className="flex gap-3">
           <Button variant="outline">Refresh</Button>
         </div>

@@ -1,7 +1,7 @@
 "use client"
 import { SigninUser, SignupUser } from '@/lib/store/features/authSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
-import { ArrowRightIcon, Eye, EyeClosed } from 'lucide-react';
+import { ArrowRightIcon, Eye, EyeClosed, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import React, { ChangeEvent, FormEvent, useState } from 'react'
@@ -112,7 +112,7 @@ function AuthenticationForm({ headerText, TypeofTheForm }: Props) {
 
                         </div>
                     </section>
-                    <button disabled={isLoading} className={`w-full bg-white ${isLoading ? "bg-gray-500" : ""} cursor-pointer text-black rounded-md py-2 mt-3`}>{isLoading ? "Please Wait.." : "Continue"}</button>
+                    <button disabled={isLoading} className={`w-full bg-white ${isLoading ? "bg-gray-500" : ""} cursor-pointer text-black rounded-md py-2 mt-3 flex items-center justify-center gap-2`}>{isLoading && <Loader2 size={16} className="animate-spin" />}{isLoading ? "Please Wait.." : "Continue"}</button>
                 </form>
                 <div className='w-full items-center p-3 flex mt-3 gap-1'>
                     <hr className="h-px bg-gray-500 grow" />

@@ -1,8 +1,9 @@
 // Custom hook for SSE notifications
 
-import { NotificationsData } from "@/types/notifications";
+import type { NotificationsData } from "@/types/notifications";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { showSystemNotification } from "@/lib/browserNotifications";
 
 export function useNotificationStream() {
     const [notificationsData, setNotificationsData] = useState<NotificationsData | null>(null);
@@ -67,6 +68,12 @@ export function useNotificationStream() {
                                     hasShownToastRef.current = false;
                                 }, 1000);
                             }
+
+                            // Show a native browser notification (only if the user enabled them)
+                            showSystemNotification(data.payload.title, {
+                                body: data.payload.message,
+                                tag: data.payload.id
+                            });
                             break;
                         case 'heartbeat':
                             // Keep-alive signal - connection is healthy

@@ -1,7 +1,6 @@
 "use client"
 import React, { useCallback } from 'react';
-import { Bell, BellRing, ChevronRight } from 'lucide-react';
-import Link from 'next/link';
+import { Bell, BellRing, BellOff } from 'lucide-react';
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -14,12 +13,12 @@ import { Button } from '../ui/button';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/lib/store/hooks';
 import { useNotificationStream } from '@/hooks/useNotificationStream';
+import { useBrowserNotifications } from '@/hooks/useBrowserNotifications';
 import { cn, formatTimeAgo } from '@/lib/utils';
 
 interface NotificationItemProps {
     title: string;
     message: string;
-    href?: string | null;
     createdAt?: Date;
     isRead?: boolean;
     notificationId: string;
@@ -29,15 +28,19 @@ interface NotificationItemProps {
 function NotificationItem({
     title,
     message,
-    href,
     createdAt,
     isRead = false,
     notificationId,
     onMarkasRead,
 }: NotificationItemProps) {
 
-    const body = (
-        <div className="flex items-start gap-3">
+    return (
+        <li className={cn(
+            "flex items-start gap-3 rounded-lg border px-3 py-2.5",
+            isRead
+                ? "border-transparent hover:bg-muted/50"
+                : "bg-accent/60 border-border"
+        )}>
             {!isRead && (
                 <span className="mt-1.5 size-2 shrink-0 rounded-full bg-primary" />
             )}
@@ -52,54 +55,17 @@ function NotificationItem({
                 </div>
                 <p className="text-xs sm:text-sm leading-snug mt-0.5 text-muted-foreground line-clamp-2">{message}</p>
 
-                {!isRead ? (
-                    <div className="flex items-center gap-2 mt-2">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="h-7 text-xs border-border"
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                onMarkasRead(notificationId);
-                            }}
-                        >
-                            Mark as read
-                        </Button>
-                        {href && (
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-7 text-xs text-muted-foreground hover:text-foreground"
-                            >
-                                View
-                            </Button>
-                        )}
-                    </div>
-                ) : (
-                    <span className="text-[11px] text-muted-foreground/70">Read</span>
+                {!isRead && (
+                    <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs border-border mt-2"
+                        onClick={() => onMarkasRead(notificationId)}
+                    >
+                        Mark as read
+                    </Button>
                 )}
             </div>
-        </div>
-    );
-
-    return (
-        <li className={cn(
-            "flex items-center rounded-lg border px-3 py-2.5 transition-colors",
-            isRead
-                ? "border-transparent hover:bg-muted/50"
-                : "bg-accent/60 border-border"
-        )}>
-            {href ? (
-                <Link href={href} className="flex-1 min-w-0 group">
-                    <div className="flex items-center gap-3">
-                        {body}
-                        <ChevronRight className="size-4 shrink-0 text-muted-foreground/50 group-hover:text-muted-foreground transition-colors" />
-                    </div>
-                </Link>
-            ) : (
-                <div className="flex-1 min-w-0">{body}</div>
-            )}
         </li>
     )
 }
@@ -107,7 +73,22 @@ function NotificationItem({
 export const Header: React.FC = () => {
     const { isLoading, searchResults, handleSearch } = useSearch();
     const { notificationsData, isConnected, setNotificationsData } = useNotificationStream();
+    const { permission, requestPermission, enabled: browserNotificationsEnabled } = useBrowserNotifications();
     const { role } = useAppSelector((state) => state.auth);
+
+    const handleEnableNotifications = useCallback(async () => {
+        try {
+            const result = await requestPermission();
+            if (result === "granted") {
+                toast.success("Browser notifications enabled");
+            } else if (result === "denied") {
+                toast.error("Notifications are blocked. Enable them in your browser's site settings.");
+            }
+        } catch (error) {
+            toast.error("Unable to enable browser notifications");
+            console.error(error);
+        }
+    }, [requestPermission]);
 
     const handleMarkasRead = useCallback(async (notificationId: string) => {
         try {
@@ -190,6 +171,35 @@ export const Header: React.FC = () => {
                                     </span>
                                 )}
                             </div>
+                            {permission !== "unsupported" && (
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className={cn(
+                                        "relative rounded-full text-muted-foreground transition-colors",
+                                        browserNotificationsEnabled
+                                            ? "text-primary hover:text-primary hover:bg-primary/10"
+                                            : "hover:bg-accent hover:text-foreground"
+                                    )}
+                                    onClick={handleEnableNotifications}
+                                    aria-label={
+                                        browserNotificationsEnabled
+                                            ? "Browser notifications are on"
+                                            : "Enable browser notifications"
+                                    }
+                                    title={
+                                        browserNotificationsEnabled
+                                            ? "Browser notifications are on"
+                                            : "Enable browser notifications"
+                                    }
+                                >
+                                    {browserNotificationsEnabled ? (
+                                        <BellRing size={16} />
+                                    ) : (
+                                        <BellOff size={16} />
+                                    )}
+                                </Button>
+                            )}
                             {!isConnected && (
                                 <span className="text-[11px] text-yellow-500 flex items-center gap-1">
                                     <span className="size-1.5 rounded-full bg-yellow-500 animate-pulse" />
@@ -205,7 +215,6 @@ export const Header: React.FC = () => {
                                         key={notification.id}
                                         title={notification.title}
                                         message={notification.message}
-                                        href={notification.link}
                                         createdAt={notification.createdAt}
                                         isRead={notification.isRead}
                                         onMarkasRead={handleMarkasRead}

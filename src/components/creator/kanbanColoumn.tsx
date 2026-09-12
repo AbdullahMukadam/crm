@@ -3,6 +3,12 @@ import { CSS } from '@dnd-kit/utilities';
 import React from 'react';
 import TaskCard from './TaskCard';
 import { Plus, MoreHorizontal } from 'lucide-react';
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface Task {
     id: string;
@@ -22,13 +28,15 @@ function KanbanColumn({
     onAddTask,
     statusColor,
     setselectedLead,
-    setselectedLeadId
+    setselectedLeadId,
+    justDragged
 }: {
     column: Column;
     onAddTask: (columnId: string) => void;
     statusColor?: 'bg-red-500' | 'bg-foreground' | 'bg-green-500' | 'bg-blue-500' | 'bg-purple-500';
     setselectedLead: React.Dispatch<React.SetStateAction<boolean>>;
-    setselectedLeadId: React.Dispatch<React.SetStateAction<string>>
+    setselectedLeadId: React.Dispatch<React.SetStateAction<string>>;
+    justDragged: boolean;
 }) {
 
     const {
@@ -43,6 +51,10 @@ function KanbanColumn({
         data: {
             type: 'column',
             column,
+        },
+        transition: {
+            duration: 180,
+            easing: 'cubic-bezier(0.2, 0, 0, 1)',
         },
     });
 
@@ -86,12 +98,29 @@ function KanbanColumn({
                                 onAddTask(column.id);
                             }}
                             className="h-6 w-6 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                            aria-label={`Add task to ${column.title}`}
                         >
                             <Plus className="size-4" />
                         </button>
-                        <button className="h-6 w-6 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
-                            <MoreHorizontal className="size-4" />
-                        </button>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <button
+                                    className="h-6 w-6 inline-flex items-center justify-center rounded-md hover:bg-accent hover:text-accent-foreground transition-colors"
+                                    aria-label={`${column.title} options`}
+                                >
+                                    <MoreHorizontal className="size-4" />
+                                </button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="min-w-40">
+                                <DropdownMenuItem
+                                    className="cursor-pointer"
+                                    onSelect={() => onAddTask(column.id)}
+                                >
+                                    <Plus className="size-4" />
+                                    Add task
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
                     </div>
                 </div>
 
@@ -105,6 +134,7 @@ function KanbanColumn({
                                 columnId={column.id}
                                 setselectedLeadId={setselectedLeadId}
                                 setselectedLead={setselectedLead}
+                                justDragged={justDragged}
                             />
                         ))}
 

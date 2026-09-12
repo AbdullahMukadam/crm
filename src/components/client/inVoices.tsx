@@ -105,7 +105,7 @@ export default function Invoices() {
                   <p className="text-xs text-muted-foreground">Lifetime earnings</p>
                 </div>
                 <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                  <CheckCircle2 className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
+                  <CheckCircle2 className="h-5 w-5" />
                 </div>
               </div>
             </CardContent>
@@ -121,7 +121,7 @@ export default function Invoices() {
                   <p className="text-xs text-muted-foreground">Due from clients</p>
                 </div>
                 <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-                  <Clock className="h-5 w-5 text-amber-600 dark:text-amber-400" />
+                  <Clock className="h-5 w-5" />
                 </div>
               </div>
             </CardContent>
@@ -141,7 +141,7 @@ export default function Invoices() {
                   </p>
                 </div>
                 <div className="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/30">
-                  <Calendar className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  <Calendar className="h-5 w-5" />
                 </div>
               </div>
             </CardContent>

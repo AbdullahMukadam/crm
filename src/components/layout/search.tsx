@@ -1,6 +1,7 @@
 "use client"
 import React, { useState, useEffect } from 'react';
 import { Loader2, Search, X, UserSearch, ChevronRight } from 'lucide-react';
+import Link from 'next/link';
 import { LeadsDataForDashboard } from '@/types/branding';
 import { Card, CardContent } from '../ui/card';
 import { cn, formatTimeAgo } from '@/lib/utils';
@@ -105,12 +106,9 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
                             <ul className="flex flex-col">
                                 {searchResults.map((lead) => (
                                     <li key={lead.id}>
-                                        <button
+                                        <Link
+                                            href={`/dashboard/creator?lead=${lead.id}`}
                                             className="w-full px-3 py-2.5 rounded-md hover:bg-accent transition-colors text-left group flex items-center gap-3"
-                                            onClick={() => {
-                                                console.log('Selected lead:', lead);
-                                                setIsResultsOpen(false);
-                                            }}
                                         >
                                             {/* Avatar */}
                                             <span className="flex items-center justify-center size-9 shrink-0 rounded-full bg-primary/10 text-primary border border-primary/20 text-xs font-bold">
@@ -148,7 +146,7 @@ const SearchComponent: React.FC<SearchComponentProps> = ({
                                             </span>
 
                                             <ChevronRight className="size-4 shrink-0 text-muted-foreground/40 group-hover:text-muted-foreground transition-colors" />
-                                        </button>
+                                        </Link>
                                     </li>
                                 ))}
                             </ul>

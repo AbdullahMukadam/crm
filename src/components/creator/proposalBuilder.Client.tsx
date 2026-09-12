@@ -23,6 +23,8 @@ import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { saveProposal } from '@/lib/store/features/proposalsSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
+import { QUERY_KEYS } from '@/constants/query-keys';
+import { useQueryClient } from '@tanstack/react-query';
 
 // Dynamic imports
 const ProposalSidebar = dynamic(() => import('./proposalSidebar'), {
@@ -48,6 +50,7 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
     const [isAutoSaveOn, setisAutoSaveOn] = useState(false)
     const [isCollapsed, setisCollapsed] = useState(false)
     const dispatch = useAppDispatch()
+    const queryClient = useQueryClient()
 
 
     // Mobile menu state
@@ -135,11 +138,14 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
 
             if (saveProposal.fulfilled.match(response)) {
                 toast.success("Data Saved Successfully")
+                queryClient.invalidateQueries({
+                    queryKey: QUERY_KEYS.proposals.detail(proposalId)
+                })
             }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "unable to save data")
         }
-    }, [blocks])
+    }, [blocks, queryClient, dispatch, proposalId])
 
     if (isLoading) {
         return (

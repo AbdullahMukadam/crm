@@ -1,34 +1,32 @@
 import brandingService from "@/lib/api/brandingService"
-import { LeadsDataForDashboard } from "@/types/branding"
+import { QUERY_KEYS } from "@/constants/query-keys"
+import { keepPreviousData, useQuery } from "@tanstack/react-query"
+import type { LeadsDataForDashboard } from "@/types/branding"
 import { useCallback, useState } from "react"
-import { toast } from "sonner"
 
 export function useSearch() {
-    const [isLoading, setisLoading] = useState(false)
-    const [searchResults, setsearchResults] = useState<LeadsDataForDashboard[]>([])
+    const [searchTerm, setSearchTerm] = useState("")
 
-    const handleSearch = useCallback(async (query: string) => {
-        if (typeof query.trim() !== "string") {
-            return toast.error("Please enter only characters")
-        }
-        try {
-            setisLoading(true)
-            const response = await brandingService.searchLeads({
-                query
-            })
-            if(response.success && response.data){
-                setsearchResults(response.data)
+    const searchQuery = useQuery({
+        queryKey: QUERY_KEYS.leadSearch.results(searchTerm),
+        queryFn: async () => {
+            const response = await brandingService.searchLeads({ query: searchTerm })
+            if (response.success && response.data) {
+                return response.data
             }
-        } catch (error) {
-            toast.error(error instanceof Error ? error.message : "Failed to Search the leads ")
-        } finally {
-            setisLoading(false)
-        }
+            throw new Error("Failed to search leads")
+        },
+        enabled: searchTerm.trim().length > 0,
+        placeholderData: keepPreviousData,
+    })
+
+    const handleSearch = useCallback((query: string) => {
+        setSearchTerm(query)
     }, [])
 
     return {
-        isLoading,
-        searchResults,
+        isLoading: searchQuery.isFetching,
+        searchResults: searchQuery.data ?? ([] as LeadsDataForDashboard[]),
         handleSearch
     }
 }

@@ -1,42 +1,23 @@
 import brandingService from "@/lib/api/brandingService";
-import { fetchLeadsSlice } from "@/lib/store/features/leadSlice";
-import { useAppDispatch } from "@/lib/store/hooks";
-import { LeadsDataForDashboard } from "@/types/branding";
-import { useCallback, useEffect, useState } from "react";
-import { toast } from "sonner";
+import { QUERY_KEYS } from "@/constants/query-keys";
+import type { LeadsDataForDashboard } from "@/types/branding";
+import { useQuery } from "@tanstack/react-query";
 
 export function useLeads() {
-    const [leads, setLeads] = useState<LeadsDataForDashboard[]>([])
-    const [error, setError] = useState("")
-    const [loadind, setloadind] = useState(false)
-    const dispatch = useAppDispatch()
-
-    const fetchLeads = useCallback(async () => {
-        try {
-            setloadind(true)
-
-            const response = await dispatch(fetchLeadsSlice())
-
-            if (fetchLeadsSlice.fulfilled.match(response)) {
-                setLeads(response.payload)
-                toast.success("Leads fetched Successfully")
+    const query = useQuery({
+        queryKey: QUERY_KEYS.leads.all,
+        queryFn: async () => {
+            const response = await brandingService.fetchLeads();
+            if (response.success && response.data) {
+                return response.data;
             }
-        } catch (error) {
-            setError(error instanceof Error ? error.message : "An Error Occured")
-            toast.error(error instanceof Error ? error.message : "An Error Occured")
-        } finally {
-            setloadind(false)
-        }
-    }, [leads])
-
-    useEffect(() => {
-        if(leads.length === 0) fetchLeads();
-    }, [])
-
+            throw new Error("Failed to fetch leads");
+        },
+    });
 
     return {
-        loadind,
-        error,
-        leads
-    }
+        loadind: query.isPending,
+        error: query.isError && query.error instanceof Error ? query.error.message : "",
+        leads: query.data ?? ([] as LeadsDataForDashboard[]),
+    };
 }

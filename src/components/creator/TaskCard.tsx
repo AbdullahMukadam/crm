@@ -10,7 +10,7 @@ import {
   Hexagon,
   Stars,
 } from "lucide-react";
-import React from "react";
+import React, { useRef } from "react";
 
 interface User {
     id: string;
@@ -52,12 +52,14 @@ function TaskCard({
     task, 
     columnId, 
     setselectedLead, 
-    setselectedLeadId 
+    setselectedLeadId,
+    justDragged
 }: {
     task: Task;
     columnId: string;
     setselectedLead: React.Dispatch<React.SetStateAction<boolean>>;
     setselectedLeadId: React.Dispatch<React.SetStateAction<string>>;
+    justDragged: boolean;
 }) {
     const {
         attributes,
@@ -73,11 +75,37 @@ function TaskCard({
             task,
             columnId,
         },
+        transition: {
+            duration: 180,
+            easing: "cubic-bezier(0.2, 0, 0, 1)",
+        },
     });
 
+    // Keep the placeholder in place while the DragOverlay ghost moves
     const style = {
-        transform: CSS.Transform.toString(transform),
+        transform: isDragging ? undefined : CSS.Transform.toString(transform),
         transition,
+    };
+
+    // Track pointer-down position so a drag release doesn't open the lead modal
+    const pointerDownPos = useRef<{ x: number; y: number } | null>(null);
+
+    const handlePointerDown = (e: React.PointerEvent) => {
+        pointerDownPos.current = { x: e.clientX, y: e.clientY };
+        listeners?.onPointerDown?.(e);
+    };
+
+    const handleClick = (e: React.MouseEvent) => {
+        if (justDragged) return; // ignore stray click straight after a drop
+        const from = pointerDownPos.current;
+        pointerDownPos.current = null;
+        if (from) {
+            const dx = Math.abs(e.clientX - from.x);
+            const dy = Math.abs(e.clientY - from.y);
+            if (dx > 5 || dy > 5) return; // this was a drag, not a click
+        }
+        setselectedLead(true);
+        setselectedLeadId(task.id);
     };
 
     const StatusIcon = task.status?.icon;
@@ -89,13 +117,11 @@ function TaskCard({
             style={style}
             {...attributes}
             {...listeners}
-            className={`bg-background shrink-0 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing transition-all duration-200 hover:shadow-md
-                ${isDragging ? "opacity-70 scale-[1.03] shadow-lg" : ""}
+            onPointerDown={handlePointerDown}
+            onClick={handleClick}
+            className={`bg-background shrink-0 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing
+                ${isDragging ? "opacity-30 ring-1 ring-primary/20" : "hover:shadow-md hover:border-border/70 transition-[box-shadow,border-color] duration-200"}
             `}
-            onClick={() => {
-                setselectedLead(true);
-                setselectedLeadId(task.id);
-            }}
         >
             <div className="px-3 py-2.5">
                 <div className="flex items-center gap-2 mb-2">

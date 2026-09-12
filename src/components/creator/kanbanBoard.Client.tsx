@@ -10,6 +10,7 @@ import {
     closestCorners,
     DragOverEvent,
     DragEndEvent,
+    DragOverlay,
     DragStartEvent,
     UniqueIdentifier,
 } from '@dnd-kit/core';
@@ -24,8 +25,10 @@ import { useLeads } from '@/features/Leads/hooks/useLeads';
 import { LeadsDataForDashboard } from '@/types/branding';
 import { toast } from 'sonner';
 import brandingService from '@/lib/api/brandingService';
+import { QUERY_KEYS } from '@/constants/query-keys';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { updateLeadStatusSlice } from '@/lib/store/features/leadSlice';
+import { useQueryClient } from '@tanstack/react-query';
 
 const LeadVisitsChart = dynamic(
     () => import('../layout/leads-visit').then(mod => mod.LeadVisitsChart),
@@ -80,13 +83,17 @@ const KanbanBoard = () => {
     const { username } = useAppSelector((state) => state.auth)
     const [columns, setColumns] = useState<Column[]>([]);
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
+    const [activeTask, setActiveTask] = useState<{ title: string; description?: string; columnId: string } | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedColumnId, setSelectedColumnId] = useState<string>('');
     const [selectedLead, setselectedLead] = useState(false)
     const [selectedLeadId, setselectedLeadId] = useState("")
     const [selectedLeadData, setselectedLeadData] = useState<LeadsDataForDashboard | null>(null)
     const [isLoading, setisLoading] = useState(false)
+    const [pendingUrlLead, setPendingUrlLead] = useState<string | null>(null)
+    const [justDragged, setJustDragged] = useState(false)
     const dispatch = useAppDispatch()
+    const queryClient = useQueryClient()
 
     useEffect(() => {
         if (leads && leads.length > 0) {
@@ -128,15 +135,33 @@ const KanbanBoard = () => {
     useEffect(() => {
         if (!selectedLeadId) return;
 
-        const lead = leads.filter((l) => l.id === selectedLeadId)
-        setselectedLeadData(lead[0])
+        const lead = leads.find((l) => l.id === selectedLeadId)
+        if (lead) {
+            setselectedLeadData(lead)
+            if (pendingUrlLead === selectedLeadId) {
+                setselectedLead(true)
+                setPendingUrlLead(null)
+            }
+        }
 
-    }, [selectedLeadId])
+    }, [selectedLeadId, leads, pendingUrlLead])
+
+    // Auto-open a lead passed via ?lead=<id> (from the header search)
+    useEffect(() => {
+        if (typeof window === 'undefined') return;
+        const params = new URLSearchParams(window.location.search);
+        const leadId = params.get('lead');
+        if (leadId) {
+            window.history.replaceState({}, '', window.location.pathname);
+            setselectedLeadId(leadId);
+            setPendingUrlLead(leadId);
+        }
+    }, [])
 
     const sensors = useSensors(
         useSensor(PointerSensor, {
             activationConstraint: {
-                distance: 3,
+                distance: 6,
             },
         }),
         useSensor(KeyboardSensor, {
@@ -167,7 +192,8 @@ const KanbanBoard = () => {
             }))
 
             if (updateLeadStatusSlice.fulfilled.match(response)) {
-                toast.success("Leads fetched Successfully")
+                toast.success("Lead status updated Successfully")
+                queryClient.invalidateQueries({ queryKey: QUERY_KEYS.leads.all })
             }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to update lead status");
@@ -176,6 +202,17 @@ const KanbanBoard = () => {
 
     const handleDragStart = (event: DragStartEvent) => {
         setActiveId(event.active.id);
+        setJustDragged(true);
+        const found = findTask(event.active.id);
+        if (found) {
+            setActiveTask({ title: found.task.title, description: found.task.description, columnId: found.column.id });
+        }
+    };
+
+    const handleDragCancel = () => {
+        setActiveId(null);
+        setActiveTask(null);
+        window.setTimeout(() => setJustDragged(false), 250);
     };
 
     const handleDragOver = (event: DragOverEvent) => {
@@ -238,6 +275,8 @@ const KanbanBoard = () => {
     const handleDragEnd = (event: DragEndEvent) => {
         const { active, over } = event;
         setActiveId(null);
+        setActiveTask(null);
+        window.setTimeout(() => setJustDragged(false), 250);
 
         if (!over) return;
 
@@ -306,6 +345,7 @@ const KanbanBoard = () => {
             const response = await brandingService.createLead(leadData)
             if (response.success) {
                 toast.success("Lead Created Successfully")
+                queryClient.invalidateQueries({ queryKey: QUERY_KEYS.leads.all })
                 const newLead: Task = {
                     id: response.data.id,
                     title: response.data.name,
@@ -342,6 +382,7 @@ const KanbanBoard = () => {
             const response = await brandingService.deleteLead(id)
             if (response.success) {
                 toast.success("Lead Deleted Successfully")
+                queryClient.invalidateQueries({ queryKey: QUERY_KEYS.leads.all })
                 setColumns((prev) => {
                     return prev.map(column => ({
                         ...column,
@@ -384,6 +425,7 @@ const KanbanBoard = () => {
                     onDragStart={handleDragStart}
                     onDragOver={handleDragOver}
                     onDragEnd={handleDragEnd}
+                    onDragCancel={handleDragCancel}
                 >
                     <SortableContext items={columns.map(col => col.id)}>
                         <div className="w-full overflow-x-auto pb-4">
@@ -398,6 +440,7 @@ const KanbanBoard = () => {
                                                 statusColor={colDef?.color}
                                                 setselectedLeadId={setselectedLeadId}
                                                 setselectedLead={setselectedLead}
+                                                justDragged={justDragged}
                                             />
                                         </div>
                                     );
@@ -405,6 +448,18 @@ const KanbanBoard = () => {
                             </div>
                         </div>
                     </SortableContext>
+
+                    {/* Drag Overlay - Smooth drag ghost that follows the cursor */}
+                    <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.2, 0, 0, 1)' }}>
+                        {activeTask && (
+                            <div className="w-[280px] rounded-xl border border-primary/30 bg-card p-3.5 shadow-2xl ring-1 ring-primary/10 cursor-grabbing pointer-events-none">
+                                <h3 className="text-sm font-medium leading-tight text-foreground">{activeTask.title}</h3>
+                                {activeTask.description && (
+                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{activeTask.description}</p>
+                                )}
+                            </div>
+                        )}
+                    </DragOverlay>
                 </DndContext>
             </div>
 

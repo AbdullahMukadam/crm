@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { Outfit } from "next/font/google";
 import "./globals.css";
 import CommonLayout from "@/common-layout/common-layout";
-import { ThemeProvider } from "@/providers/theme-provider";
 import { cn } from "@/lib/utils";
+import { QueryProvider } from "@/providers/query-provider";
+import { ThemeProvider } from "@/providers/theme-provider";
 
 const fontSans = Outfit({
   subsets: ["latin"],
@@ -146,7 +147,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <CommonLayout>{children}</CommonLayout>
+          <QueryProvider>
+            <CommonLayout>{children}</CommonLayout>
+          </QueryProvider>
         </ThemeProvider>
       </body>
     </html>

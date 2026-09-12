@@ -196,7 +196,7 @@ export default function Invoices() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Total Paid</CardTitle>
               <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/20">
-                <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
+                <CheckCircle2 className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent>
@@ -209,7 +209,7 @@ export default function Invoices() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
               <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/20">
-                <Clock className="h-4 w-4 text-amber-600 dark:text-amber-400" />
+                <Clock className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent>
@@ -222,7 +222,7 @@ export default function Invoices() {
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium text-muted-foreground">Next Due</CardTitle>
               <div className="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/20">
-                <Calendar className="h-4 w-4 text-indigo-600 dark:text-indigo-400" />
+                <Calendar className="h-4 w-4" />
               </div>
             </CardHeader>
             <CardContent>
@@ -238,7 +238,7 @@ export default function Invoices() {
 
         {/* Main Content Card */}
         <Card className="border shadow-sm">
-          <CardHeader className="p-4 md:p-6 border-b bg-muted/40">
+          <CardHeader className="p-4 border-b bg-muted/40">
             <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
               <div className="relative w-full md:max-w-sm">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
@@ -266,7 +266,7 @@ export default function Invoices() {
             </div>
           </CardHeader>
           
-          <CardContent className="p-4 md:p-6">
+          <CardContent className="p-4">
             {/* Desktop Table View (Hidden on Mobile) */}
             <div className="hidden md:block rounded-md border border-border overflow-x-auto">
               <Table>
