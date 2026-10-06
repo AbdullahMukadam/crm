@@ -10,6 +10,8 @@ import proposalService from '@/lib/api/proposalService'
 import dynamic from 'next/dynamic'
 import { useAppDispatch } from '@/lib/store/hooks'
 import { updateProposalStatus } from '@/lib/store/features/proposalsSlice'
+import { useQueryClient } from '@tanstack/react-query'
+import { QUERY_KEYS } from '@/constants/query-keys'
 
 const BlockRenderer = dynamic(() => import('./blockRenderer').then(mod => mod.BlockRenderer), {
     ssr: false
@@ -18,7 +20,10 @@ const BlockRenderer = dynamic(() => import('./blockRenderer').then(mod => mod.Bl
 function ProposalViewerClient({ proposalId }: { proposalId: string }) {
     const { isLoading, proposalData } = useProposal({ proposalId })
     const [isProposalLoading, setisProposalLoading] = useState(false)
+    const [signature, setSignature] = useState('')
     const dispatch = useAppDispatch()
+    const queryClient = useQueryClient()
+    const needsSignature = proposalData?.content?.some((b: Block) => b.type === 'signature') ?? false
 
     // Dummy functions to disable editing
     const noop = () => { };
@@ -29,19 +34,21 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
             setisProposalLoading(true)
             const data = {
                 proposalId,
-                status
+                status,
+                signature: needsSignature ? signature.trim() : undefined
             }
             const response = await dispatch(updateProposalStatus(data))
 
             if (updateProposalStatus.fulfilled.match(response)) {
                 toast.success("Proposal Accepted Successfully")
+                queryClient.invalidateQueries({ queryKey: QUERY_KEYS.proposals.detail(proposalId) })
             }
         } catch (error) {
             toast.error(error instanceof Error ? error.message : "Failed to Accept Proposal")
         } finally {
             setisProposalLoading(false)
         }
-    }, [])
+    }, [dispatch, proposalId, needsSignature, signature, queryClient])
 
     const handleRejectProposal = useCallback(async (status: string) => {
         try {
@@ -135,6 +142,15 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
                     </div>
 
                     <div className="flex items-center gap-3 w-full sm:w-auto">
+                        {needsSignature && (
+                            <input
+                                className="flex-1 sm:w-56 h-9 px-3 rounded-md border border-zinc-800 bg-transparent text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-zinc-500"
+                                placeholder="Type your full name to sign"
+                                aria-label="Signature"
+                                value={signature}
+                                onChange={(e) => setSignature(e.target.value)}
+                            />
+                        )}
                         <Button
                             variant="outline"
                             className="flex-1 sm:flex-none border-zinc-800 bg-transparent hover:bg-zinc-900 text-zinc-400 hover:text-white transition-colors"
@@ -148,7 +164,7 @@ function ProposalViewerClient({ proposalId }: { proposalId: string }) {
                         <Button
                             className="flex-1 sm:flex-none bg-white text-black hover:bg-zinc-200 border-none"
                             onClick={() => handleAcceptProposal("ACCEPTED")}
-                            disabled={isProposalLoading}
+                            disabled={isProposalLoading || (needsSignature && !signature.trim())}
                         >
                             <Check className="w-4 h-4 mr-2" />
                             {isProposalLoading ? "Please Wait" : "Accept Proposal"}

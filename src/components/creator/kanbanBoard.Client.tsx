@@ -19,7 +19,11 @@ import {
     arrayMove,
     sortableKeyboardCoordinates,
 } from '@dnd-kit/sortable';
-import { Loader2, X } from 'lucide-react';
+import { Loader2, Plus } from 'lucide-react';
+import { Button } from '../ui/button';
+import { TaskCardBody } from './TaskCard';
+import { TONES, Tone } from '../ui/status-pill';
+import { PageHeader } from '../ui/page-header';
 import KanbanColumn from './kanbanColoumn';
 import { useLeads } from '@/features/Leads/hooks/useLeads';
 import { LeadsDataForDashboard } from '@/types/branding';
@@ -65,16 +69,16 @@ interface Column {
 interface ColoumDefinations {
     id: string;
     title: string;
-    color: "bg-red-500" | "bg-foreground" | "bg-blue-500" | "bg-purple-500" | "bg-green-500";
+    tone: Tone;
 }
 
 // Column definitions
 const COLUMN_DEFINITIONS: ColoumDefinations[] = [
-    { id: 'new-lead', title: 'Leads', color: 'bg-red-500' },
-    { id: 'contacted', title: 'Contacted', color: 'bg-foreground' },
-    { id: 'qualified', title: 'Qualified', color: 'bg-blue-500' },
-    { id: 'proposal-sent', title: 'Proposal Sent', color: 'bg-purple-500' },
-    { id: 'won', title: 'Won', color: 'bg-green-500' },
+    { id: 'new-lead', title: 'New', tone: TONES.amber },
+    { id: 'contacted', title: 'Contacted', tone: TONES.sky },
+    { id: 'qualified', title: 'Qualified', tone: TONES.violet },
+    { id: 'proposal-sent', title: 'Proposal Sent', tone: TONES.pink },
+    { id: 'won', title: 'Won', tone: TONES.emerald },
 ];
 
 // Main Kanban Board Component
@@ -83,7 +87,7 @@ const KanbanBoard = () => {
     const { username } = useAppSelector((state) => state.auth)
     const [columns, setColumns] = useState<Column[]>([]);
     const [activeId, setActiveId] = useState<UniqueIdentifier | null>(null);
-    const [activeTask, setActiveTask] = useState<{ title: string; description?: string; columnId: string } | null>(null);
+    const [activeTask, setActiveTask] = useState<{ task: Task; columnId: string } | null>(null);
     const [showAddModal, setShowAddModal] = useState(false);
     const [selectedColumnId, setSelectedColumnId] = useState<string>('');
     const [selectedLead, setselectedLead] = useState(false)
@@ -205,7 +209,7 @@ const KanbanBoard = () => {
         setJustDragged(true);
         const found = findTask(event.active.id);
         if (found) {
-            setActiveTask({ title: found.task.title, description: found.task.description, columnId: found.column.id });
+            setActiveTask({ task: found.task, columnId: found.column.id });
         }
     };
 
@@ -399,6 +403,10 @@ const KanbanBoard = () => {
     }
 
     const selectedColumn = columns.find(col => col.id === selectedColumnId);
+    const totalLeads = columns.reduce((sum, col) => sum + col.tasks.length, 0);
+    const wonLeads = columns.find(col => col.id === 'won')?.tasks.length ?? 0;
+    const toneFor = (columnId: string) =>
+        (COLUMN_DEFINITIONS.find(def => def.id === columnId) ?? COLUMN_DEFINITIONS[0]).tone;
 
     if (loadind) {
         return (
@@ -418,6 +426,17 @@ const KanbanBoard = () => {
 
     return (
         <div className="grid grid-cols-1 w-full h-full gap-6">
+            <PageHeader
+                title="Leads Pipeline"
+                description={<>{totalLeads} {totalLeads === 1 ? 'lead' : 'leads'} &middot; {wonLeads} won</>}
+                actions={
+                    <Button size="sm" className="gap-1.5" onClick={() => handleAddTask('new-lead')}>
+                        <Plus className="size-4" />
+                        Add lead
+                    </Button>
+                }
+            />
+
             <div className="w-full min-w-0">
                 <DndContext
                     sensors={sensors}
@@ -429,15 +448,14 @@ const KanbanBoard = () => {
                 >
                     <SortableContext items={columns.map(col => col.id)}>
                         <div className="w-full overflow-x-auto pb-4">
-                            <div className="flex gap-4 w-max min-w-full">
+                            <div className="flex gap-3 w-max min-w-full">
                                 {columns.map((column) => {
-                                    const colDef = COLUMN_DEFINITIONS.find(def => def.id === column.id);
                                     return (
-                                        <div key={column.id} className="w-[320px] shrink-0">
+                                        <div key={column.id} className="w-[300px] shrink-0">
                                             <KanbanColumn
                                                 column={column}
                                                 onAddTask={handleAddTask}
-                                                statusColor={colDef?.color}
+                                                tone={toneFor(column.id)}
                                                 setselectedLeadId={setselectedLeadId}
                                                 setselectedLead={setselectedLead}
                                                 justDragged={justDragged}
@@ -452,12 +470,11 @@ const KanbanBoard = () => {
                     {/* Drag Overlay - Smooth drag ghost that follows the cursor */}
                     <DragOverlay dropAnimation={{ duration: 180, easing: 'cubic-bezier(0.2, 0, 0, 1)' }}>
                         {activeTask && (
-                            <div className="w-[280px] rounded-xl border border-primary/30 bg-card p-3.5 shadow-2xl ring-1 ring-primary/10 cursor-grabbing pointer-events-none">
-                                <h3 className="text-sm font-medium leading-tight text-foreground">{activeTask.title}</h3>
-                                {activeTask.description && (
-                                    <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{activeTask.description}</p>
-                                )}
-                            </div>
+                            <TaskCardBody
+                                lead={activeTask.task.leadData}
+                                tone={toneFor(activeTask.columnId)}
+                                className="w-[284px] rotate-[1.5deg] shadow-xl cursor-grabbing pointer-events-none"
+                            />
                         )}
                     </DragOverlay>
                 </DndContext>

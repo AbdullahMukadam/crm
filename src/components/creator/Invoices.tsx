@@ -1,10 +1,8 @@
 "use client"
 
-import { Search, CheckCircle2, Clock, Calendar, Loader2, Plus, MoreHorizontal, Pencil, Trash, Check, FileText } from "lucide-react"
+import { Search, Loader2, Plus, MoreHorizontal, Pencil, Trash, Check, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   DropdownMenu,
@@ -20,41 +18,21 @@ import { deleteInvoiceSlice, editInvoiceSlice, fetchProjects } from "@/lib/store
 import { useInvoices } from "@/hooks/useInvoices"
 import { format } from "date-fns"
 import { CreateInvoice } from "../common/create-invoice"
-import { EditInvoiceRequest, InvoiceStatus } from "@/types/project"
+import { EditInvoiceRequest } from "@/types/project"
 import DownloadInvoiceBtn from "../ui/downloadInvoiceBtn"
 import { toast } from "sonner"
 import { EditInvoice } from "@/components/common/edit-invoice"
+import { StatusPill, TONES, Tone } from "@/components/ui/status-pill"
+import { PageHeader } from "@/components/ui/page-header"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 // import emailjs from '@emailjs/browser'; 
 
-const statusConfig: Record<string, { label: string; className: string; icon: any }> = {
-  PAID: {
-    label: "Paid",
-    className: "bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-950/30 dark:text-emerald-400 dark:border-emerald-900",
-    icon: CheckCircle2
-  },
-  SENT: {
-    label: "Pending",
-    className: "bg-amber-50 text-amber-700 border-amber-200 dark:bg-amber-950/30 dark:text-amber-400 dark:border-amber-900",
-    icon: Clock
-  },
-  DRAFT: {
-    label: "Draft",
-    className: "bg-zinc-50 text-zinc-700 border-zinc-200 dark:bg-zinc-900 dark:text-zinc-400 dark:border-zinc-800",
-    icon: FileText
-  },
-  OVERDUE: {
-    label: "Overdue",
-    className: "bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-950/30 dark:text-rose-400 dark:border-rose-900",
-    icon: Clock
-  },
+const statusConfig: Record<string, { label: string; tone: Tone }> = {
+  DRAFT: { label: "Draft", tone: TONES.neutral },
+  SENT: { label: "Pending", tone: TONES.amber },
+  PAID: { label: "Paid", tone: TONES.emerald },
+  OVERDUE: { label: "Overdue", tone: TONES.red },
 }
-
-const InvoicesStatus = [
-  { id: "PAID", label: "Paid" },
-  { id: "SENT", label: "Sent" },
-  { id: "DRAFT", label: "Draft" },
-  { id: "OVERDUE", label: "Overdue" },
-]
 
 export default function Invoices() {
   const { projects, isLoading, isInvoiceLoading, isDeletingInvoice, isEditingInvoice } = useAppSelector((state) => state.projects)
@@ -64,7 +42,9 @@ export default function Invoices() {
   const [isEditInvoiceOpen, setisEditInvoiceOpen] = useState(false)
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null)
 
-  const { invoices, stats, handleSearchInvoices, handleFilterInvoices } = useInvoices({ projects })
+  const [statusFilter, setStatusFilter] = useState<"ALL" | keyof typeof statusConfig>("ALL")
+  const { invoices: searchedInvoices, stats, handleSearchInvoices } = useInvoices({ projects })
+  const invoices = statusFilter === "ALL" ? searchedInvoices : searchedInvoices.filter((inv) => inv.status === statusFilter)
 
   useEffect(() => {
     if (projects.length === 0) {
@@ -175,110 +155,65 @@ export default function Invoices() {
     <div className="min-h-screen bg-background">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
 
-        {/* Header Section */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Invoices
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your billing, track payments, and view revenue.
-            </p>
+        <PageHeader
+          title="Invoices"
+          description={`${stats.totalCount} ${stats.totalCount === 1 ? "invoice" : "invoices"}`}
+          actions={
+            <Button size="sm" className="gap-1.5" onClick={() => setisOpen(true)}>
+              <Plus className="size-4" /> New invoice
+            </Button>
+          }
+        >
+          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+            <TabsList variant="line" className="h-8 overflow-x-auto">
+              <TabsTrigger value="ALL" className="flex-none px-2.5">All</TabsTrigger>
+              {Object.entries(statusConfig).map(([key, st]) => (
+                <TabsTrigger key={key} value={key} className="flex-none px-2.5">{st.label}</TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              placeholder="Invoice number or amount..."
+              className="h-8 pl-8"
+              value={searchQuery}
+              onChange={(e) => setsearchQuery(e.target.value)}
+            />
           </div>
-          <Button size="lg" className="w-full sm:w-auto shadow-sm" onClick={() => setisOpen(true)}>
-            <Plus className="mr-2 h-4 w-4" /> Create Invoice
-          </Button>
+        </PageHeader>
+
+        {/* Stats strip */}
+        <div className="my-6 grid grid-cols-1 divide-y divide-border rounded-xl border border-border bg-card sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="p-4">
+            <p className="text-xs text-muted-foreground">Total paid</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums">{formatCurrency(stats.totalPaid)}</p>
+          </div>
+          <div className="p-4">
+            <p className="text-xs text-muted-foreground">Outstanding</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums">{formatCurrency(stats.pendingAmount)}</p>
+          </div>
+          <div className="p-4">
+            <p className="text-xs text-muted-foreground">Next due</p>
+            <p className="mt-1 truncate text-xl font-semibold">{stats.nextDueInvoiceNumber ? stats.nextDueDate : "All caught up"}</p>
+            {stats.nextDueInvoiceNumber && <p className="mt-0.5 text-xs text-muted-foreground">Invoice #{stats.nextDueInvoiceNumber}</p>}
+          </div>
         </div>
 
-        {/* Stats Grid */}
-        <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-          <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Paid</CardTitle>
-              <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/20">
-                <CheckCircle2 className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.totalPaid)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Lifetime earnings</p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Pending</CardTitle>
-              <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/20">
-                <Clock className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{formatCurrency(stats.pendingAmount)}</div>
-              <p className="text-xs text-muted-foreground mt-1">Outstanding payments</p>
-            </CardContent>
-          </Card>
-
-          <Card className="shadow-sm sm:col-span-2 lg:col-span-1">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Next Due</CardTitle>
-              <div className="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/20">
-                <Calendar className="h-4 w-4" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold truncate">
-                {stats.nextDueDate || "All Caught Up"}
-              </div>
-              <p className="text-xs text-muted-foreground mt-1">
-                {stats.nextDueInvoiceNumber ? `Invoice #${stats.nextDueInvoiceNumber}` : "No pending invoices"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Main Content Card */}
-        <Card className="border shadow-sm">
-          <CardHeader className="p-4 border-b bg-muted/40">
-            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-              <div className="relative w-full md:max-w-sm">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                <Input
-                  type="search"
-                  placeholder="Search clients or invoice ID..."
-                  className="w-full bg-background pl-9"
-                  value={searchQuery}
-                  onChange={(e) => setsearchQuery(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                {InvoicesStatus.map((inv) => (
-                  <Button
-                    key={inv.id}
-                    size="sm"
-                    variant="outline"
-                    className="whitespace-nowrap rounded-full px-4"
-                    onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}
-                  >
-                    {inv.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="p-4">
+        <div>
             {/* Desktop Table View (Hidden on Mobile) */}
-            <div className="hidden md:block rounded-md border border-border overflow-x-auto">
+            <div className="hidden md:block rounded-xl border border-border bg-card overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="w-[100px] font-semibold text-muted-foreground whitespace-nowrap">Invoice</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Client</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Project</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Due Date</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Amount</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">Status</TableHead>
-                    <TableHead className="text-right font-semibold text-muted-foreground whitespace-nowrap">Actions</TableHead>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="w-[100px] h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Invoice</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Client</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Project</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Due Date</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Amount</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-right h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -286,7 +221,7 @@ export default function Invoices() {
                     invoices.map((invoice) => {
                       const status = statusConfig[invoice.status] || statusConfig.DRAFT;
                       return (
-                        <TableRow key={invoice.id} className="hover:bg-muted/50">
+                        <TableRow key={invoice.id}>
                           <TableCell className="font-mono font-medium whitespace-nowrap">{invoice.invoiceNumber}</TableCell>
                           <TableCell>
                             <div className="font-medium whitespace-nowrap">{invoice.client?.username || "Unknown"}</div>
@@ -298,9 +233,7 @@ export default function Invoices() {
                           </TableCell>
                           <TableCell className="font-semibold whitespace-nowrap">{formatCurrency(Number(invoice.amount))}</TableCell>
                           <TableCell>
-                            <Badge variant="outline" className={`rounded-full px-3 py-0.5 ${status.className}`}>
-                              {status.label}
-                            </Badge>
+                            <StatusPill tone={status.tone}>{status.label}</StatusPill>
                           </TableCell>
                           <TableCell className="text-right">
                             <InvoiceActions invoice={invoice} />
@@ -323,7 +256,7 @@ export default function Invoices() {
             </div>
 
             {/* Mobile List View (Hidden on Desktop) */}
-            <div className="md:hidden rounded-md border border-border">
+            <div className="md:hidden rounded-xl border border-border bg-card">
               {invoices.length > 0 ? (
                 <div className="divide-y">
                   {invoices.map((invoice) => {
@@ -336,9 +269,7 @@ export default function Invoices() {
                             <p className="font-semibold text-sm">{invoice.client?.username || "Unknown Client"}</p>
                             <p className="text-xs text-muted-foreground">{invoice.project?.title || "General"}</p>
                           </div>
-                          <Badge variant="outline" className={`rounded-full ${status.className}`}>
-                            {status.label}
-                          </Badge>
+                          <StatusPill tone={status.tone}>{status.label}</StatusPill>
                         </div>
                         
                         <div className="flex items-center justify-between mt-2">
@@ -364,8 +295,7 @@ export default function Invoices() {
                 </div>
               )}
             </div>
-          </CardContent>
-        </Card>
+        </div>
       </div>
 
       <CreateInvoice

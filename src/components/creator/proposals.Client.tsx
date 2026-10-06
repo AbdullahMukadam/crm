@@ -4,7 +4,7 @@ import { createProposalSlice, deleteProposal, fetchProposals } from "@/lib/store
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks";
 import React, { useCallback, useEffect, useState } from "react";
 import { Button } from "../ui/button";
-import { Plus, Loader2, Trash2, Search, FileInput, MoreHorizontal, Copy, Share2, ExternalLink, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown, CheckCircle2, XCircle, Clock, Send } from "lucide-react";
+import { Plus, Loader2, Trash2, Search, FileInput, MoreHorizontal, Copy, Share2, ExternalLink, ChevronsLeft, ChevronLeft, ChevronRight, ChevronsRight, ChevronDown } from "lucide-react";
 import { useRouter } from "next/navigation";
 import {
     ColumnDef,
@@ -50,43 +50,18 @@ import { Proposal } from "@/types/proposal";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
 import { Textarea } from "../ui/textarea";
+import { StatusPill, TONES, Tone } from "../ui/status-pill";
+import { PageHeader } from "../ui/page-header";
+import { Tabs, TabsList, TabsTrigger } from "../ui/tabs";
 
-const statusStyles: Record<string, {
-    label: string;
-    icon: React.ElementType;
-    color: string;
-    borderColor: string;
-    bgColor: string;
-}> = {
-    accepted: {
-        label: "Accepted",
-        icon: CheckCircle2,
-        color: "text-emerald-500",
-        borderColor: "border-emerald-500/20",
-        bgColor: "bg-emerald-500/10",
-    },
-    rejected: {
-        label: "Rejected",
-        icon: XCircle,
-        color: "text-red-500",
-        borderColor: "border-red-500/20",
-        bgColor: "bg-red-500/10",
-    },
-    draft: {
-        label: "Draft",
-        icon: Clock,
-        color: "text-orange-500",
-        borderColor: "border-orange-500/20",
-        bgColor: "bg-orange-500/10",
-    },
-    sent: {
-        label: "Sent",
-        icon: Send,
-        color: "text-blue-500",
-        borderColor: "border-blue-500/20",
-        bgColor: "bg-blue-500/10",
-    },
+const statusStyles: Record<string, { label: string; tone: Tone }> = {
+    draft: { label: "Draft", tone: TONES.amber },
+    sent: { label: "Sent", tone: TONES.sky },
+    accepted: { label: "Accepted", tone: TONES.emerald },
+    declined: { label: "Declined", tone: TONES.red },
 };
+
+type StatusFilter = "all" | keyof typeof statusStyles;
 
 const createColumns = (
     onDelete: (id: string) => void,
@@ -104,7 +79,7 @@ const createColumns = (
                     }
                     onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
                     aria-label="Select all"
-                    className="translate-y-[2px] border-[0.1px] border-zinc-600"
+                    className="translate-y-[2px]"
                 />
             ),
             cell: ({ row }) => (
@@ -112,7 +87,7 @@ const createColumns = (
                     checked={row.getIsSelected()}
                     onCheckedChange={(value) => row.toggleSelected(!!value)}
                     aria-label="Select row"
-                    className="translate-y-[2px] border-[0.1px] border-zinc-600"
+                    className="translate-y-[2px]"
                 />
             ),
             enableSorting: false,
@@ -159,24 +134,7 @@ const createColumns = (
             cell: ({ row }) => {
                 const data: string = row.getValue("status")
                 const config = statusStyles[data.toLowerCase()] || statusStyles.draft;
-                const Icon = config.icon;
-
-                return (
-                    <div className="flex items-center">
-                        <span
-                            className={`
-              flex items-center gap-1.5 
-              px-2.5 py-0.5 rounded-full text-xs font-medium border
-              ${config.color} 
-              ${config.borderColor} 
-              ${config.bgColor}
-            `}
-                        >
-                            <Icon className="h-3.5 w-3.5" />
-                            <span className="capitalize">{config.label}</span>
-                        </span>
-                    </div>
-                );
+                return <StatusPill tone={config.tone}>{config.label}</StatusPill>;
             },
         },
         {
@@ -233,6 +191,7 @@ function ProposalsClient() {
     const [isProposalCreatedLoadind, setisProposalCreatedLoadind] = useState(false);
     const [isProposalDeletedLoading, setisProposalDeletedLoading] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [statusFilter, setStatusFilter] = useState<StatusFilter>("all");
     const dispatch = useAppDispatch();
     const router = useRouter();
 
@@ -247,11 +206,12 @@ function ProposalsClient() {
 
     const filteredProposals = React.useMemo(() => {
         return proposals.filter((proposal) =>
-            searchQuery === "" ||
-            proposal.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            proposal.title.toLowerCase().includes(searchQuery.toLowerCase())
+            (statusFilter === "all" || proposal.status.toLowerCase() === statusFilter) &&
+            (searchQuery === "" ||
+                proposal.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                proposal.title.toLowerCase().includes(searchQuery.toLowerCase()))
         );
-    }, [proposals, searchQuery]);
+    }, [proposals, searchQuery, statusFilter]);
 
     const createProposal = useCallback(
         async () => {
@@ -360,43 +320,43 @@ function ProposalsClient() {
     return (
         <div className="w-full min-h-screen bg-background">
             <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-6">
-                {/* Header - Stacks on mobile */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                    <div className="space-y-1">
-                        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Proposals</h1>
-                        <p className="text-sm text-muted-foreground">
-                            Manage and organize your proposals
-                        </p>
+                <PageHeader
+                    title="Proposals"
+                    description={`${proposals.length} ${proposals.length === 1 ? "proposal" : "proposals"} · ${proposals.filter(p => p.status.toLowerCase() === "accepted").length} accepted`}
+                    actions={
+                        <Button size="sm" onClick={() => setisDialogOpen(true)} className="gap-1.5">
+                            <Plus className="size-4" />
+                            New proposal
+                        </Button>
+                    }
+                >
+                    <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as StatusFilter)}>
+                        <TabsList variant="line" className="h-8 overflow-x-auto">
+                            <TabsTrigger value="all" className="flex-none px-2.5">All</TabsTrigger>
+                            {Object.entries(statusStyles).map(([key, s]) => (
+                                <TabsTrigger key={key} value={key} className="flex-none px-2.5">{s.label}</TabsTrigger>
+                            ))}
+                        </TabsList>
+                    </Tabs>
+                    <div className="relative w-full sm:w-64">
+                        <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            placeholder="Search proposals..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="h-8 pl-8"
+                        />
                     </div>
-                    <Button onClick={() => setisDialogOpen(true)} className="w-full sm:w-auto gap-2">
-                        <Plus size={18} />
-                        New Proposal
-                    </Button>
-                </div>
+                </PageHeader>
 
                 {/* Table Container */}
-                <div className="rounded-xl border border-border bg-card">
-                    {/* Filters Bar - Stacks on mobile */}
-                    <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-3 border-b border-border p-4">
-                        <div className="flex flex-1 items-center gap-2">
-                            <div className="relative w-full md:max-w-md">
-                                <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-                                <Input
-                                        placeholder="Search proposals..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="pl-8 h-9 w-full border-border"
-                                    />
-                            </div>
-                        </div>
-                    </div>
-
+                <div className="rounded-xl border border-border bg-card overflow-hidden">
                     {/* Table Content */}
                     <div className="overflow-x-auto">
                         <Table>
                             <TableHeader>
                                 {table.getHeaderGroups().map((headerGroup) => (
-                                    <TableRow key={headerGroup.id} className="bg-muted/50">
+                                    <TableRow key={headerGroup.id} className="bg-muted/40 hover:bg-muted/40">
                                         {headerGroup.headers.map((header) => {
                                             // Responsive Logic: Determine if column should be hidden
                                             const isHiddenOnMobile = header.id === 'createdAt' ? 'hidden md:table-cell' : '';
@@ -406,7 +366,7 @@ function ProposalsClient() {
                                                 <TableHead
                                                     key={header.id}
                                                     className={cn(
-                                                        "text-muted-foreground font-medium",
+                                                        "h-9 text-xs font-medium text-muted-foreground",
                                                         isHiddenOnMobile,
                                                         isHiddenOnTablet
                                                     )}
@@ -453,9 +413,9 @@ function ProposalsClient() {
                                     <TableRow>
                                         <TableCell
                                             colSpan={columns.length}
-                                            className="h-24 text-center"
+                                            className="h-32 text-center text-sm text-muted-foreground"
                                         >
-                                            No results.
+                                            {proposals.length === 0 ? "No proposals yet. Create your first one." : "No proposals match these filters."}
                                         </TableCell>
                                     </TableRow>
                                 )}

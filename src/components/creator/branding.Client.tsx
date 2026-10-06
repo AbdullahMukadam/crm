@@ -1,6 +1,7 @@
 "use client"
 import React, { useCallback, useState } from 'react'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { PageHeader } from '../ui/page-header'
 import { LeadFormOptions } from '@/config/settingsConfig'
 import { closestCenter, DndContext, DragEndEvent, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { arrayMove, SortableContext, sortableKeyboardCoordinates, verticalListSortingStrategy } from '@dnd-kit/sortable'
@@ -115,21 +116,18 @@ function BrandingClient() {
     return (
         <div className='w-full min-h-screen px-4 sm:px-6 lg:px-8 py-6 md:py-8'>
             <div className='max-w-4xl mx-auto flex flex-col gap-6'>
-                <div className="flex flex-col gap-1">
-                    <h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>Brand Settings</h1>
-                    <p className="text-sm text-muted-foreground">Manage your branding and lead form configurations.</p>
-                </div>
-
-                <Tabs defaultValue="lead-form" className="w-full">
-                    <TabsList className="w-full sm:w-auto grid grid-cols-2 sm:inline-flex">
-                        <TabsTrigger value="lead-form">Lead Form</TabsTrigger>
-                        <TabsTrigger value="settings">Settings</TabsTrigger>
-                    </TabsList>
+                <Tabs defaultValue="lead-form" className="w-full gap-0">
+                    <PageHeader title="Branding" description="Set up the lead form your visitors fill in.">
+                        <TabsList variant="line" className="h-8">
+                            <TabsTrigger value="lead-form" className="flex-none px-2.5">Lead form</TabsTrigger>
+                            <TabsTrigger value="settings" className="flex-none px-2.5">Sharing</TabsTrigger>
+                        </TabsList>
+                    </PageHeader>
 
                     <TabsContent value="lead-form" className="mt-6 space-y-6">
                         <div className='space-y-4'>
                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                                <h3 className='text-lg font-medium'>Form Fields</h3>
+                                <h3 className='text-sm font-medium'>Form fields</h3>
                                 <p className='text-sm text-muted-foreground'>
                                     Drag and drop to reorder fields
                                 </p>
@@ -167,7 +165,7 @@ function BrandingClient() {
                     </TabsContent>
 
                     <TabsContent value="settings" className="mt-6 space-y-4">
-                        <div className='bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm'>
+                        <div className='bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                             <div className="space-y-1">
                                 <h4 className='font-medium text-card-foreground'>View Lead Form</h4>
                                 <p className='text-sm text-muted-foreground'>Preview how your form looks to visitors</p>
@@ -178,7 +176,7 @@ function BrandingClient() {
                             </Button>
                         </div>
 
-                        <div className='bg-card border border-border rounded-xl p-4 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm'>
+                        <div className='bg-card border border-border rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4'>
                             <div className="space-y-1">
                                 <h4 className='font-medium text-card-foreground'>Public Lead Form URL</h4>
                                 <p className='text-sm text-muted-foreground'>Generate a unique URL for your campaigns</p>

@@ -14,15 +14,35 @@ export async function POST(request: NextRequest) {
     }
 
     const req = await request.json()
-    const { status, proposalId } = req
+    const { status, proposalId, signature } = req
     try {
+        // Stamp the client's typed name into any signature blocks on accept
+        const existing = await prisma.proposal.findUnique({ where: { id: proposalId }, select: { content: true } })
+        const blocks = Array.isArray(existing?.content) ? (existing.content as any[]) : []
+        const hasSignatureBlock = blocks.some((b) => b?.type === "signature")
+        const signedName = typeof signature === "string" ? signature.trim().slice(0, 100) : ""
+
+        if (status === "ACCEPTED" && hasSignatureBlock && !signedName) {
+            return NextResponse.json({
+                success: false,
+                message: "Please sign the proposal before accepting"
+            }, { status: 400 })
+        }
+
+        const signedContent = status === "ACCEPTED" && hasSignatureBlock
+            ? blocks.map((b) => b?.type === "signature"
+                ? { ...b, props: { ...b.props, signedName, signedAt: new Date().toISOString() } }
+                : b)
+            : undefined
+
         const response = await prisma.proposal.update({
             where: {
                 id: proposalId
             },
             data: {
                 status: status,
-                clientId: user.id as string
+                clientId: user.id as string,
+                ...(signedContent && { content: signedContent })
             }
         })
 

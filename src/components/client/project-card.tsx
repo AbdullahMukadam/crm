@@ -1,10 +1,8 @@
-import { MoreVertical } from "lucide-react"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
+import { MoreHorizontal } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Button } from "@/components/ui/button"
+import { StatusPill, TONES } from "@/components/ui/status-pill"
 import { Project, ProjectStatus } from "@/types/project"
 import { SetStateAction } from "react"
 import { useRouter } from "next/navigation"
@@ -18,18 +16,10 @@ interface ProjectCardProps {
 }
 
 export const statusConfig = {
-  IN_PROGRESS: { label: "IN PROGRESS", color: "bg-emerald-400 text-primary-foreground", dotColor: "bg-emerald-600" },
-  PLANNING: { label: "PLANNING", color: "bg-orange-500 text-white", dotColor: "bg-orange-300" },
-  COMPLETED: { label: "COMPLETED", color: "bg-emerald-500 text-white", dotColor: "bg-emerald-500" },
-  CANCELED: { label: "CANCELED", color: "bg-red-500 text-white", dotColor: "bg-red-300" },
-}
-
-export const getProgressColor = (progress: ProjectStatus) => {
-  if (progress === "IN_PROGRESS") return "bg-emerald-500"
-  if (progress === "PLANNING") return "bg-orange-500"
-  if (progress === "CANCELED") return "bg-red-500"
-  if (progress === "COMPLETED") return "bg-emerald-500"
-  return "bg-yellow-500"
+  PLANNING: { label: "Planning", tone: TONES.amber },
+  IN_PROGRESS: { label: "In Progress", tone: TONES.sky },
+  COMPLETED: { label: "Completed", tone: TONES.emerald },
+  CANCELED: { label: "Canceled", tone: TONES.red },
 }
 
 export const getProgress = (progress: ProjectStatus) => {
@@ -41,72 +31,71 @@ export const getProgress = (progress: ProjectStatus) => {
 
 export function ProjectCard({ project, setIsCreateDialogOpen, setselectedProject, isLoading, handleDeleteProject }: ProjectCardProps) {
   const config = statusConfig[project.status]
-  const now = getTimeAgo(project.updatedAt)
+  const progress = getProgress(project.status) ?? 0
   const router = useRouter()
 
   return (
-    // Added w-full and overflow-hidden to prevent layout breakage
-    <Card className="hover:shadow-lg transition-shadow border-border w-full overflow-hidden flex flex-col justify-between">
-      <CardHeader className="flex flex-row items-start justify-between space-y-0 pb-4">
-        <Badge className={`${config.color} text-xs font-semibold whitespace-nowrap`}>
-          <span className={`w-1.5 h-1.5 rounded-full ${config.dotColor} inline-block mr-1.5`}></span>
-          {config.label}
-        </Badge>
+    <div
+      className="group flex w-full cursor-pointer flex-col rounded-lg border border-border bg-card p-4 shadow-[0_1px_2px_rgba(0,0,0,0.04)] transition-[box-shadow,border-color] duration-150 hover:border-foreground/15 hover:shadow-sm"
+      onClick={() => router.push(`/review-project/${project.id}`)}
+    >
+      <div className="flex items-start justify-between gap-2">
+        <StatusPill tone={config.tone}>{config.label}</StatusPill>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon" className="w-8 h-8 -mr-2">
-              <MoreVertical className="w-4 h-4" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="-mr-1.5 -mt-1 size-7 text-muted-foreground"
+              onClick={(e) => e.stopPropagation()}
+              aria-label="Project options"
+            >
+              <MoreHorizontal className="size-4" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="bg-card border-border">
-            <DropdownMenuItem className="hover:bg-muted cursor-pointer" onClick={() => {
+          <DropdownMenuContent align="end" onClick={(e) => e.stopPropagation()}>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => {
               setselectedProject?.(project);
               setIsCreateDialogOpen(true)
-            }}>Edit Project</DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-muted cursor-pointer" onClick={() => router.push(`/review-project/${project.id}`)}>View Details</DropdownMenuItem>
-            <DropdownMenuItem className="hover:bg-muted cursor-pointer text-destructive" onClick={() => handleDeleteProject(project.id)} disabled={isLoading}>{isLoading ? "please wait" : "Delete"}</DropdownMenuItem>
+            }}>Edit project</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer" onClick={() => router.push(`/review-project/${project.id}`)}>View details</DropdownMenuItem>
+            <DropdownMenuItem className="cursor-pointer text-destructive" onClick={() => handleDeleteProject(project.id)} disabled={isLoading}>{isLoading ? "Please wait" : "Delete"}</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-      </CardHeader>
+      </div>
 
-      <CardContent className="space-y-4">
-        <div>
-          {/* Added truncate/break-words to title */}
-          <h3 className="font-bold text-foreground text-lg mb-2 break-words">{project.title}</h3>
-          <p className="text-sm text-muted-foreground line-clamp-2 break-words">{project.description}</p>
-        </div>
+      <h3 className="mt-3 text-sm font-medium leading-snug text-foreground break-words">{project.title}</h3>
+      {project.description && (
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2 break-words">{project.description}</p>
+      )}
 
-        <div>
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-semibold text-foreground">Progress</span>
-            <span
-              className={`text-xs font-bold ${getProgressColor(project.status) === "bg-emerald-500" ? "text-emerald-600" : "text-primary"}`}
-            >
-              {getProgress(project.status)}%
-            </span>
-          </div>
-          <Progress value={getProgress(project.status)} className="h-2 bg-muted" />
+      <div className="mt-4">
+        <div className="mb-1.5 flex items-center justify-between text-xs">
+          <span className="text-muted-foreground">Progress</span>
+          <span className="font-medium tabular-nums text-foreground">{progress}%</span>
         </div>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className={`h-full rounded-full ${config.tone.dot}`} style={{ width: `${progress}%` }} />
+        </div>
+      </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-border">
-          <div className="flex -space-x-2">
-            <Avatar className="w-8 h-8 border-2 ring-2 ring-background">
-              <AvatarImage src={project.creator.avatarUrl || "/auth-image.jpg"} />
-              <AvatarFallback className="text-xs">{project.creator.username.charAt(0)}</AvatarFallback>
-            </Avatar>
-            <Avatar className="w-8 h-8 border-2 ring-2 ring-background">
-              <AvatarImage src={project.client.avatarUrl || "/auth-image.jpg"} />
-              <AvatarFallback className="text-xs">{project.client.username.charAt(0)}</AvatarFallback>
-            </Avatar>
-          </div>
-          <span className="text-xs text-muted-foreground whitespace-nowrap">{now}</span>
+      <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
+        <div className="flex -space-x-1.5">
+          <Avatar className="size-6 ring-2 ring-card" title={project.creator.username}>
+            <AvatarImage src={project.creator.avatarUrl || "/auth-image.jpg"} />
+            <AvatarFallback className="text-[10px]">{project.creator.username.charAt(0)}</AvatarFallback>
+          </Avatar>
+          <Avatar className="size-6 ring-2 ring-card" title={project.client.username}>
+            <AvatarImage src={project.client.avatarUrl || "/auth-image.jpg"} />
+            <AvatarFallback className="text-[10px]">{project.client.username.charAt(0)}</AvatarFallback>
+          </Avatar>
         </div>
-      </CardContent>
-    </Card>
+        <span className="text-xs text-muted-foreground whitespace-nowrap">Updated {getTimeAgo(project.updatedAt)}</span>
+      </div>
+    </div>
   )
 }
 
-// Helper function (unchanged, just included for context)
 export function getTimeAgo(dateInput: Date | string): string {
   const date = new Date(dateInput);
   const now = new Date();

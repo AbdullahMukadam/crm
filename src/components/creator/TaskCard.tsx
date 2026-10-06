@@ -1,62 +1,71 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import {
-  Calendar,
-  MessageSquare,
-  FileText,
-  Link,
-  CheckCircle,
-  InfoIcon,
-  Hexagon,
-  Stars,
-} from "lucide-react";
+import { CalendarDays, Mail, Phone } from "lucide-react";
+import { format } from "date-fns";
 import React, { useRef } from "react";
-
-interface User {
-    id: string;
-    name: string;
-    avatar?: string;
-}
-
-interface Label {
-    id: string;
-    name: string;
-    color?: string;
-}
-
-interface Progress {
-    completed: number;
-    total: number;
-}
-
-interface Status {
-    icon: React.ComponentType<{ className?: string }>;
-}
+import { LeadsDataForDashboard } from "@/types/branding";
+import { StatusPill, TONES, Tone } from "../ui/status-pill";
 
 interface Task {
     id: string;
     title: string;
-    description?: string;
-    status?: Status;
-    priority?: 'urgent' | 'high' | 'medium' | 'low';
-    labels?: Label[];
-    date?: string;
-    comments?: number;
-    attachments?: number;
-    links?: number;
-    progress?: Progress;
-    assignees?: User[];
+    leadData: LeadsDataForDashboard;
 }
 
-function TaskCard({ 
-    task, 
-    columnId, 
-    setselectedLead, 
+const initials = (name: string) =>
+    name.split(" ").filter(Boolean).slice(0, 2).map((n) => n[0]).join("").toUpperCase();
+
+// Pure card markup, shared by the sortable card and the drag overlay
+export function TaskCardBody({ lead, tone, className = "" }: { lead: LeadsDataForDashboard; tone: Tone; className?: string }) {
+    return (
+        <div className={`rounded-lg border border-border bg-card p-3 shadow-[0_1px_2px_rgba(0,0,0,0.04)] ${className}`}>
+            <StatusPill tone={lead.companyName ? tone : TONES.neutral}>{lead.companyName || "Individual"}</StatusPill>
+
+            <h3 className="mt-2.5 text-sm font-medium leading-snug text-foreground">{lead.name}</h3>
+            {lead.note && (
+                <p className="mt-1 text-xs leading-relaxed text-muted-foreground line-clamp-2">{lead.note}</p>
+            )}
+
+            <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
+                    <CalendarDays className="size-3.5" />
+                    {format(new Date(lead.createdAt), "dd MMM yyyy")}
+                </span>
+                <span
+                    className="size-6 rounded-full bg-muted text-[10px] font-semibold text-foreground/70 flex items-center justify-center"
+                    title={lead.name}
+                >
+                    {initials(lead.name)}
+                </span>
+            </div>
+
+            <div className="mt-3 flex items-center gap-3 border-t border-border pt-2.5 text-xs text-muted-foreground">
+                <span className="inline-flex min-w-0 items-center gap-1.5">
+                    <Mail className="size-3.5 shrink-0" />
+                    <span className="truncate">{lead.email}</span>
+                </span>
+                {lead.mobileNumber && (
+                    <span className="inline-flex shrink-0 items-center gap-1.5">
+                        <Phone className="size-3.5" />
+                        {lead.mobileNumber}
+                    </span>
+                )}
+            </div>
+        </div>
+    );
+}
+
+function TaskCard({
+    task,
+    columnId,
+    tone,
+    setselectedLead,
     setselectedLeadId,
     justDragged
 }: {
     task: Task;
     columnId: string;
+    tone: Tone;
     setselectedLead: React.Dispatch<React.SetStateAction<boolean>>;
     setselectedLeadId: React.Dispatch<React.SetStateAction<string>>;
     justDragged: boolean;
@@ -108,9 +117,6 @@ function TaskCard({
         setselectedLeadId(task.id);
     };
 
-    const StatusIcon = task.status?.icon;
-    const hasProgress = task.progress && task.progress.total > 0;
-
     return (
         <div
             ref={setNodeRef}
@@ -119,96 +125,13 @@ function TaskCard({
             {...listeners}
             onPointerDown={handlePointerDown}
             onClick={handleClick}
-            className={`bg-background shrink-0 rounded-lg overflow-hidden border border-border cursor-grab active:cursor-grabbing
-                ${isDragging ? "opacity-30 ring-1 ring-primary/20" : "hover:shadow-md hover:border-border/70 transition-[box-shadow,border-color] duration-200"}
-            `}
+            className={`shrink-0 rounded-lg cursor-grab active:cursor-grabbing ${isDragging ? "opacity-40" : ""}`}
         >
-            <div className="px-3 py-2.5">
-                <div className="flex items-center gap-2 mb-2">
-                    {StatusIcon && (
-                        <div className="size-5 mt-0.5 shrink-0 flex items-center justify-center bg-muted rounded-sm p-1">
-                            <StatusIcon className="size-4" />
-                        </div>
-                    )}
-                    <h3 className="text-sm font-medium leading-tight flex-1">
-                        {task.title}
-                    </h3>
-                   
-                </div>
-
-                {task.description && (
-                    <p className="text-xs text-muted-foreground mb-3 line-clamp-2">
-                        {task.description}
-                    </p>
-                )}
-
-                {task.labels && task.labels.length > 0 && (
-                    <div className="flex flex-wrap gap-1.5">
-                        {task.labels.map((label) => (
-                            <span
-                                key={label.id}
-                                className={`text-[10px] px-1.5 py-0.5 font-medium rounded-md bg-secondary text-secondary-foreground ${label.color || ''}`}
-                            >
-                                {label.name}
-                            </span>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            <div className="px-3 py-2.5">
-                <div className="flex items-center justify-between flex-wrap gap-2">
-                    <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
-                        {task.date && (
-                            <div className="flex items-center gap-1.5 border border-border rounded-sm py-1 px-2">
-                                <Calendar className="size-3" />
-                                <span>{task.date}</span>
-                            </div>
-                        )}
-                        {task.comments && task.comments > 0 && (
-                            <div className="flex items-center gap-1.5 border border-border rounded-sm py-1 px-2">
-                                <MessageSquare className="size-3" />
-                                <span>{task.comments}</span>
-                            </div>
-                        )}
-                        {task.attachments && task.attachments > 0 && (
-                            <div className="flex items-center gap-1.5 border border-border rounded-sm py-1 px-2">
-                                <FileText className="size-3" />
-                                <span>{task.attachments}</span>
-                            </div>
-                        )}
-                        {task.links && task.links > 0 && (
-                            <div className="flex items-center gap-1.5 border border-border rounded-sm py-1 px-2">
-                                <Link className="size-3" />
-                                <span>{task.links}</span>
-                            </div>
-                        )}
-                       
-                    </div>
-
-                    {task.assignees && task.assignees.length > 0 && (
-                        <div className="flex -space-x-2">
-                            {task.assignees.map((user) => (
-                                <div
-                                    key={user.id}
-                                    className="size-5 rounded-full border-2 border-background bg-muted flex items-center justify-center overflow-hidden"
-                                >
-                                    {user.avatar ? (
-                                        <img src={user.avatar} alt={user.name} className="size-full object-cover" />
-                                    ) : (
-                                        <span className="text-[10px] font-medium">
-                                            {user.name
-                                                .split(" ")
-                                                .map((n) => n[0])
-                                                .join("")}
-                                        </span>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </div>
+            <TaskCardBody
+                lead={task.leadData}
+                tone={tone}
+                className={isDragging ? "border-dashed shadow-none" : "transition-[box-shadow,border-color] duration-150 hover:border-foreground/15 hover:shadow-sm"}
+            />
         </div>
     );
 }

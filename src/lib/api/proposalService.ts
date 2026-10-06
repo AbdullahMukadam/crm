@@ -38,7 +38,7 @@ class ProposalService {
         })
     }
 
-    async updateProposalStatus(data: { proposalId: string, status: string }): Promise<APIResponse> {
+    async updateProposalStatus(data: { proposalId: string, status: string, signature?: string }): Promise<APIResponse> {
         return FetchClient.makeRequest(CREATOR_API_ENDPOINTS.UPDATE_PROPOSAL_STATUS, {
             method: "POST",
             body: JSON.stringify(data)

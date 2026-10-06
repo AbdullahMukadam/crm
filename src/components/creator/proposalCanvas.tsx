@@ -79,8 +79,6 @@ function ProposalCanvas({ blocks, setBlocks, proposalId, isAutosaveOn }: Proposa
                 style={{
                     position: 'relative',
                     overflow: 'auto',
-                    backgroundImage: 'radial-gradient(#e5e5e5 1px, transparent 1px)',
-                    backgroundSize: '24px 24px'
                 }}
             >
                 {blocks.length > 0 ? (

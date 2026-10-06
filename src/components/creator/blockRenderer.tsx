@@ -6,7 +6,7 @@ import Editor from '../common/Editor';
 import { Block, ImageUploadRequest } from '@/types/proposal';
 import { toast } from 'sonner';
 import { useAppSelector } from '@/lib/store/hooks';
-import { GripVertical, Trash2 } from 'lucide-react';
+import { GripVertical, Plus, Trash2, X } from 'lucide-react';
 
 interface BlockRendererProps {
     block: Block;
@@ -285,6 +285,120 @@ export function BlockRenderer({
                     </div>
                 );
 
+            case 'pricing': {
+                const items: { name: string; qty: number; price: number }[] = block.props.items ?? [];
+                const currency = block.props.currency ?? '$';
+                const setItems = (next: typeof items) => updateBlockProps(block.id, { items: next });
+                const setItem = (i: number, patch: Partial<(typeof items)[number]>) =>
+                    setItems(items.map((it, j) => (j === i ? { ...it, ...patch } : it)));
+                const money = (n: number) =>
+                    `${currency}${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+                const total = items.reduce((sum, it) => sum + (Number(it.qty) || 0) * (Number(it.price) || 0), 0);
+                const cell = "w-full bg-transparent px-1 py-0.5 rounded border border-transparent hover:border-neutral-200 focus:border-neutral-400 focus:outline-none";
+
+                return (
+                    <div className="h-full flex flex-col text-sm">
+                        <div className="grid grid-cols-[1fr_60px_100px_100px_24px] gap-2 pb-2 border-b border-neutral-200 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                            <span>Item</span><span>Qty</span><span>Price</span><span className="text-right">Amount</span><span />
+                        </div>
+                        <div className="flex-1 overflow-y-auto">
+                            {items.map((it, i) => (
+                                <div key={i} className="grid grid-cols-[1fr_60px_100px_100px_24px] gap-2 py-1.5 border-b border-neutral-100 items-center">
+                                    <input className={cell} value={it.name} placeholder="Item" onChange={(e) => setItem(i, { name: e.target.value })} />
+                                    <input className={cell} type="number" min={0} value={it.qty} onChange={(e) => setItem(i, { qty: Number(e.target.value) })} />
+                                    <input className={cell} type="number" min={0} value={it.price} onChange={(e) => setItem(i, { price: Number(e.target.value) })} />
+                                    <span className="text-right">{money((Number(it.qty) || 0) * (Number(it.price) || 0))}</span>
+                                    {isSelected ? (
+                                        <button className="text-neutral-400 hover:text-red-600" title="Remove row" onClick={() => setItems(items.filter((_, j) => j !== i))}>
+                                            <X className="size-4" />
+                                        </button>
+                                    ) : <span />}
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-neutral-300">
+                            {isSelected ? (
+                                <div className="flex items-center gap-2">
+                                    <Button variant="outline" size="sm" onClick={() => setItems([...items, { name: '', qty: 1, price: 0 }])}>
+                                        <Plus className="size-4" /> Add row
+                                    </Button>
+                                    <input
+                                        className="w-14 px-2 py-1 border border-neutral-300 rounded text-xs"
+                                        value={currency}
+                                        title="Currency symbol"
+                                        onChange={(e) => updateBlockProps(block.id, { currency: e.target.value })}
+                                    />
+                                </div>
+                            ) : <span />}
+                            <span className="font-semibold">Total: {money(total)}</span>
+                        </div>
+                    </div>
+                );
+            }
+
+            case 'button': {
+                // Only allow http(s)/mailto links, so a javascript: URL can't run on the client's viewer page
+                const safeUrl = /^(https?:\/\/|mailto:)/i.test(block.props.url ?? '') ? block.props.url : undefined;
+                return (
+                    <div className="h-full flex flex-col items-center justify-center gap-2">
+                        <a
+                            href={safeUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="pointer-events-auto inline-flex items-center justify-center rounded-md bg-neutral-900 px-6 py-2.5 text-sm font-semibold text-white hover:bg-neutral-700"
+                            onClick={(e) => isSelected && e.preventDefault()}
+                        >
+                            {block.props.label || 'Button'}
+                        </a>
+                        {isSelected && (
+                            <div className="w-full flex gap-2">
+                                <input
+                                    className="flex-1 px-2 py-1 border border-neutral-300 rounded text-xs"
+                                    placeholder="Label"
+                                    value={block.props.label || ''}
+                                    onChange={(e) => updateBlockProps(block.id, { label: e.target.value })}
+                                />
+                                <input
+                                    className="flex-[2] px-2 py-1 border border-neutral-300 rounded text-xs"
+                                    placeholder="https://..."
+                                    value={block.props.url || ''}
+                                    onChange={(e) => updateBlockProps(block.id, { url: e.target.value })}
+                                />
+                            </div>
+                        )}
+                    </div>
+                );
+            }
+
+            case 'signature':
+                return (
+                    <div className="h-full flex flex-col justify-end gap-1">
+                        {block.props.signedName ? (
+                            <>
+                                <span className="text-3xl italic font-serif text-neutral-800">{block.props.signedName}</span>
+                                <div className="border-t border-neutral-400" />
+                                <span className="text-xs text-neutral-500">
+                                    {block.props.label} &bull; Signed {new Date(block.props.signedAt).toLocaleDateString()}
+                                </span>
+                            </>
+                        ) : (
+                            <>
+                                <span className="text-sm text-neutral-400 italic">Signed when the client accepts the proposal</span>
+                                <div className="border-t border-dashed border-neutral-400" />
+                                {isSelected ? (
+                                    <input
+                                        className="px-2 py-1 border border-neutral-300 rounded text-xs"
+                                        value={block.props.label || ''}
+                                        onChange={(e) => updateBlockProps(block.id, { label: e.target.value })}
+                                    />
+                                ) : (
+                                    <span className="text-xs text-neutral-500">{block.props.label}</span>
+                                )}
+                            </>
+                        )}
+                    </div>
+                );
+
             default:
                 return (
                     <div className="p-4 bg-neutral-50 border border-neutral-200 rounded-lg">
@@ -303,7 +417,8 @@ export function BlockRenderer({
                 }
             }}
             style={style}
-            className={`flex flex-col bg-white text-neutral-900 rounded-lg border border-neutral-200 p-5 transition-all ${isSelected
+            // Borderless blocks show an outline only on hover so they're still findable while editing
+            className={`flex flex-col bg-white text-neutral-900 rounded-lg border p-5 transition-all ${['text', 'button', 'signature'].includes(block.type) ? 'border-transparent hover:border-neutral-200' : 'border-neutral-200'} ${isSelected
                 && 'border-primary/40 shadow-sm ring-2 ring-primary/25'
                 }`}
             onClick={(e) => {

@@ -94,7 +94,7 @@ export const deleteProposal = createAsyncThunk(
 
 export const updateProposalStatus = createAsyncThunk(
   'proposals/updateProposalStatus',
-  async (data: { proposalId: string; status: string }, { rejectWithValue }) => {
+  async (data: { proposalId: string; status: string; signature?: string }, { rejectWithValue }) => {
     try {
       const response = await proposalService.updateProposalStatus(data);
       if (response.success) {

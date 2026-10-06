@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react"
 import { Search, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { PageHeader } from "@/components/ui/page-header"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
@@ -54,37 +55,30 @@ export default function ProjectsClient() {
     <div className="min-h-screen bg-background w-full">
       {/* Standard container */}
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight break-words">Your Projects</h1>
-            <p className="text-sm text-muted-foreground sm:text-base">Manage and track the progress of your active collaborations.</p>
-          </div>
-        </div>
-
-        {/* Tabs and Search */}
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-8">
-          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)} className="w-full lg:w-auto">
-            {/* Made TabsList wrap on small screens and use auto height */}
-            <TabsList className="bg-muted w-full sm:w-auto flex flex-wrap h-auto justify-start p-1">
-              <TabsTrigger className="flex-1 sm:flex-none" value="all">All Projects</TabsTrigger>
-              <TabsTrigger className="flex-1 sm:flex-none" value="active">Active</TabsTrigger>
-              <TabsTrigger className="flex-1 sm:flex-none" value="planning">Planning</TabsTrigger>
-              <TabsTrigger className="flex-1 sm:flex-none" value="completed">Completed</TabsTrigger>
+        <PageHeader
+          title="Projects"
+          description={`${projects.length} ${projects.length === 1 ? "project" : "projects"} · ${projects.filter(p => p.status === "IN_PROGRESS").length} in progress`}
+        >
+          <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)}>
+            <TabsList variant="line" className="h-8 overflow-x-auto">
+              <TabsTrigger className="flex-none px-2.5" value="all">All</TabsTrigger>
+              <TabsTrigger className="flex-none px-2.5" value="active">In Progress</TabsTrigger>
+              <TabsTrigger className="flex-none px-2.5" value="planning">Planning</TabsTrigger>
+              <TabsTrigger className="flex-none px-2.5" value="completed">Completed</TabsTrigger>
             </TabsList>
           </Tabs>
-
-          <div className="relative w-full lg:w-64">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search projects..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 bg-card border-border w-full"
+              className="h-8 pl-8"
             />
           </div>
-        </div>
+        </PageHeader>
 
+        <div className="mt-6">
         {isLoading ? (
           <div className="w-full flex justify-center text-muted-foreground py-12">
             <Loader2 className="animate-spin mr-2" /> Loading projects...
@@ -93,12 +87,12 @@ export default function ProjectsClient() {
           <>
             {
               filteredProjects.length === 0 ? (
-                <div className="flex items-center justify-center py-12">
-                  <h1 className="text-lg font-medium text-muted-foreground text-center">No projects found</h1>
+                <div className="rounded-xl border border-dashed border-border py-16 text-center text-sm text-muted-foreground">
+                  {projects.length === 0 ? "No projects yet. They appear here when a client accepts a proposal." : "No projects match these filters."}
                 </div>
               ) : (
                 // Adjusted grid gap and column settings
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {filteredProjects.map((project) => (
                     <ProjectCard
                       key={project.id}
@@ -125,6 +119,7 @@ export default function ProjectsClient() {
           </>
 
         )}
+        </div>
       </div>
 
       <EditProjectDialog

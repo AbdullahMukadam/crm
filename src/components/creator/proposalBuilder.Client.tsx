@@ -25,6 +25,8 @@ import { saveProposal } from '@/lib/store/features/proposalsSlice';
 import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { QUERY_KEYS } from '@/constants/query-keys';
 import { useQueryClient } from '@tanstack/react-query';
+import { OutputData } from '@editorjs/editorjs';
+import AiProposalDialog from './aiProposalDialog';
 
 // Dynamic imports
 const ProposalSidebar = dynamic(() => import('./proposalSidebar'), {
@@ -116,6 +118,22 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
         }
     };
 
+    // Append the AI draft as one text block below everything on the canvas
+    const handleAiDraft = useCallback((data: OutputData) => {
+        setBlocks((prev) => {
+            const bottom = prev.reduce((max, b) => Math.max(max, b.position.y + b.size.height), 0);
+            // ponytail: rough height estimate (~36px per editor block); user can resize
+            const height = Math.max(400, data.blocks.length * 36 + 80);
+            return [...prev, {
+                id: `block-${Date.now()}-${nanoid(6)}`,
+                type: 'text',
+                props: { data },
+                size: { width: 760, height },
+                position: { x: 20, y: bottom + 20 },
+            }];
+        });
+    }, []);
+
     const handleCreateSharableLink = useCallback((proposalId: string) => {
         const url = process.env.NEXT_PUBLIC_APP_URL + `/proposals/viewer/${proposalId}`
         navigator.clipboard.writeText(url)
@@ -192,6 +210,8 @@ function ProposalBuilderClient({ proposalId }: { proposalId: string }) {
                     </div>
 
                     <div className='flex items-center gap-2 sm:gap-4'>
+                        <AiProposalDialog onGenerated={handleAiDraft} />
+
                         <Button
                             size="sm"
                             className="hidden sm:flex gap-2"

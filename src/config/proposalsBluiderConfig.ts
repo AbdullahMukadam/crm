@@ -32,5 +32,32 @@ export const ProposalBuilderBlocks: Block[] = [
         props: { src: 'https://www.w3schools.com/html/mov_bbb.mp4', controls: true },
         size: { width: 500, height: 350 },
         position: { x: 50, y: 50 }
+    },
+    {
+        id: '4',
+        type: 'pricing',
+        props: {
+            currency: '$',
+            items: [
+                { name: 'Design', qty: 1, price: 1000 },
+                { name: 'Development', qty: 1, price: 2000 },
+            ]
+        },
+        size: { width: 600, height: 300 },
+        position: { x: 50, y: 50 }
+    },
+    {
+        id: '5',
+        type: 'button',
+        props: { label: 'Book a call', url: 'https://' },
+        size: { width: 300, height: 120 },
+        position: { x: 50, y: 50 }
+    },
+    {
+        id: '6',
+        type: 'signature',
+        props: { label: 'Client signature' },
+        size: { width: 400, height: 180 },
+        position: { x: 50, y: 50 }
     }
 ]

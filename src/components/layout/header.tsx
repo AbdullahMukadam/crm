@@ -121,7 +121,7 @@ export const Header: React.FC = () => {
     const unreadCount = notificationsData?.unreadCount || 0;
 
     return (
-        <header className="h-16 border-b border-border bg-background backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 lg:px-8 transition-all">
+        <header className="h-14 border-b border-border bg-background/90 backdrop-blur-md sticky top-0 z-40 flex items-center justify-between px-4 sm:px-6 lg:px-8">
 
             <div className="text-sm text-muted-foreground truncate mr-2">
                 {!isConnected && (
@@ -129,7 +129,7 @@ export const Header: React.FC = () => {
                 )}
             </div>
 
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2 sm:gap-3">
                 {role === "CREATOR" && (
                     <div className="w-full max-w-[150px] sm:max-w-sm md:max-w-md transition-all">
                         <SearchComponent
@@ -145,10 +145,10 @@ export const Header: React.FC = () => {
                         <Button
                             variant="ghost"
                             size="icon"
-                            className="relative rounded-full text-muted-foreground hover:bg-accent hover:text-foreground transition-colors"
+                            className="relative size-8 rounded-md border border-border text-muted-foreground hover:bg-muted hover:text-foreground transition-colors"
                             aria-label={`Notifications (${unreadCount} unread)`}
                         >
-                            {unreadCount > 0 ? <BellRing size={20} /> : <Bell size={20} />}
+                            {unreadCount > 0 ? <BellRing className="size-4" /> : <Bell className="size-4" />}
                             {unreadCount > 0 && (
                                 <span className="absolute -top-0.5 -right-0.5 min-w-4.5 h-4.5 px-1 bg-primary text-[10px] text-primary-foreground rounded-full flex items-center justify-center font-bold">
                                     {unreadCount > 9 ? '9+' : unreadCount}

@@ -1,20 +1,6 @@
-import { Badge } from "@/components/ui/badge"
-import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card"
-import { Progress } from "@/components/ui/progress"
 import { Project } from "@/types/project"
 import { getProgress, statusConfig } from "./project-card"
-import {
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  TrendingUp
-} from "lucide-react"
+import { StatusPill, TONES } from "@/components/ui/status-pill"
 
 // Helper for currency formatting
 const formatCurrency = (amount: number) => {
@@ -55,90 +41,52 @@ export function SectionCards({ project }: ProjectCardsProps) {
   const hasOverdue = overdueCount > 0
 
   return (
-    <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-6">
+    <div className="grid w-full grid-cols-1 divide-y divide-border rounded-xl border border-border bg-card md:grid-cols-3 md:divide-x md:divide-y-0">
 
-      {/* CARD 1: OVERALL STATUS */}
-      <Card className="flex flex-col justify-between h-full">
-        <CardHeader className="w-full pb-2">
-          <div className="flex justify-between items-start">
-            <CardDescription>Project Status</CardDescription>
-            <Badge variant="outline" className={`${config.color} bg-opacity-10`}>
-              {config.label}
-            </Badge>
-          </div>
-          <CardTitle className="text-2xl font-semibold tabular-nums pt-2">
-            {progressValue}% Complete
-          </CardTitle>
-          <div className="pt-2">
-            <Progress value={progressValue} className="h-2 w-full" />
-          </div>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1 text-sm text-muted-foreground pt-0">
-          <div className="flex items-center gap-2">
-            <Clock className="h-4 w-4" />
-            <span>
-              Updated {project?.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : "Never"}
-            </span>
-          </div>
-        </CardFooter>
-      </Card>
+      {/* Overall status */}
+      <div className="flex flex-col gap-3 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">Project status</p>
+          <StatusPill tone={config.tone}>{config.label}</StatusPill>
+        </div>
+        <p className="text-xl font-semibold tabular-nums">{progressValue}% complete</p>
+        <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+          <div className={`h-full rounded-full ${config.tone.dot}`} style={{ width: `${progressValue ?? 0}%` }} />
+        </div>
+        <p className="text-xs text-muted-foreground">
+          Updated {project?.updatedAt ? new Date(project.updatedAt).toLocaleDateString() : "never"}
+        </p>
+      </div>
 
-      {/* CARD 2: DELIVERABLES */}
-      <Card className="flex flex-col justify-between h-full">
-        <CardHeader className="w-full pb-2">
-          <div className="flex justify-between items-start">
-            <CardDescription>Deliverables</CardDescription>
-            <Badge variant="outline" className={pendingDeliverables > 0 ? "text-orange-500 border-orange-200" : "text-slate-500"}>
-              {pendingDeliverables > 0 ? `${pendingDeliverables} Pending` : "All Reviewed"}
-            </Badge>
-          </div>
-          <CardTitle className="text-2xl font-semibold tabular-nums flex items-baseline gap-2 pt-2">
-            {totalDeliverables} <span className="text-sm font-normal text-muted-foreground">files</span>
-          </CardTitle>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm pt-0">
-          <div className="flex items-center gap-2 font-medium text-green-600">
-            <CheckCircle2 className="h-4 w-4" />
-            {approvedDeliverables} Approved
-          </div>
-          <div className="text-muted-foreground text-xs">
-            {deliverableCompletion}% approval rate
-          </div>
-        </CardFooter>
-      </Card>
+      {/* Deliverables */}
+      <div className="flex flex-col gap-3 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">Deliverables</p>
+          <StatusPill tone={pendingDeliverables > 0 ? TONES.amber : TONES.neutral}>
+            {pendingDeliverables > 0 ? `${pendingDeliverables} pending` : "All reviewed"}
+          </StatusPill>
+        </div>
+        <p className="text-xl font-semibold tabular-nums">
+          {totalDeliverables} <span className="text-sm font-normal text-muted-foreground">files</span>
+        </p>
+        <p className="mt-auto text-xs text-muted-foreground">
+          {approvedDeliverables} approved &middot; {deliverableCompletion}% approval rate
+        </p>
+      </div>
 
-      {/* CARD 3: INVOICES & REVENUE */}
-      <Card className="flex flex-col justify-between h-full">
-        <CardHeader className="w-full pb-2">
-          <div className="flex justify-between items-start">
-            <CardDescription>Total Revenue (Paid)</CardDescription>
-            {hasOverdue ? (
-              <Badge variant="destructive" className="flex gap-1">
-                <AlertCircle className="h-3 w-3" /> {overdueCount} Overdue
-              </Badge>
-            ) : (
-              <Badge variant={"outline"} className="text-green-600">
-                Good Standing
-              </Badge>
-            )}
-          </div>
-          <CardTitle className="text-2xl font-semibold tabular-nums pt-2">
-            {formatCurrency(totalPaidAmount)}
-          </CardTitle>
-        </CardHeader>
-        <CardFooter className="flex-col items-start gap-1.5 text-sm pt-0">
-          <div className="flex items-center gap-2 font-medium">
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
-            <span className="text-muted-foreground">
-              Total Invoiced: <span className="text-foreground">{formatCurrency(totalInvoicedAmount)}</span>
-            </span>
-          </div>
-          <div className="text-xs text-muted-foreground">
-            {invoices.length} invoices generated
-          </div>
-        </CardFooter>
-      </Card>
-
+      {/* Invoices */}
+      <div className="flex flex-col gap-3 p-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="text-xs text-muted-foreground">Paid so far</p>
+          <StatusPill tone={hasOverdue ? TONES.red : TONES.emerald}>
+            {hasOverdue ? `${overdueCount} overdue` : "Good standing"}
+          </StatusPill>
+        </div>
+        <p className="text-xl font-semibold tabular-nums">{formatCurrency(totalPaidAmount)}</p>
+        <p className="mt-auto text-xs text-muted-foreground">
+          {formatCurrency(totalInvoicedAmount)} invoiced across {invoices.length} {invoices.length === 1 ? "invoice" : "invoices"}
+        </p>
+      </div>
     </div>
   )
 }

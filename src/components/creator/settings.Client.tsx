@@ -1,6 +1,7 @@
 "use client"
 import { CreatorSettingsItems } from '@/config/settingsConfig'
-import { MoveRight } from 'lucide-react'
+import { ChevronRight } from 'lucide-react'
+import { PageHeader } from '@/components/ui/page-header'
 import { useRouter } from 'next/navigation'
 import React, { useCallback } from 'react'
 
@@ -12,21 +13,20 @@ function SettingsClient() {
 
     return (
         <div className='mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8'>
-            <div className='mb-8 space-y-1'>
-                <h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>Settings</h1>
-                <p className='text-sm text-muted-foreground'>Manage your account settings and preferences.</p>
-            </div>
-            <div className='rounded-xl border border-border bg-card'>
-                {CreatorSettingsItems.map((item, index) => (
-                    <div key={index} onClick={() => handleItemClick(item.href)} className='hover:cursor-pointer w-full p-4 sm:p-5 flex items-center justify-between hover:bg-accent/50 transition-colors'>
-                        <div className='w-[70%]'>
-                            <h2 className='text-base font-medium mb-1'>{item.label}</h2>
-                            <p className='text-sm text-muted-foreground'>{item.description}</p>
+            <PageHeader title="Settings" description="Manage your account and preferences." />
+            <div className='mt-6 divide-y divide-border rounded-xl border border-border bg-card'>
+                {CreatorSettingsItems.map((item) => (
+                    <button
+                        key={item.href}
+                        onClick={() => handleItemClick(item.href)}
+                        className='group flex w-full items-center justify-between gap-4 p-4 text-left transition-colors first:rounded-t-xl last:rounded-b-xl hover:bg-muted/40'
+                    >
+                        <div className='min-w-0'>
+                            <h2 className='text-sm font-medium'>{item.label}</h2>
+                            <p className='mt-0.5 text-sm text-muted-foreground'>{item.description}</p>
                         </div>
-                        <div className='w-[30%] flex justify-end text-muted-foreground'>
-                            <MoveRight size={20} />
-                        </div>
-                    </div>
+                        <ChevronRight className='size-4 shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5' />
+                    </button>
                 ))}
             </div>
         </div>

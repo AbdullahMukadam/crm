@@ -1,44 +1,24 @@
 "use client"
 
-import { Download, Search, CheckCircle2, Clock, Calendar, Loader2, Plus } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Search, Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import { StatusPill, TONES, Tone } from "@/components/ui/status-pill"
+import { PageHeader } from "@/components/ui/page-header"
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { useAppDispatch, useAppSelector } from "@/lib/store/hooks"
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { fetchProjects } from "@/lib/store/features/projectSlice"
 import { useInvoices } from "@/hooks/useInvoices"
 import { format } from "date-fns"
-import { InvoiceStatus } from "@/types/project"
 import DownloadInvoiceBtn from "../ui/downloadInvoiceBtn"
 
-const statusConfig: Record<string, { label: string; className: string }> = {
-  PAID: {
-    label: "Paid",
-    className: "bg-emerald-100 text-emerald-700 hover:bg-emerald-100 border-emerald-200",
-  },
-  SENT: {
-    label: "Pending",
-    className: "bg-amber-100 text-amber-700 hover:bg-amber-100 border-amber-200",
-  },
-  DRAFT: {
-    label: "Draft",
-    className: "bg-gray-100 text-gray-700 hover:bg-gray-100 border-gray-200",
-  },
-  OVERDUE: {
-    label: "Overdue",
-    className: "bg-rose-100 text-rose-700 hover:bg-rose-100 border-rose-200",
-  },
+const statusConfig: Record<string, { label: string; tone: Tone }> = {
+  SENT: { label: "Pending", tone: TONES.amber },
+  PAID: { label: "Paid", tone: TONES.emerald },
+  OVERDUE: { label: "Overdue", tone: TONES.red },
+  DRAFT: { label: "Draft", tone: TONES.neutral },
 }
-
-const InvoicesStatus = [
-  { id: "PAID", label: "Paid" },
-  { id: "SENT", label: "Sent" },
-  { id: "DRAFT", label: "Draft" },
-  { id: "OVERDUE", label: "Overdue" },
-]
 
 export default function Invoices() {
   const { projects, isLoading, isInvoiceLoading } = useAppSelector((state) => state.projects)
@@ -46,7 +26,9 @@ export default function Invoices() {
   const [searchQuery, setsearchQuery] = useState("")
 
   // Use the hook to get real processed data
-  const { invoices, stats, handleSearchInvoices, handleFilterInvoices } = useInvoices({ projects })
+  const [statusFilter, setStatusFilter] = useState<"ALL" | keyof typeof statusConfig>("ALL")
+  const { invoices: searchedInvoices, stats, handleSearchInvoices } = useInvoices({ projects })
+  const invoices = statusFilter === "ALL" ? searchedInvoices : searchedInvoices.filter((inv) => inv.status === statusFilter)
 
   useEffect(() => {
     if (projects.length === 0) {
@@ -57,7 +39,7 @@ export default function Invoices() {
   useEffect(() => {
     let timerId = setTimeout(() => {
       handleSearchInvoices(searchQuery)
-    }, 2000);
+    }, 500);
 
     return () => clearTimeout(timerId)
   }, [searchQuery])
@@ -79,120 +61,59 @@ export default function Invoices() {
     <div className="min-h-screen bg-background w-full">
       <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
 
-        {/* Header */}
-        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="space-y-1">
-            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight text-foreground">
-              Invoices & Payments
-            </h1>
-            <p className="text-sm text-muted-foreground">
-              Manage your billing history and track revenue.
-            </p>
+        <PageHeader
+          title="Invoices"
+          description="Your billing history and payments."
+        >
+          <Tabs value={statusFilter} onValueChange={(v) => setStatusFilter(v as typeof statusFilter)}>
+            <TabsList variant="line" className="h-8 overflow-x-auto">
+              <TabsTrigger value="ALL" className="flex-none px-2.5">All</TabsTrigger>
+              {Object.entries(statusConfig).map(([key, st]) => (
+                <TabsTrigger key={key} value={key} className="flex-none px-2.5">{st.label}</TabsTrigger>
+              ))}
+            </TabsList>
+          </Tabs>
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-2.5 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              value={searchQuery}
+              onChange={(e) => setsearchQuery(e.target.value)}
+              placeholder="Invoice number or amount..."
+              className="h-8 pl-8"
+            />
+          </div>
+        </PageHeader>
+
+        {/* Stats strip */}
+        <div className="my-6 grid grid-cols-1 divide-y divide-border rounded-xl border border-border bg-card sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+          <div className="p-4">
+            <p className="text-xs text-muted-foreground">Total paid</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums">{formatCurrency(stats.totalPaid)}</p>
+          </div>
+          <div className="p-4">
+            <p className="text-xs text-muted-foreground">Amount due</p>
+            <p className="mt-1 text-xl font-semibold tabular-nums">{formatCurrency(stats.pendingAmount)}</p>
+          </div>
+          <div className="p-4">
+            <p className="text-xs text-muted-foreground">Next due</p>
+            <p className="mt-1 truncate text-xl font-semibold">{stats.nextDueInvoiceNumber ? stats.nextDueDate : "All clear"}</p>
+            {stats.nextDueInvoiceNumber && <p className="mt-0.5 text-xs text-muted-foreground">Invoice #{stats.nextDueInvoiceNumber}</p>}
           </div>
         </div>
 
-        {/* Stats Cards */}
-        {/* Grid is already responsive, but constraints above ensure it doesn't stretch too wide */}
-        <div className="mb-8 grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-
-          {/* Total Paid Card */}
-          <Card className="border-border bg-card shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Total Paid</p>
-                  <p className="text-2xl md:text-2xl font-bold tracking-tight">{formatCurrency(stats.totalPaid)}</p>
-                  <p className="text-xs text-muted-foreground">Lifetime earnings</p>
-                </div>
-                <div className="rounded-full bg-emerald-100 p-2 dark:bg-emerald-900/30">
-                  <CheckCircle2 className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Pending Amount Card */}
-          <Card className="border-border bg-card shadow-sm">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Pending Amount</p>
-                  <p className="text-2xl md:text-2xl font-bold tracking-tight">{formatCurrency(stats.pendingAmount)}</p>
-                  <p className="text-xs text-muted-foreground">Due from clients</p>
-                </div>
-                <div className="rounded-full bg-amber-100 p-2 dark:bg-amber-900/30">
-                  <Clock className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Next Due Date Card */}
-          <Card className="border-border bg-card shadow-sm sm:col-span-2 lg:col-span-1">
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div className="space-y-1">
-                  <p className="text-sm font-medium text-muted-foreground">Next Due Date</p>
-                  <p className="text-2xl md:text-2xl font-bold tracking-tight truncate">
-                    {stats.nextDueDate || "N/A"}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {stats.nextDueInvoiceNumber ? `Invoice #${stats.nextDueInvoiceNumber}` : "All clear"}
-                  </p>
-                </div>
-                <div className="rounded-full bg-indigo-100 p-2 dark:bg-indigo-900/30">
-                  <Calendar className="h-5 w-5" />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Invoices Table Section */}
-        {/* Added overflow-hidden to prevent the card border from cutting off if table is large */}
-        <Card className="border-border bg-card shadow-sm overflow-hidden">
-          <CardContent className="p-4 md:p-6">
-
-            {/* Search and Filters - Stack vertically on mobile, row on tablet */}
-            <div className="mb-6 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-              <div className="relative w-full lg:max-w-sm">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-                <Input
-                  value={searchQuery}
-                  onChange={(e) => setsearchQuery(e.target.value)}
-                  placeholder="Search by invoice ID..."
-                  className="pl-9 w-full"
-                />
-              </div>
-
-              {/* Filter Buttons: flex-wrap ensures they don't squash on mobile */}
-              <div className="flex flex-wrap gap-2">
-                {InvoicesStatus.map((inv) => (
-                  <Button
-                    key={inv.id}
-                    size="sm"
-                    variant="secondary"
-                    className="flex-grow sm:flex-grow-0"
-                    onClick={() => handleFilterInvoices(inv.id as InvoiceStatus)}
-                  >
-                    {inv.label}
-                  </Button>
-                ))}
-              </div>
-            </div>
-
+        <div>
             {/* Table Container - overflow-x-auto allows scrolling on mobile */}
-            <div className="rounded-md border border-border overflow-x-auto">
+            <div className="rounded-xl border border-border bg-card overflow-x-auto">
               <Table>
                 <TableHeader>
-                  <TableRow className="bg-muted/50 hover:bg-muted/50">
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">INVOICE ID</TableHead>
+                  <TableRow className="bg-muted/40 hover:bg-muted/40">
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Invoice</TableHead>
                     {/* Hiding Date columns on small screens to prioritize ID, Amount, Status */}
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap hidden md:table-cell">ISSUED</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap hidden sm:table-cell">DUE</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">AMOUNT</TableHead>
-                    <TableHead className="font-semibold text-muted-foreground whitespace-nowrap">STATUS</TableHead>
-                    <TableHead className="text-right font-semibold text-muted-foreground whitespace-nowrap">ACTIONS</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap hidden md:table-cell">Issued</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap hidden sm:table-cell">Due</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Amount</TableHead>
+                    <TableHead className="h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Status</TableHead>
+                    <TableHead className="text-right h-9 text-xs font-medium text-muted-foreground whitespace-nowrap">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -217,9 +138,7 @@ export default function Invoices() {
                             {formatCurrency(Number(invoice.amount))}
                           </TableCell>
                           <TableCell className="whitespace-nowrap">
-                            <Badge variant="outline" className={status.className}>
-                              {status.label}
-                            </Badge>
+                            <StatusPill tone={status.tone}>{status.label}</StatusPill>
                           </TableCell>
                           <TableCell className="text-right whitespace-nowrap">
                             <DownloadInvoiceBtn invoice={invoice} onDownload={() => {
@@ -232,15 +151,14 @@ export default function Invoices() {
                   ) : (
                     <TableRow>
                       <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
-                        No invoices found. Create one to get started!
+                        No invoices here yet.
                       </TableCell>
                     </TableRow>
                   )}
                 </TableBody>
               </Table>
             </div>
-          </CardContent>
-        </Card>
+        </div>
       </div>
     </div>
   )

@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useProject } from '@/hooks/useProject'
 import { FigmaEmbed } from '@/components/common/figmaEmbed' 
 import { Button } from '@/components/ui/button'
+import { PageHeader } from '@/components/ui/page-header'
 
 function ClientDashboard() {
   const { projects, isLoading } = useAppSelector((state) => state.projects)
@@ -43,24 +44,14 @@ function ClientDashboard() {
   // Handle case where user has no projects at all
   if (!isLoading && projects.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="relative mb-6">
-          <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full" />
-          <div className="relative p-6 bg-card rounded-2xl ring-1 ring-border shadow-2xl">
-            <Layers className="h-10 w-10 text-primary" />
-          </div>
-        </div>
-
-        <h2 className="text-2xl font-bold tracking-tight text-foreground mb-2">
-          No Active Projects
-        </h2>
-
-        <p className="text-muted-foreground max-w-[400px] text-base leading-relaxed mb-8">
-          It looks quiet here. You are not currently assigned to any active projects.
-        </p>
-
-        <div className="flex gap-3">
-          <Button variant="outline">Refresh</Button>
+      <div className="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8">
+        <PageHeader title={`Welcome back, ${username}`} />
+        <div className="mt-6 flex flex-col items-center rounded-xl border border-dashed border-border px-4 py-16 text-center">
+          <Layers className="mb-3 size-6 text-muted-foreground" />
+          <p className="text-sm font-medium text-foreground">No active projects</p>
+          <p className="mt-1 max-w-sm text-sm text-muted-foreground">
+            When a proposal you accept turns into a project, it shows up here.
+          </p>
         </div>
       </div>
     )
@@ -68,19 +59,14 @@ function ClientDashboard() {
 
   return (
     // Replaced 'flex center' with standard dashboard layout classes
-    <div className='mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-8 min-h-screen pb-20'>
+    <div className='mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-6 md:py-8 space-y-6 min-h-screen pb-20'>
 
-      {/* HEADER SECTION */}
-      <div className='flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-6'>
-        <div className="space-y-1">
-          <h1 className='text-2xl sm:text-3xl font-bold tracking-tight'>Welcome back, {username}</h1>
-          <p className="text-muted-foreground">Here is what's happening with your projects today.</p>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <span className="text-sm font-medium text-muted-foreground hidden md:block">Project:</span>
+      <PageHeader
+        title={`Welcome back, ${username}`}
+        description="Here's where your projects stand."
+        actions={
           <Select value={currentProjectName} onValueChange={setcurrentProjectName}>
-            <SelectTrigger className="w-full md:w-[280px] bg-background">
+            <SelectTrigger size="sm" className="w-full sm:w-[240px]">
               <SelectValue placeholder="Select a project" />
             </SelectTrigger>
             <SelectContent>
@@ -89,11 +75,11 @@ function ClientDashboard() {
               ))}
             </SelectContent>
           </Select>
-        </div>
-      </div>
+        }
+      />
 
       {/* DASHBOARD CONTENT */}
-      <div className='flex flex-col gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500'>
+      <div className='flex flex-col gap-8'>
 
         {/* 1. Status Cards */}
         <section>
@@ -103,10 +89,7 @@ function ClientDashboard() {
         {/* 2. Design Preview */}
         <section className='space-y-4'>
           <div className="flex items-center justify-between">
-            <h2 className='text-xl font-semibold flex items-center gap-2'>
-              <Figma className="h-5 w-5 text-purple-500" />
-              Design Preview
-            </h2>
+            <h2 className='text-sm font-medium'>Design preview</h2>
             {currentProject?.embedLink && (
               <Button variant="outline" size="sm" asChild>
                 <a href={currentProject.embedLink} target="_blank" rel="noreferrer">Open in Figma</a>
@@ -114,7 +97,7 @@ function ClientDashboard() {
             )}
           </div>
 
-          <div className="w-full aspect-video bg-muted/40 rounded-xl overflow-hidden border shadow-sm">
+          <div className="w-full aspect-video bg-muted/40 rounded-xl overflow-hidden border border-border">
             {currentProject?.embedLink ? (
               <FigmaEmbed
                 src={currentProject.embedLink}
@@ -122,8 +105,8 @@ function ClientDashboard() {
               />
             ) : (
               <div className="w-full h-full flex flex-col items-center justify-center text-muted-foreground gap-2">
-                <Figma className="h-10 w-10 opacity-20" />
-                <p>No design preview available for this project yet.</p>
+                <Figma className="size-6" />
+                <p className="text-sm">No design preview for this project yet.</p>
               </div>
             )}
           </div>

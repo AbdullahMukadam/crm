@@ -31,7 +31,7 @@ export interface CreateProposalResponse {
 
 export interface Block {
     id: string;
-    type: 'text' | 'image' | 'video';
+    type: 'text' | 'image' | 'video' | 'pricing' | 'button' | 'signature';
     props: Record<string, any>;
     size: {
         height: number,
