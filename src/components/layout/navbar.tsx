@@ -4,38 +4,54 @@ import { inter } from '@/lib/fonts'
 import { cn } from '@/lib/utils'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { ThemeToggle } from '../common/theme-toggle'
+
+const navItems = [
+  { name: 'Intake', href: '/#intake' },
+  { name: 'Proposals', href: '/#proposals' },
+  { name: 'Client portal', href: '/#portal' },
+  { name: 'Invoices', href: '/#invoices' },
+]
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false)
   const { isAuthenticated } = useAppSelector((state) => state.auth)
   const scope = usePathname() === '/' ? inter.className : ''
-
-  const toggleMenu = () => setIsOpen(!isOpen)
   const closeMenu = () => setIsOpen(false)
 
-  const commonItems = [
-    { name: 'Intake', href: '/#intake' },
-    { name: 'Proposals', href: '/#proposals' },
-    { name: 'Client portal', href: '/#portal' },
-    { name: 'Invoices', href: '/#invoices' },
-  ]
+  // While the mobile menu is open: lock page scroll, close on Escape or when the desktop nav takes over
+  useEffect(() => {
+    if (!isOpen) return
+    const desktop = window.matchMedia('(min-width: 1024px)')
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && setIsOpen(false)
+    const onResize = () => desktop.matches && setIsOpen(false)
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKey)
+    desktop.addEventListener('change', onResize)
+    return () => {
+      document.body.style.overflow = ''
+      window.removeEventListener('keydown', onKey)
+      desktop.removeEventListener('change', onResize)
+    }
+  }, [isOpen])
+
+  if (isAuthenticated) return null
 
   return (
     <>
       <header className={cn(
-        isAuthenticated ? 'hidden' : 'fixed inset-x-0 top-0',
-        'z-50 h-14 border-b border-border bg-background/80 text-foreground backdrop-blur-md',
+        'fixed inset-x-0 top-0 z-50 h-14 border-b border-border text-foreground',
+        isOpen ? 'bg-background' : 'bg-background/80 backdrop-blur-md',
         scope
       )}>
-        <div className='mx-auto flex h-full max-w-6xl items-center justify-between px-6'>
+        <div className='mx-auto flex h-full max-w-6xl items-center justify-between px-5 sm:px-6'>
           <div className='flex items-center gap-10'>
             <Link href="/" onClick={closeMenu} className='text-[15px] font-medium tracking-tight'>
               StudioFlow
             </Link>
             <nav className='hidden lg:flex items-center gap-7 text-[13px] text-muted-foreground'>
-              {commonItems.map((item) => (
+              {navItems.map((item) => (
                 <Link key={item.name} href={item.href} className='hover:text-foreground transition-colors duration-200'>
                   {item.name}
                 </Link>
@@ -43,71 +59,56 @@ function Navbar() {
             </nav>
           </div>
 
-          <div className='flex items-center gap-3'>
+          <div className='flex items-center gap-2 sm:gap-3'>
             <ThemeToggle />
-            <Link href={"/signin"} className='hidden md:block text-[13px] text-muted-foreground hover:text-foreground transition-colors'>
+            <Link href="/signin" className='hidden md:block text-[13px] text-muted-foreground hover:text-foreground transition-colors'>
               Log in
             </Link>
-            <Link href={"/signup"} className='hidden md:inline-flex h-8 items-center rounded-full bg-foreground px-3.5 text-[13px] font-medium text-background hover:bg-foreground/90 transition-colors'>
+            <Link href="/signup" className='hidden md:inline-flex h-8 items-center rounded-full bg-foreground px-3.5 text-[13px] font-medium text-background hover:bg-foreground/90 transition-colors'>
               Sign up
             </Link>
-
-          <button
-            type="button"
-            onClick={toggleMenu}
-            className='lg:hidden cursor-pointer p-2 rounded-full hover:bg-muted transition-all duration-200 relative z-50'
-            aria-label={isOpen ? 'Close menu' : 'Open menu'}
-            aria-expanded={isOpen}
-          >
-            <div className="w-5 h-5 flex flex-col justify-center items-center">
-              <span className={`block w-5 h-0.5 bg-foreground transition-all duration-300 ${isOpen ? 'rotate-45 translate-y-0.5' : '-translate-y-1'
-                }`} />
-              <span className={`block w-5 h-0.5 bg-foreground transition-all duration-300 ${isOpen ? 'opacity-0' : 'opacity-100'
-                }`} />
-              <span className={`block w-5 h-0.5 bg-foreground transition-all duration-300 ${isOpen ? '-rotate-45 -translate-y-0.5' : 'translate-y-1'
-                }`} />
-            </div>
-          </button>
+            <button
+              type="button"
+              onClick={() => setIsOpen((open) => !open)}
+              className='lg:hidden -mr-2 flex size-9 items-center justify-center rounded-full hover:bg-muted transition-colors'
+              aria-label={isOpen ? 'Close menu' : 'Open menu'}
+              aria-expanded={isOpen}
+              aria-controls="mobile-menu"
+            >
+              {/* Two lines that cross into an X */}
+              <span className="relative block h-3 w-[18px]">
+                <span className={cn('absolute left-0 h-px w-full bg-foreground transition-all duration-300', isOpen ? 'top-1.5 rotate-45' : 'top-0.5')} />
+                <span className={cn('absolute left-0 h-px w-full bg-foreground transition-all duration-300', isOpen ? 'top-1.5 -rotate-45' : 'top-2.5')} />
+              </span>
+            </button>
           </div>
         </div>
       </header>
 
-
       {isOpen && (
-        <div className={cn("fixed inset-0 z-40 transition-all ease-in duration-75 lg:hidden", scope)}>
-          <div
-            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={closeMenu}
-          />
-
-
-          <div className={`mobile-menu absolute top-16 left-1/2 transform -translate-x-1/2 w-[calc(100%-2rem)] max-w-sm
-                          bg-popover border border-border rounded-3xl shadow-[0_24px_60px_-24px_rgba(0,0,0,0.25)]
-                          transition-all duration-300 ease-out ${isOpen ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 -translate-y-4 scale-95'
-            }`}>
-            <nav className="flex flex-col p-6 space-y-1 text-popover-foreground">
-              {[...commonItems, { name: 'Log in', href: '/signin' }].map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={closeMenu}
-                  className="block px-4 py-3 hover:bg-muted rounded-lg transition-colors duration-200 font-medium"
-                >
-                  {item.name}
-                </Link>
-              ))}
-
-
-              <div className="pt-4 flex items-center justify-center text-center">
-                <Link
-                  href={"/signup"}
-                  className="w-full px-4 py-3 bg-foreground text-background font-medium rounded-full
-                           hover:bg-foreground/90 transition-colors duration-200"
-                >
-                  Sign up
-                </Link>
-              </div>
-            </nav>
+        <div
+          id="mobile-menu"
+          className={cn('fixed inset-x-0 bottom-0 top-14 z-40 flex flex-col overflow-y-auto bg-background px-5 pb-8 pt-2 text-foreground animate-in fade-in slide-in-from-top-1 duration-200 sm:px-6 lg:hidden', scope)}
+        >
+          <nav className="flex flex-col">
+            {navItems.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                onClick={closeMenu}
+                className="border-b border-border py-4 text-[17px] font-medium tracking-tight transition-colors hover:text-muted-foreground"
+              >
+                {item.name}
+              </Link>
+            ))}
+          </nav>
+          <div className="mt-auto grid gap-3 pt-8">
+            <Link href="/signin" onClick={closeMenu} className="flex h-11 items-center justify-center rounded-full border border-border text-[15px] font-medium hover:bg-muted transition-colors">
+              Log in
+            </Link>
+            <Link href="/signup" onClick={closeMenu} className="flex h-11 items-center justify-center rounded-full bg-foreground text-[15px] font-medium text-background hover:bg-foreground/90 transition-colors">
+              Sign up
+            </Link>
           </div>
         </div>
       )}

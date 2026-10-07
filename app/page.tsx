@@ -174,7 +174,7 @@ export default function LandingPage() {
   return (
     <div className={`${inter.className} min-h-screen bg-background ${fg} antialiased`}>
       {/* Hero */}
-      <section className="mx-auto max-w-6xl px-6 pt-36 sm:pt-44">
+      <section className="mx-auto max-w-6xl px-5 pt-28 sm:px-6 sm:pt-44">
         <h1 style={rise(0)} className="rise max-w-3xl text-balance text-[40px] font-medium leading-[1.05] tracking-[-0.025em] sm:text-[56px] lg:text-[64px]">
           The business system for freelance designers and studios
         </h1>
@@ -187,13 +187,13 @@ export default function LandingPage() {
             <ChevronRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
           </Link>
         </div>
-        <div style={rise(200)} className={`rise mt-16 ${fade}`}>
+        <div style={rise(200)} className={`rise mt-10 sm:mt-16 ${fade}`}>
           <DashboardMock />
         </div>
       </section>
 
       {/* Statement + pillars */}
-      <section className="mx-auto max-w-6xl px-6 py-28 sm:py-36">
+      <section className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-36">
         <p className="max-w-4xl text-pretty text-[28px] font-medium leading-[1.2] tracking-[-0.02em] sm:text-[40px]">
           A new kind of studio tool.{' '}
           <span className={muted}>
@@ -201,7 +201,7 @@ export default function LandingPage() {
             with one system built around your clients.
           </span>
         </p>
-        <div className="mt-20 grid gap-12 sm:grid-cols-3 sm:gap-8">
+        <div className="mt-14 grid gap-12 sm:mt-20 sm:grid-cols-3 sm:gap-8">
           {pillars.map(({ art: Art, title, body }) => (
             <div key={title} className="group">
               <div className="h-40 text-muted-foreground/70 transition-colors duration-500 group-hover:text-muted-foreground"><Art /></div>
@@ -215,7 +215,7 @@ export default function LandingPage() {
       {/* Feature chapters */}
       {chapters.map((ch) => (
         <section key={ch.id} id={ch.id} className="scroll-mt-20 border-t border-border">
-          <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+          <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-32">
             <div className="grid gap-6 md:grid-cols-2">
               <h2 className="text-[32px] font-medium leading-[1.1] tracking-[-0.02em] sm:text-[44px]">
                 {ch.title[0]}
@@ -229,8 +229,8 @@ export default function LandingPage() {
                 </Link>
               </div>
             </div>
-            <div className={`mt-16 ${fade}`}>{ch.mock}</div>
-            <div className="mt-6 grid grid-cols-3 gap-4 border-t border-border pt-5 text-[13px]">
+            <div className={`mt-10 sm:mt-16 ${fade}`}>{ch.mock}</div>
+            <div className="mt-6 grid grid-cols-3 gap-3 border-t border-border pt-5 text-[12px] sm:gap-4 sm:text-[13px]">
               {ch.subs.map((s) => <p key={s} className={muted}>{s}</p>)}
             </div>
           </div>
@@ -239,9 +239,9 @@ export default function LandingPage() {
 
       {/* Changelog */}
       <section className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-6 py-24 sm:py-32">
+        <div className="mx-auto max-w-6xl px-5 py-20 sm:px-6 sm:py-32">
           <h2 className="text-[32px] font-medium tracking-[-0.02em] sm:text-[44px]">Changelog</h2>
-          <div className="mt-14 grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid gap-px overflow-hidden sm:mt-14 rounded-xl border border-border bg-border sm:grid-cols-2 lg:grid-cols-4">
             {changelog.map((entry) => (
               <article key={entry.title} className="bg-background p-6">
                 <span className="block size-1.5 rounded-full bg-foreground" />
@@ -258,7 +258,7 @@ export default function LandingPage() {
 
       {/* Closing CTA */}
       <section className="border-t border-border">
-        <div className="mx-auto max-w-6xl px-6 py-32 text-center sm:py-44">
+        <div className="mx-auto max-w-6xl px-5 py-24 text-center sm:px-6 sm:py-44">
           <h2 className="text-[40px] font-medium leading-[1.05] tracking-[-0.025em] sm:text-[56px] lg:text-[64px]">
             Built for client work.
             <br />

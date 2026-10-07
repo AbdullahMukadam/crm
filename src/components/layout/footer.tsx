@@ -30,8 +30,9 @@ const columns = [
 function Footer() {
     return (
         <footer className="border-t border-border bg-background text-[13px]">
-            <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 sm:grid-cols-[2fr_repeat(3,1fr)]">
-                <p className="text-[15px] font-medium text-foreground">StudioFlow</p>
+            {/* Phones: logo on its own row, link columns in a 2-up grid */}
+            <div className="mx-auto grid max-w-6xl grid-cols-2 gap-x-6 gap-y-10 px-5 py-12 sm:grid-cols-[2fr_repeat(3,1fr)] sm:px-6 sm:py-16">
+                <p className="col-span-2 text-[15px] font-medium text-foreground sm:col-span-1">StudioFlow</p>
                 {columns.map((col) => (
                     <div key={col.title}>
                         <p className="font-medium text-foreground">{col.title}</p>
@@ -45,7 +46,7 @@ function Footer() {
                     </div>
                 ))}
             </div>
-            <div className="mx-auto max-w-6xl px-6 pb-10 text-muted-foreground">
+            <div className="mx-auto max-w-6xl px-5 pb-10 text-muted-foreground sm:px-6">
                 &copy; {new Date().getFullYear()} StudioFlow
             </div>
         </footer>

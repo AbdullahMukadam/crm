@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { DndContext } from '@dnd-kit/core'
 import { Bell, Figma, Link as LinkIcon, MoreHorizontal, MoreVertical, PanelLeftClose, Plus, Save, Search, Sparkles } from 'lucide-react'
@@ -32,11 +32,24 @@ const noop = () => { }
 
 // ---------- Shared frame ----------
 
-function Frame({ children, className }: { children: React.ReactNode; className?: string }) {
+// `width` renders the real app layout at that size, then zooms it down to fit narrower screens
+function Frame({ children, className, width }: { children: React.ReactNode; className?: string; width?: number }) {
+    const outer = useRef<HTMLDivElement>(null)
+    const [zoom, setZoom] = useState(1)
+
+    useLayoutEffect(() => {
+        const el = outer.current
+        if (!width || !el) return
+        const observer = new ResizeObserver(([entry]) => setZoom(Math.min(1, entry.contentRect.width / width)))
+        observer.observe(el)
+        return () => observer.disconnect()
+    }, [width])
+
     return (
-        <div className="overflow-hidden rounded-xl border border-border bg-background shadow-[0_40px_80px_-30px_rgba(0,0,0,0.35)]">
-            {/* Fixed inner width keeps the real layout; narrow screens crop instead of squashing */}
-            <div inert className={cn('font-sans text-foreground', className)}>{children}</div>
+        <div ref={outer} className="overflow-hidden rounded-xl border border-border bg-background shadow-[0_40px_80px_-30px_rgba(0,0,0,0.35)]">
+            <div inert className={cn('font-sans text-foreground', className)} style={width ? { width, zoom } : undefined}>
+                {children}
+            </div>
         </div>
     )
 }
@@ -139,7 +152,7 @@ function ShellHeader() {
 
 export function DashboardMock() {
     return (
-        <Frame className="flex h-[640px] min-w-[1120px]">
+        <Frame width={1120} className="flex h-[640px]">
             <ShellSidebar active="Dashboard" />
             <div className="flex min-w-0 flex-1 flex-col">
                 <ShellHeader />
@@ -190,8 +203,8 @@ export function IntakeMock() {
     ]
     return (
         <div className="grid gap-4 md:grid-cols-2">
-            <Frame className="flex justify-center bg-background p-6">
-                <Card className="w-full max-w-md border-border bg-card/80 p-8 shadow-2xl">
+            <Frame className="flex justify-center bg-background p-4 sm:p-6">
+                <Card className="w-full max-w-md border-border bg-card/80 p-6 shadow-2xl sm:p-8">
                     <div className="mb-8 text-center">
                         <h2 className="text-2xl font-bold tracking-tight text-foreground">Get in Touch</h2>
                         <p className="mt-2 text-sm text-muted-foreground">Fill out the form below and we&apos;ll get back to you.</p>
@@ -207,7 +220,7 @@ export function IntakeMock() {
                     </div>
                 </Card>
             </Frame>
-            <Frame className="p-6">
+            <Frame className="p-4 sm:p-6">
                 <div className="overflow-hidden rounded-xl border border-border bg-popover shadow-2xl">
                     <div className="flex items-center gap-2 border-b border-border bg-muted/40 p-4">
                         <Bell size={16} className="text-muted-foreground" />
@@ -256,7 +269,7 @@ const proposalBlocks: Block[] = [
 
 export function ProposalMock() {
     return (
-        <Frame className="flex h-[700px] min-w-[1120px] flex-col">
+        <Frame width={1120} className="flex h-[700px] flex-col">
             <DndContext id="landing-proposal-mock">
                 {/* Copy of the builder header (proposalBuilder.Client.tsx) */}
                 <header className="flex w-full items-center justify-between border-b border-border bg-background/95 px-6 py-3">
@@ -307,7 +320,7 @@ export function ProposalMock() {
 
 export function PortalMock() {
     return (
-        <Frame className="flex h-[680px] min-w-[1120px]">
+        <Frame width={1120} className="flex h-[680px]">
             <ShellSidebarClient />
             <div className="flex min-w-0 flex-1 flex-col">
                 <ShellHeader />
@@ -376,7 +389,7 @@ const invoices: { num: string; client: string; email: string; project: string; d
 
 export function InvoiceMock() {
     return (
-        <Frame className="flex h-[640px] min-w-[1120px]">
+        <Frame width={1120} className="flex h-[640px]">
             <ShellSidebar active="Invoices" />
             <div className="flex min-w-0 flex-1 flex-col">
                 <ShellHeader />
