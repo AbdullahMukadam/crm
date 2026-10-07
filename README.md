@@ -2,7 +2,7 @@
 
 The all-in-one suite for freelance designers to win clients, manage projects, and get paid. No more scattered tools.
 
-![Product Screenshot](public/studioflow-new.PNG)
+![StudioFlow landing page with the leads pipeline dashboard](public/readme-screenshot.png)
 
 ## Features
 
