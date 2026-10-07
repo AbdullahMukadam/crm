@@ -13,7 +13,6 @@ const fontSans = Outfit({
 
 // --- METADATA CONFIGURATION ---
 export const metadata: Metadata = {
-  // REPLACE with your actual domain when deployed
   metadataBase: new URL("https://crm-studioflow.vercel.app"),
 
   title: {
@@ -87,7 +86,7 @@ export const metadata: Metadata = {
     siteName: "StudioFlow",
     images: [
       {
-        url: "/og-image.png", // You need to create this image in /public
+        url: "/og-image.png",
         width: 1200,
         height: 630,
         alt: "StudioFlow Dashboard Preview",
@@ -144,7 +143,7 @@ export default function RootLayout({
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
-          forcedTheme="dark"
+          enableSystem
           disableTransitionOnChange
         >
           <QueryProvider>

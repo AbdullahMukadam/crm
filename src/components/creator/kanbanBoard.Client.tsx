@@ -22,7 +22,7 @@ import {
 import { Loader2, Plus } from 'lucide-react';
 import { Button } from '../ui/button';
 import { TaskCardBody } from './TaskCard';
-import { TONES, Tone } from '../ui/status-pill';
+import { COLUMN_DEFINITIONS } from '@/config/pipeline';
 import { PageHeader } from '../ui/page-header';
 import KanbanColumn from './kanbanColoumn';
 import { useLeads } from '@/features/Leads/hooks/useLeads';
@@ -65,21 +65,6 @@ interface Column {
     title: string;
     tasks: Task[];
 }
-
-interface ColoumDefinations {
-    id: string;
-    title: string;
-    tone: Tone;
-}
-
-// Column definitions
-const COLUMN_DEFINITIONS: ColoumDefinations[] = [
-    { id: 'new-lead', title: 'New', tone: TONES.amber },
-    { id: 'contacted', title: 'Contacted', tone: TONES.sky },
-    { id: 'qualified', title: 'Qualified', tone: TONES.violet },
-    { id: 'proposal-sent', title: 'Proposal Sent', tone: TONES.pink },
-    { id: 'won', title: 'Won', tone: TONES.emerald },
-];
 
 // Main Kanban Board Component
 const KanbanBoard = () => {

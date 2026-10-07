@@ -4,7 +4,7 @@ import { useAppDispatch, useAppSelector } from '@/lib/store/hooks';
 import { ArrowRightIcon, Eye, EyeClosed, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import React, { ChangeEvent, FormEvent, useState } from 'react'
+import React, { ChangeEvent, FormEvent, useEffect, useState } from 'react'
 import { toast } from 'sonner';
 
 interface Props {
@@ -29,6 +29,12 @@ function AuthenticationForm({ headerText, TypeofTheForm }: Props) {
         password: ""
     });
     const [isPasswordvisible, setisPasswordvisible] = useState(false)
+
+    // Pre-fill from the landing page CTA (/signup?email=...)
+    useEffect(() => {
+        const email = new URLSearchParams(window.location.search).get("email")
+        if (email) setUserData((prev) => ({ ...prev, email }))
+    }, [])
 
 
     const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -85,41 +91,41 @@ function AuthenticationForm({ headerText, TypeofTheForm }: Props) {
     }
 
     return (
-        <div className='w-full lg:w-1/3 h-fit mt-2 lg:mt-6 overflow-hidden rounded-2xl text-white font-brcolage-grotesque lg:flex items-center justify-center'>
+        <div className='w-full lg:w-1/3 h-fit mt-2 lg:mt-6 overflow-hidden rounded-2xl text-foreground font-brcolage-grotesque lg:flex items-center justify-center'>
             <div className='w-full'>
                 <form className='w-full p-2' onSubmit={handleSubmit}>
-                    <h3 className='font-bold text-2xl text-white'>{headerText || "Authentication"}</h3>
+                    <h3 className='font-bold text-2xl text-foreground'>{headerText || "Authentication"}</h3>
                     <section className='w-full mt-3 flex flex-col gap-3'>
                         {TypeofTheForm === "Signup" && (
                             <div className='w-full flex flex-col gap-2'>
-                                <label className='text-white' htmlFor="email">Username</label>
-                                <input value={userData.username} onChange={handleChange} required className=' border-[0.2px] border-gray-900 bg-zinc-900 rounded-md p-2 outline-none hover:border-gray-800' id='username' type="text" placeholder='Enter your Username' />
+                                <label className='text-sm font-medium text-foreground' htmlFor="email">Username</label>
+                                <input value={userData.username} onChange={handleChange} required className='border border-input bg-background rounded-md p-2 outline-none hover:border-ring/60 focus-within:border-ring placeholder:text-muted-foreground' id='username' type="text" placeholder='Enter your Username' />
                             </div>
                         )}
                         <div className='w-full flex flex-col gap-2'>
-                            <label className='text-white' htmlFor="email">Email Address</label>
-                            <input value={userData.email} onChange={handleChange} required className=' border-[0.2px] border-gray-900 bg-zinc-900 rounded-md p-2 outline-none hover:border-gray-800' id='email' type="email" placeholder='Enter your Email Address' />
+                            <label className='text-sm font-medium text-foreground' htmlFor="email">Email Address</label>
+                            <input value={userData.email} onChange={handleChange} required className='border border-input bg-background rounded-md p-2 outline-none hover:border-ring/60 focus-within:border-ring placeholder:text-muted-foreground' id='email' type="email" placeholder='Enter your Email Address' />
                         </div>
                         <div className='w-full flex flex-col gap-2'>
-                            <label className='text-white' htmlFor="password">Password</label>
-                            <div className='border-[0.2px] border-gray-900 bg-zinc-900 rounded-md p-2 outline-none w-full flex items-center space-between hover:border-gray-800'>
-                                <input value={userData.password} onChange={handleChange} required className='w-full outline-none' id='password' type={isPasswordvisible ? "text" : "password"} placeholder='Enter your Password' />
-                                <div onClick={() => setisPasswordvisible((prev) => !prev)}>
-                                    {isPasswordvisible ? <EyeClosed color='gray' /> : <Eye color='gray' />}
+                            <label className='text-sm font-medium text-foreground' htmlFor="password">Password</label>
+                            <div className='border border-input bg-background rounded-md p-2 outline-none hover:border-ring/60 focus-within:border-ring w-full flex items-center gap-2'>
+                                <input value={userData.password} onChange={handleChange} required className='w-full bg-transparent outline-none placeholder:text-muted-foreground' id='password' type={isPasswordvisible ? "text" : "password"} placeholder='Enter your Password' />
+                                <div className='text-muted-foreground cursor-pointer' onClick={() => setisPasswordvisible((prev) => !prev)}>
+                                    {isPasswordvisible ? <EyeClosed size={18} /> : <Eye size={18} />}
                                 </div>
                             </div>
 
 
                         </div>
                     </section>
-                    <button disabled={isLoading} className={`w-full bg-white ${isLoading ? "bg-gray-500" : ""} cursor-pointer text-black rounded-md py-2 mt-3 flex items-center justify-center gap-2`}>{isLoading && <Loader2 size={16} className="animate-spin" />}{isLoading ? "Please Wait.." : "Continue"}</button>
+                    <button disabled={isLoading} className="w-full bg-primary text-primary-foreground hover:bg-primary/90 disabled:opacity-60 cursor-pointer rounded-md py-2 mt-3 flex items-center justify-center gap-2">{isLoading && <Loader2 size={16} className="animate-spin" />}{isLoading ? "Please Wait.." : "Continue"}</button>
                 </form>
                 <div className='w-full items-center p-3 flex mt-3 gap-1'>
-                    <hr className="h-px bg-gray-500 grow" />
-                    <span>or</span>
-                    <hr className="h-px bg-gray-500 grow" />
+                    <hr className="h-px border-0 bg-border grow" />
+                    <span className='text-sm text-muted-foreground'>or</span>
+                    <hr className="h-px border-0 bg-border grow" />
                 </div>
-                <button onClick={() => window.location.href="/api/google"} className='w-full cursor-pointer py-2 mt-3 mx-2 text-black bg-white rounded-md flex items-center justify-center gap-2'>
+                <button onClick={() => window.location.href="/api/google"} className='w-full cursor-pointer py-2 mt-3 border border-border bg-card text-foreground hover:bg-muted rounded-md flex items-center justify-center gap-2'>
                     <svg className="w-5 h-5" viewBox="0 0 24 24">
                         <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" />
                         <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" />
@@ -128,7 +134,7 @@ function AuthenticationForm({ headerText, TypeofTheForm }: Props) {
                     </svg>
                     Continue with Google
                 </button>
-                <Link className='py-2 mt-6 text-center rounded-md border bg-zinc-950 border-gray-600 text-gray-400 flex items-center justify-center gap-1 hover:text-white transition-all ease-in-out duration-200 group' href={`${TypeofTheForm === "Signup" ? "/signin" : "signup"}`}>{TypeofTheForm === "Signup" ? "Already have an account? SignIn" : "Dont have an Account? Signup"} <ArrowRightIcon size={18} className='transition-transform duration-200 ease-in-out group-hover:translate-x-2' /></Link>
+                <Link className='py-2 mt-6 text-center rounded-md border border-border bg-muted/40 text-muted-foreground flex items-center justify-center gap-1 hover:text-foreground transition-all ease-in-out duration-200 group' href={`${TypeofTheForm === "Signup" ? "/signin" : "signup"}`}>{TypeofTheForm === "Signup" ? "Already have an account? SignIn" : "Dont have an Account? Signup"} <ArrowRightIcon size={18} className='transition-transform duration-200 ease-in-out group-hover:translate-x-2' /></Link>
             </div>
         </div>
     )

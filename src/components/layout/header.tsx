@@ -7,6 +7,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import SearchComponent from './search';
+import { ThemeToggle } from '../common/theme-toggle';
 import { useSearch } from '@/hooks/useSearch';
 import notificationService from '@/lib/api/notificarionService';
 import { Button } from '../ui/button';
@@ -139,6 +140,8 @@ export const Header: React.FC = () => {
                         />
                     </div>
                 )}
+
+                <ThemeToggle />
 
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>

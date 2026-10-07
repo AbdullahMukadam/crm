@@ -1,41 +1,52 @@
-import { Github, Twitter } from 'lucide-react'
 import Link from 'next/link'
-import React from 'react'
+
+const columns = [
+    {
+        title: 'Product',
+        links: [
+            { label: 'Intake', href: '/#intake' },
+            { label: 'Proposals', href: '/#proposals' },
+            { label: 'Client portal', href: '/#portal' },
+            { label: 'Invoices', href: '/#invoices' },
+        ],
+    },
+    {
+        title: 'Account',
+        links: [
+            { label: 'Sign up', href: '/signup' },
+            { label: 'Sign in', href: '/signin' },
+        ],
+    },
+    {
+        title: 'Company',
+        links: [
+            { label: 'About', href: '/about' },
+            { label: 'GitHub', href: 'https://github.com/AbdullahMukadam' },
+            { label: 'X', href: 'https://x.com/abd_mukadam' },
+        ],
+    },
+]
 
 function Footer() {
     return (
-        <footer className='w-full p-6 border-t border-gray-700 flex flex-col items-center justify-center bg-background font-brcolage-grotesque text-white'>
-            <div className='w-full lg:w-[70%] lg:flex items-center justify-between'>
-                <section className='w-full md:w-[40%] flex flex-col gap-2'>
-                    <h2 className='text-2xl text-white font-bold font-brcolage-grotesque'>StudioFlow</h2>
-                    <p className='text-gray-400 text-sm font-brcolage-grotesque'>The all-in-one suite for freelance designers to win clients, manage projects, and get paid. No more scattered tools.</p>
-                    <div className='w-full flex gap-2 mt-2 '>
-                        <Link href={"https://github.com/AbdullahMukadam"}><Github size={20} className='text-gray-400 hover:text-white' /></Link>
-                        <Link href={"https://x.com/abd_mukadam"}><Twitter size={20} className='text-gray-400 hover:text-white' /></Link>
+        <footer className="border-t border-border bg-background text-[13px]">
+            <div className="mx-auto grid max-w-6xl gap-10 px-6 py-16 sm:grid-cols-[2fr_repeat(3,1fr)]">
+                <p className="text-[15px] font-medium text-foreground">StudioFlow</p>
+                {columns.map((col) => (
+                    <div key={col.title}>
+                        <p className="font-medium text-foreground">{col.title}</p>
+                        <ul className="mt-4 space-y-3 text-muted-foreground">
+                            {col.links.map((link) => (
+                                <li key={link.label}>
+                                    <Link href={link.href} className="transition-colors hover:text-foreground">{link.label}</Link>
+                                </li>
+                            ))}
+                        </ul>
                     </div>
-                </section>
-                <section className='w-full md:w-[40%] flex gap-2 mt-8 lg:mt-0'>
-                    <div className='w-[40%] flex flex-col gap-2'>
-                        <h2 className='font-bold'>Resources</h2>
-                        <div className='w-full flex flex-col gap-[2px] text-gray-400 '>
-                            <Link className='text-gray-400 hover:text-white' href={"/"}>Resources</Link>
-                            <Link className='text-gray-400 hover:text-white' href={"/"}>Privacy Policy</Link>
-                            <Link className='text-gray-400 hover:text-white' href={"/"}>Terms of use</Link>
-                        </div>
-                    </div>
-                    <div className='w-1/2 flex flex-col justify-start gap-2'>
-                        <h2 className='font-bold'>Company</h2>
-                        <div className='w-full flex flex-col gap-[2px] text-gray-400'>
-                            <Link className='text-gray-400 hover:text-white' href={"/"}>Contributors</Link>
-                            <Link className='text-gray-400 hover:text-white' href={"/"}>About</Link>
-                        </div>
-                    </div>
-                </section>
+                ))}
             </div>
-            <div className='w-full lg:w-[70%]'>
-                <section className='w-full mt-8'>
-                    <p className='text-gray-400'>&#169; 2025 StudioFlow All Rights Reserved</p>
-                </section>
+            <div className="mx-auto max-w-6xl px-6 pb-10 text-muted-foreground">
+                &copy; {new Date().getFullYear()} StudioFlow
             </div>
         </footer>
     )

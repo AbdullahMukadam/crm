@@ -73,15 +73,15 @@ function LeadForm({ username }: LeadFormProps) {
     return (
         <div className='w-full h-full flex items-center justify-center p-4'>
             {isLoading && !brnadingData ? (
-                <div className="flex flex-col items-center gap-2 text-zinc-400">
+                <div className="flex flex-col items-center gap-2 text-muted-foreground">
                     <Loader2 className='animate-spin w-8 h-8 text-indigo-500' />
                     <p className="text-sm">Loading form...</p>
                 </div>
             ) : (
-                <Card className='w-full max-w-md bg-zinc-950/80 backdrop-blur-sm border-zinc-800 shadow-2xl p-8'>
+                <Card className='w-full max-w-md bg-card/80 backdrop-blur-sm border-border shadow-2xl p-8'>
                     <div className="mb-8 text-center">
-                        <h2 className="text-2xl font-bold text-white tracking-tight">Get in Touch</h2>
-                        <p className="text-zinc-400 text-sm mt-2">
+                        <h2 className="text-2xl font-bold text-foreground tracking-tight">Get in Touch</h2>
+                        <p className="text-muted-foreground text-sm mt-2">
                             Fill out the form below and we'll get back to you.
                         </p>
                     </div>
@@ -90,14 +90,14 @@ function LeadForm({ username }: LeadFormProps) {
                         {brnadingData ? (
                             brnadingData?.map((feild: FormFeild, i) => (
                                 <div key={feild.id} className='w-full space-y-2'>
-                                    <Label className='text-zinc-300 font-medium text-sm ml-1'>
+                                    <Label className='text-foreground/80 font-medium text-sm ml-1'>
                                         {feild.mapping}
                                     </Label>
                                     <Input 
                                         value={formData[feild.id] ?? ""} 
                                         placeholder={feild.label} 
                                         required={feild.required} 
-                                        className="bg-zinc-900/50 border-zinc-800 text-white placeholder:text-zinc-600 h-11"
+                                        className="bg-background/50 h-11"
                                         onChange={(e) =>
                                             setFormData(prev => ({ ...prev, [feild.id]: e.target.value }))
                                         } 
@@ -105,13 +105,13 @@ function LeadForm({ username }: LeadFormProps) {
                                 </div>
                             ))
                         ) : (
-                            <div className="text-center py-10 text-zinc-500 border border-dashed border-zinc-800 rounded-lg">
+                            <div className="text-center py-10 text-muted-foreground border border-dashed border-border rounded-lg">
                                 <p>No form configuration found.</p>
                             </div>
                         )}
                         
                         <Button 
-                            className='w-full mt-6 text-white font-medium h-11' 
+                            className='w-full mt-6 font-medium h-11' 
                             type='submit'
                             disabled={isLoading}
                         >

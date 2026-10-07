@@ -66,7 +66,7 @@ function Onboardpage() {
 
     return (
         <div className='w-full p-2 flex items-center justify-center'>
-            <Card className="w-full p-6 lg:max-w-[500px] font-brcolage-grotesque bg-transparent text-white border-none">
+            <Card className="w-full p-6 lg:max-w-[500px] font-brcolage-grotesque bg-transparent text-foreground border-none">
                 <CardHeader>
                     <CardTitle className='text-xl'>Please fill the details</CardTitle>
                     <CardDescription>
@@ -78,10 +78,10 @@ function Onboardpage() {
                         <div className="flex flex-col gap-6">
                             <div className="grid gap-2">
                                 <Select defaultValue={role} onValueChange={(value) => setRole(value as UserRole)}>
-                                    <SelectTrigger className="w-full border-[1px] border-white/25">
+                                    <SelectTrigger className="w-full">
                                         <SelectValue placeholder="Select your role" />
                                     </SelectTrigger>
-                                    <SelectContent className='bg-zinc-900 text-white border-[1px] border-white/25'>
+                                    <SelectContent>
                                         <SelectGroup>
                                             <SelectLabel>Select</SelectLabel>
                                             <SelectItem value="client">Client</SelectItem>
